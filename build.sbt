@@ -25,7 +25,7 @@ libraryDependencies ++= Seq(
 
 fork := true
 
-envVars := Map("LD_LIBRARY_PATH" -> ".")
+envVars := Map("LD_LIBRARY_PATH" -> ".", "DYLD_LIBRARY_PATH" -> ".")
 
 lazy val root = (project in file("."))
 
