@@ -4,18 +4,30 @@ name := "fatdynet"
 
 organization := "org.clulab"
 
-scalaVersion := "2.12.4"
+val defaultScalaVersion = "2.12.4"
+
+scalaVersion := defaultScalaVersion
+
 crossScalaVersions := Seq("2.11.11", "2.12.4")
 
-val versionRegex = "(\\d+)\\.(\\d+)\\.(\\d+)".r
-val versionRegex(major, minor, update) = defaultScalaVersion
-val majorMinor = major + "." + minor
+val majorMinor = {
+  val versionRegex = "(\\d+)\\.(\\d+)\\.(\\d+)".r
+  val versionRegex(major, minor, update) = defaultScalaVersion
 
-unmanagedBase := "lib-" + majorMinor
+  major + "." + minor
+}
+
+unmanagedBase := baseDirectory.value / ("lib-" + majorMinor)
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 )
+
+fork := true
+
+envVars := Map("LD_LIBRARY_PATH" -> ".")
+
+lazy val root = (project in file("."))
 
 mainClass in Compile := Some("edu.cmu.dynet.examples.XorScala")
 
@@ -71,12 +83,6 @@ pomExtra :=
 //
 // end publishing settings
 //
-
-lazy val root = (project in file("."))
-  .settings(
-    fork := true,
-    envVars := Map("LD_LIBRARY_PATH" -> ".")
-  )
 
 // release steps
 releaseProcess := Seq[ReleaseStep](
