@@ -1,2 +1,106 @@
-# fatdynet
-Builds a fat, cross-platform jar of dynet for scala
+[![Build Status](https://travis-ci.org/clulab/fatdynet2.12.svg?branch=master)](https://travis-ci.org/clulab/fatdynet2.12)
+
+# fatdynet2.12
+
+This was compiled with
+- dynet commit: f1b365faabbf2fb5752ce897577b048501637278
+- dynet compiled with make -j 4
+- scala 2.12.4
+- java 1.8.0_x
+
+You can perform a quick test with
+`sbt run`
+which should product output similar to
+```
+[info] Running edu.cmu.dynet.examples.XorScala 
+Running XOR example
+[dynet] random seed: 2354967643
+[dynet] allocating memory: 512MB
+[dynet] memory allocation done.
+Dynet initialized!
+
+Computation graphviz structure:
+digraph G {
+  rankdir=LR;
+  nodesep=.05;
+  N0 [label="v0 = parameters({8,2}) @ 0x7fe79abb0478"];
+  N1 [label="v1 = parameters({8}) @ 0x7fe79abb05a8"];
+  N2 [label="v2 = parameters({1,8}) @ 0x7fe79abb06f8"];
+  N3 [label="v3 = parameters({1}) @ 0x7fe79abb08a8"];
+  N4 [label="v4 = constant({2})"];
+  N5 [label="v5 = scalar_constant(0x7fe79abb9060)"];
+  N6 [label="v6 = v0 * v4"];
+  N0 -> N6;
+  N4 -> N6;
+  N7 [label="v7 = v6 + v1"];
+  N6 -> N7;
+  N1 -> N7;
+  N8 [label="v8 = tanh(v7)"];
+  N7 -> N8;
+  N9 [label="v9 = v2 * v8"];
+  N2 -> N9;
+  N8 -> N9;
+  N10 [label="v10 = v9 + v3"];
+  N9 -> N10;
+  N3 -> N10;
+  N11 [label="v11 = || v10 - v5 ||^2"];
+  N10 -> N11;
+  N5 -> N11;
+}
+
+Training...
+iter = 0, loss = 2.2457085
+iter = 1, loss = 1.6314303
+iter = 2, loss = 1.2347934
+iter = 3, loss = 0.91187227
+iter = 4, loss = 0.63016045
+iter = 5, loss = 0.3049145
+iter = 6, loss = 0.09319025
+iter = 7, loss = 0.019082734
+iter = 8, loss = 0.003395962
+iter = 9, loss = 5.326783E-4
+iter = 10, loss = 8.053323E-5
+iter = 11, loss = 1.1818531E-5
+iter = 12, loss = 1.7824146E-6
+iter = 13, loss = 2.6764963E-7
+iter = 14, loss = 4.260896E-8
+iter = 15, loss = 6.514804E-9
+iter = 16, loss = 1.1485586E-9
+iter = 17, loss = 1.756435E-10
+iter = 18, loss = 3.5814907E-11
+iter = 19, loss = 4.943601E-12
+iter = 20, loss = 1.2052581E-12
+iter = 21, loss = 6.865619E-13
+iter = 22, loss = 3.5704772E-13
+iter = 23, loss = 2.1049829E-13
+iter = 24, loss = 1.687539E-13
+iter = 25, loss = 6.57252E-14
+iter = 26, loss = 2.1316282E-14
+iter = 27, loss = 7.1054274E-15
+iter = 28, loss = 1.0658141E-14
+iter = 29, loss = 7.1054274E-15
+[success] Total time: 1 s, completed Sep 17, 2018 5:20:44 PM
+```
+
+To use it with `sbt` in your own project, make a `build.sbt` file like
+```
+name := "dynetClient"
+
+organization := "org.clulab"
+
+scalaVersion := "2.12.4"
+
+libraryDependencies ++= Seq(
+  "org.clulab" %% "fatdynet" % "0.0.1-SNAPSHOT"
+)
+```
+
+It can be tested with a program like
+```
+package org.clulab.dynet.apps
+
+import edu.cmu.dynet.examples.XorScala
+
+object XorScalaApp extends App {
+  XorScala.main(Array[String]())
+}
