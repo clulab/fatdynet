@@ -1,12 +1,27 @@
-[![Build Status](https://travis-ci.org/clulab/fatdynet2.12.svg?branch=master)](https://travis-ci.org/clulab/fatdynet2.12)
+[![Build Status](https://travis-ci.org/clulab/fatdynet.svg?branch=master)](https://travis-ci.org/clulab/fatdynet)
 
-# fatdynet2.12
+# fatdynet
 
-This was compiled with
-- dynet commit: f1b365faabbf2fb5752ce897577b048501637278
-- dynet compiled with make -j 4
-- scala 2.12.4
+The source code used for the libraries of this project is
+- dynet commit f1b365f (remove duplicated rng initialization, 2.0.3 with patches)
+- eigen commit b2e267d
+
+The build environment included
 - java 1.8.0_x
+- sbt 1.2.1
+
+The files in lib-2.12 were built with
+- scala 2.12.4
+- cmake .. -DSCALA_VERSION=2.12.4 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
+- make
+
+and those in lib-2.11 were built with
+- scala 2.11.11
+- cmake .. -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
+- make
+
+For more details see [Compiling DyNet with SWIG Support](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-with-SWIG-Support).
+
 
 You can perform a quick test with
 `sbt run`
