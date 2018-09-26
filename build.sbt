@@ -4,15 +4,14 @@ name := "fatdynet"
 
 organization := "org.clulab"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.12.4"
 
 crossScalaVersions := Seq("2.11.11", "2.12.4")
 
 lazy val majorMinor = Def.setting {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((major, minor)) => s"${major}.${minor}"
-    case None => "maj-min"
-  }
+  val (major, minor) = CrossVersion.partialVersion(scalaVersion.value).get
+
+  s"${major}.${minor}"
 }
 
 unmanagedBase := baseDirectory.value / s"lib-${majorMinor.value}"

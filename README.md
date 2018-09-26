@@ -7,7 +7,7 @@ The source code used for the libraries of this project is
 - eigen commit b2e267d
 
 The build environment included
-- java 1.8.0_x
+- java 1.8.0_162
 - sbt 1.2.1
 
 The files in lib-2.12 were built with
