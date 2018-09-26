@@ -4,20 +4,18 @@ name := "fatdynet"
 
 organization := "org.clulab"
 
-val defaultScalaVersion = "2.12.4"
-
-scalaVersion := defaultScalaVersion
+scalaVersion := "2.11.11"
 
 crossScalaVersions := Seq("2.11.11", "2.12.4")
 
-val majorMinor = {
-  val versionRegex = "(\\d+)\\.(\\d+)\\.(\\d+)".r
-  val versionRegex(major, minor, update) = defaultScalaVersion
-
-  major + "." + minor
+lazy val majorMinor = Def.setting {
+  CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((major, minor)) => s"${major}.${minor}"
+    case None => "maj-min"
+  }
 }
 
-unmanagedBase := baseDirectory.value / ("lib-" + majorMinor)
+unmanagedBase := baseDirectory.value / s"lib-${majorMinor.value}"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % "test"
