@@ -22,7 +22,15 @@ libraryDependencies ++= Seq(
 
 fork := true
 
-envVars := Map("LD_LIBRARY_PATH" -> ".", "DYLD_LIBRARY_PATH" -> ".")
+envVars := {
+  val empty = Map.empty[String, String]
+  val key1 = "LD_LIBRARY_PATH"
+  val key2 = "DYLD_LIBRARY_PATH"
+  val map1 = if (System.getenv(key1) == null) Map(key1 -> ".") else empty
+  val map2 = if (System.getenv(key2) == null) Map(key2 -> ".") else empty
+
+  map1 ++ map2
+}
 
 lazy val root = (project in file("."))
 
