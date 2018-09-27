@@ -2,6 +2,11 @@
 
 # fatdynet
 
+**Note:** You need to install the dynet libraries to use this project.  Luckily, there are
+precompiled versions available so that you probably don't have to build them yourself.  If
+you are using a Mac, libdynet.dylib is already included with the project and you can proceed
+with the cloned project.  For Linux, please visit [our drive](https://drive.google.com/open?id=1LcA6-SHN_Yj2nLq7zC5EayUY_vhBtlqi), download `libdynet.so`, and place it in the project directory.
+
 The source code used for the libraries of this project is
 - dynet commit f1b365f (remove duplicated rng initialization, 2.0.3 with patches)
 - eigen commit b2e267d
@@ -23,8 +28,7 @@ and those in lib-2.11 were built with
 For more details see [Compiling DyNet with SWIG Support](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-with-SWIG-Support).
 
 
-You can perform a quick test with
-`sbt run`
+You can perform a quick test with `sbt test` which should pass or `sbt run`
 which should product output similar to
 ```
 [info] Running edu.cmu.dynet.examples.XorScala 
