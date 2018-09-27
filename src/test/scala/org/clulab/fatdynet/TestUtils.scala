@@ -17,6 +17,5 @@ class TestUtils extends FlatSpec with Matchers {
   it should "be able to load the dynet library" in {
     Utils.isDynetLibAvailable should be (true)
   }
-
 }
 
