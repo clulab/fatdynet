@@ -2,36 +2,20 @@
 
 # fatdynet
 
-**Note:** You need to install the dynet libraries to use this project.  Luckily, there are
-precompiled versions available so that you probably don't have to build them yourself.  If
-you are using a Mac, libdynet.dylib is already included in this repo and you can proceed
-with the cloned project.  For Linux, please visit [our drive](https://drive.google.com/open?id=1LcA6-SHN_Yj2nLq7zC5EayUY_vhBtlqi), download `libdynet.so`, and place it in the project directory.
+## Cloning Thie Project
 
-The source code used for the libraries of this project is
-- dynet commit f1b365f (remove duplicated rng initialization, 2.0.3 with patches)
-- eigen commit b2e267d
+This project should work out of the box with no extra configuration needed for basic functionality.  You can perform a quick
+check with `sbt test` which should pass or `sbt run` which should produce output similar to the lines quoted below.
 
-The build environment included
-- java 1.8.0_162
-- sbt 1.2.1
+However, the project may not work as efficiently as possible.  It includes an internal version of the DyNet
+library which it will use if necessary.  You can install an external version for increased efficiency. 
+Visit [our drive](https://drive.google.com/open?id=1LcA6-SHN_Yj2nLq7zC5EayUY_vhBtlqi), download the file appropriate
+for your operating system (`libdynet.so` or `libdynet.dylib`), and install it.  Advice is available for
+[Linux](http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html) and
+[Mac](https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/UsingDynamicLibraries.html) operating systems.  This step is optional.
 
-The files in lib-2.12 were built with
-- scala 2.12.4
-- cmake .. -DSCALA_VERSION=2.12.4 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
-- make
-
-and those in lib-2.11 were built with
-- scala 2.11.11
-- cmake .. -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
-- make
-
-For more details see [Compiling DyNet with SWIG Support](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-with-SWIG-Support).
-
-
-You can perform a quick test with `sbt test` which should pass or `sbt run`
-which should product output similar to
 ```
-[info] Running edu.cmu.dynet.examples.XorScala 
+[info] Running org.clulab.fatdynet.apps.XorScalaApp
 Running XOR example
 [dynet] random seed: 2354967643
 [dynet] allocating memory: 512MB
@@ -101,7 +85,10 @@ iter = 29, loss = 7.1054274E-15
 [success] Total time: 1 s, completed Sep 17, 2018 5:20:44 PM
 ```
 
-To use it with `sbt` in your own project, make a `build.sbt` file like
+## Depending on This Project
+
+To use fatdynet with `sbt` in your own project, make a `build.sbt` file like
+
 ```
 name := "dynetClient"
 
@@ -116,10 +103,33 @@ libraryDependencies ++= Seq(
 
 It can be tested with a program like
 ```
-package org.clulab.dynet.apps
+package org.clulab.fatdynetClient.apps
 
-import edu.cmu.dynet.examples.XorScala
+import org.clulab.fatdynet.apps.XorScalaApp
 
-object XorScalaApp extends App {
+object XorScalaClientApp extends App {
   XorScala.main(Array[String]())
 }
+```
+
+## Building the Files for This Project
+
+The source code used for the libraries of this project is
+- dynet commit f1b365f (remove duplicated rng initialization, 2.0.3 with patches)
+- eigen commit b2e267d
+
+The build environment included
+- java 1.8.0_162
+- sbt 1.2.1
+
+The files in lib-2.12 were built with
+- scala 2.12.4
+- cmake .. -DSCALA_VERSION=2.12.4 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
+- make
+
+and those in lib-2.11 were built with
+- scala 2.11.11
+- cmake .. -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
+- make
+
+For more details see [Compiling DyNet with SWIG Support](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-with-SWIG-Support).
