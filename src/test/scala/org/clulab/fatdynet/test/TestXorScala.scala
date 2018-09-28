@@ -1,6 +1,6 @@
-package org.clulab.fatdynet
+package org.clulab.fatdynet.test
 
-import edu.cmu.dynet.examples.XorScala
+import org.clulab.fatdynet.apps.XorScalaApp
 import org.scalatest._
 
 class TestXorScala extends FlatSpec with Matchers {
@@ -10,7 +10,7 @@ class TestXorScala extends FlatSpec with Matchers {
   it should "not throw an exception" in {
     noException should be thrownBy {
       try {
-        XorScala.main(Array[String]())
+        XorScalaApp.main(Array[String]())
       }
       catch {
         case exception: Throwable => exception.printStackTrace; throw exception

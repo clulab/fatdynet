@@ -1,5 +1,6 @@
-package org.clulab.fatdynet
+package org.clulab.fatdynet.test
 
+import org.clulab.fatdynet.utils.Utils
 import org.scalatest._
 
 class TestUtils extends FlatSpec with Matchers {
@@ -10,12 +11,8 @@ class TestUtils extends FlatSpec with Matchers {
     Utils.isKnownOS should be (true)
   }
 
-  ignore should "find the dynet library file" in {
-    Utils.isDynetFileAvailable should be (true)
-  }
-
   it should "be able to load the dynet library" in {
-    Utils.isDynetLibAvailable should be (true)
+    Utils.loadDynet() should be (true)
   }
 }
 

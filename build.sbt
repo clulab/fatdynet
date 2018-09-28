@@ -34,7 +34,7 @@ envVars := {
 
 lazy val root = (project in file("."))
 
-mainClass in Compile := Some("edu.cmu.dynet.examples.XorScala")
+mainClass in Compile := Some("org.clulab.fatdynet.apps.XorScalaApp")
 
 assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
 
