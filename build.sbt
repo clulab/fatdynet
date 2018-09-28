@@ -20,6 +20,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 )
 
+fork := true
+
 lazy val root = (project in file("."))
 
 mainClass in Compile := Some("org.clulab.fatdynet.apps.XorScalaApp")
