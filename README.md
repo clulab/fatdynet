@@ -2,7 +2,7 @@
 
 # fatdynet
 
-## Cloning Thie Project
+## Cloning This Project
 
 This project should work out of the box with no extra configuration needed for basic functionality.  You can perform a quick
 check with `sbt test` which should pass or `sbt run` which should produce output similar to the lines quoted below.
