@@ -87,10 +87,13 @@ iter = 29, loss = 7.1054274E-15
 
 ## Depending on This Project
 
+If you are using the internal dynet library described above (i.e., you haven't installed an external version), your code
+needs to make sure the internal library is loaded by calling, for example, `org.clulab.fatdynet.utils.Utils.loadDynet()`.
+
 To use fatdynet with `sbt` in your own project, make a `build.sbt` file like
 
 ```
-name := "dynetClient"
+name := "fatdynetClient"
 
 organization := "org.clulab"
 
@@ -105,10 +108,12 @@ It can be tested with a program like
 ```
 package org.clulab.fatdynetClient.apps
 
-import org.clulab.fatdynet.apps.XorScalaApp
+import edu.cmu.dynet.examples.XorScala
+import org.clulab.fatdynet.utils.Utils
 
 object XorScalaClientApp extends App {
-  XorScala.main(Array[String]())
+  Utils.loadDynet()
+  XorScala.main(args)
 }
 ```
 
