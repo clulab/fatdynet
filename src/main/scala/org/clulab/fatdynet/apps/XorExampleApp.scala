@@ -3,10 +3,11 @@ package org.clulab.fatdynet.apps
 import edu.cmu.dynet.examples.XorExample
 import org.clulab.fatdynet.utils.Utils
 
-object XorExampleApp {
+object
+ XorExampleApp {
 
   def main(args: Array[String]) {
-    Utils.loadDynet()
+//    Utils.loadDynet()
     XorExample.main(args)
   }
 }

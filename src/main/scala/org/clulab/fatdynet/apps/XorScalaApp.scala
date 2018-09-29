@@ -6,7 +6,7 @@ import org.clulab.fatdynet.utils.Utils
 object XorScalaApp {
 
   def main(args: Array[String]) {
-    Utils.loadDynet()
+//    Utils.loadDynet()
     XorScala.main(args)
   }
 }
