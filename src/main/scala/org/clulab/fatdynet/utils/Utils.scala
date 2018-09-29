@@ -39,7 +39,8 @@ object Utils {
       true
     else {
       try {
-        val tempFile = File.createTempFile("fatdynet", "")
+ //       val tempFile = File.createTempFile("fatdynet", "")
+        val tempFile = new File(getLibFileName) 
         val libname = System.mapLibraryName("dynet")
         val classLoader = Utils.getClass().getClassLoader()
         val is: InputStream = classLoader.getResourceAsStream(libname)
@@ -60,8 +61,9 @@ object Utils {
         val lock: InputStream = new FileInputStream(tempFile)
         os.close()
 
+println("Loading library from " + tempFile.getCanonicalPath())
         // Load the library from the tempfile.
-        System.load(tempFile.getPath())
+        System.load(tempFile.getCanonicalPath())
         lock.close()
 
         // And delete the tempfile.
