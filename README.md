@@ -2,17 +2,19 @@
 
 # fatdynet
 
+
 ## Cloning This Project
 
-This project should work out of the box with no extra configuration needed for basic functionality.  You can perform a quick
+A clone of this project should work with `sbt` with no extra configuration needed.  You can perform a quick
 check with `sbt test` which should pass or `sbt run` which should produce output similar to the lines quoted below.
 
-However, the project may not work as efficiently as possible.  It includes an internal version of the DyNet
-library which it will use if necessary.  You can install an external version for increased efficiency. 
-Visit [our drive](https://drive.google.com/open?id=1LcA6-SHN_Yj2nLq7zC5EayUY_vhBtlqi), download the file appropriate
-for your operating system (`libdynet.so` or `libdynet.dylib`), and install it.  Advice is available for
-[Linux](http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html) and
-[Mac](https://developer.apple.com/library/archive/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/UsingDynamicLibraries.html) operating systems.  This step is optional.
+```
+> git clone https://github.com/clulab/fatdynet
+> cd fatdynet
+> sbt
+sbt: fatdynet> test
+sbt: fatdynet> run
+```
 
 ```
 [info] Running org.clulab.fatdynet.apps.XorScalaApp
@@ -85,10 +87,8 @@ iter = 29, loss = 7.1054274E-15
 [success] Total time: 1 s, completed Sep 17, 2018 5:20:44 PM
 ```
 
-## Depending on This Project
 
-If you are using the internal dynet library described above (i.e., you haven't installed an external version), your code
-needs to make sure the internal library is loaded by calling, for example, `org.clulab.fatdynet.utils.Utils.loadDynet()`.
+## Depending on This Project
 
 To use fatdynet with `sbt` in your own project, make a `build.sbt` file like
 
@@ -109,10 +109,8 @@ It can be tested with a program like
 package org.clulab.fatdynetClient.apps
 
 import edu.cmu.dynet.examples.XorScala
-import org.clulab.fatdynet.utils.Utils
 
 object XorScalaClientApp extends App {
-  Utils.loadDynet()
   XorScala.main(args)
 }
 ```
@@ -134,7 +132,7 @@ The files in lib-2.12 were built with
 
 and those in lib-2.11 were built with
 - scala 2.11.11
-- cmake .. -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
+- cmake .. -DSCALA_VERSION=2.11.11 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
 - make
 
 For more details see [Compiling DyNet with SWIG Support](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-with-SWIG-Support).
