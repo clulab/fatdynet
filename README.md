@@ -5,8 +5,8 @@
 
 ## Cloning This Project
 
-A clone of this project should work with `sbt` with no extra configuration needed.  You can perform a quick
-check with `sbt test` which should pass or `sbt run` which should produce output similar to the lines quoted below.
+A clone of this project should work out of the box with `sbt`.  You can perform a quick check with `sbt test`
+which should pass or `sbt run` which should produce output similar to the lines quoted below.
 
 ```
 > git clone https://github.com/clulab/fatdynet
