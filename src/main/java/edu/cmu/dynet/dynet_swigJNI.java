@@ -14,7 +14,7 @@ public class dynet_swigJNI {
 
     static {
         try {
-            File tempFile = File.createTempFile("dynet", "");
+            File tempFile = File.createTempFile("dynet", "*.dll"); // kwa
             String libname = System.mapLibraryName("dynet_swig");
 
             if (libname.endsWith("dylib")) {
