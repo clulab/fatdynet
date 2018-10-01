@@ -8,14 +8,6 @@ scalaVersion := "2.12.4"
 
 crossScalaVersions := Seq("2.11.11", "2.12.4")
 
-lazy val majorMinor = Def.setting {
-  val (major, minor) = CrossVersion.partialVersion(scalaVersion.value).get
-
-  s"${major}.${minor}"
-}
-
-unmanagedBase := baseDirectory.value / s"lib-${majorMinor.value}"
-
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 )
@@ -25,15 +17,6 @@ fork := true
 lazy val root = (project in file("."))
 
 mainClass in Compile := Some("org.clulab.fatdynet.apps.XorScalaApp")
-
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
-
-artifact in (Compile, assembly) := {
-  val art = (artifact in (Compile, assembly)).value
-  art.withClassifier(Some("assembly"))
-}
-
-addArtifact(artifact in (Compile, assembly), assembly)
 
 //
 // publishing settings
