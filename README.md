@@ -118,7 +118,7 @@ object XorScalaClientApp extends App {
 ## Building the Files for This Project
 
 The source code used for the libraries of this project is
-- dynet commit f1b365f (remove duplicated rng initialization, 2.0.3 with patches)
+- dynet commit d9d3e80 (version 2.1)
 - eigen commit b2e267d
 
 The build environment included
