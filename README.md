@@ -13,7 +13,9 @@ which should pass or `sbt run` which should produce output similar to the lines 
 > cd fatdynet
 > sbt
 sbt: fatdynet> test
+...
 sbt: fatdynet> run
+...
 ```
 
 ```
