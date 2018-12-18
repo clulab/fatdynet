@@ -1,16 +1,9 @@
 package org.clulab.fatdynet.utils
 
 import edu.cmu.dynet.{
-  Initialize,
-
   Dim,
   Expression,
-
-  LookupParameter,
-  Parameter,
   ParameterCollection,
-
-  // These other, unused builders to be addedd
 
   FastLstmBuilder,
   LstmBuilder,

@@ -11,20 +11,27 @@ import org.clulab.fatdynet.utils.Transducer
 
 class TestLoader extends FlatSpec with Matchers {
 
-  // TODO
-  // For LstmBuilder, CompactVanillaLSTMBuilder, CoupledLstmBuilder, VanillaLstmBuilder
-  //    newBuilder.setDropout(d = 0.12f, dR = 0.34f)
-  // should work, but might have to reset the RNG after the model is reloaded.
-  // Scala does not have access to this functionality.
-
-  // For SimpleRnnBuilder support
-  //     newBuilder.addAuxiliaryInput(x: Expression, aux: Expression): Expression
-  // rather than just the simple addInput.
+  /**
+    * TODO
+    *
+    * For LstmBuilder, CompactVanillaLSTMBuilder, CoupledLstmBuilder, VanillaLstmBuilder
+    *    newBuilder.setDropout(d = 0.12f, dR = 0.34f)
+    * should work, but might have to reset the RNG after the model is reloaded.
+    * Scala does not have access to this functionality.
+    *
+    * For SimpleRnnBuilder support
+    *     newBuilder.addAuxiliaryInput(x: Expression, aux: Expression): Expression
+    * rather than just the simple addInput.
+    *
+    * Figure out how to do input on tree LSTMs.
+    */
 
   abstract class LoaderTester(val layers: Int, val inputDim: Int, val hiddenDim: Int, val name: String) {
     val testname: String = name + "_" +  layers + "_" + inputDim + "_" + hiddenDim
     def makeBuilder(model: ParameterCollection): RnnBuilder
     def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression])
+
+    def canTransduce: Boolean = true
 
     val filename: String = "Test" + testname + ".txt"
     val input: Expression = Expression.randomNormal(Dim(inputDim))
@@ -38,8 +45,6 @@ class TestLoader extends FlatSpec with Matchers {
         val oldBuilder = makeBuilder(oldModel)
         oldBuilder.newGraph()
         oldBuilder.startNewSequence()
-        val oldTransduced = Transducer.transduce(oldBuilder, inputs)
-        val oldSum = Expression.sumElems(oldTransduced.get)
 
         new ClosableModelSaver(filename).autoClose { saver =>
           saver.addModel(oldModel)
@@ -50,21 +55,31 @@ class TestLoader extends FlatSpec with Matchers {
         val newModel = newOptionModel.get
         newBuilder.newGraph()
         newBuilder.startNewSequence()
-        val newTransduced = Transducer.transduce(newBuilder, inputs)
-        val newSum = Expression.sumElems(newTransduced.get)
 
-//        oldModel.parametersList.foreach { parameterStorage =>
-//          println(parameterStorage.dim)
-//        }
-//
-//        newModel.parametersList.foreach { parameterStorage =>
-//          println(parameterStorage.dim)
-//        }
-//
-//        println(oldSum.value.toFloat)
-//        println(newSum.value.toFloat)
-        oldSum.value.toFloat should be(newSum.value.toFloat)
+        oldModel.parameterCount should be (newModel.parameterCount)
+        val oldParameters = oldModel.parametersList()
+        val newParameters = newModel.parametersList()
+        oldParameters.size should be (newParameters.size)
+        0.until(oldParameters.size).foreach { index =>
+          val oldDim: Dim = oldParameters(index).dim
+          val newDim = newParameters(index).dim
+          oldDim should be (newDim)
 
+          val oldValues = oldParameters(index).values.toSeq
+          val newValues = newParameters(index).values.toSeq
+
+          oldValues should be (newValues)
+        }
+
+        if (canTransduce) {
+          val oldTransduced = Transducer.transduce(oldBuilder, inputs)
+          val oldSum = Expression.sumElems(oldTransduced.get)
+
+          val newTransduced = Transducer.transduce(newBuilder, inputs)
+          val newSum = Expression.sumElems(newTransduced.get)
+
+          oldSum.value.toFloat should be(newSum.value.toFloat)
+        }
         new File(filename).delete
       }
     }
@@ -110,8 +125,28 @@ class TestLoader extends FlatSpec with Matchers {
     def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadVanillaLstm(filename)
   }
 
+  class UnidirectionalTreeLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
+      extends LoaderTester(layers, inputDim, hiddenDim, "UnidirectionalTreeLstmLoader") {
+
+    def makeBuilder(model: ParameterCollection): RnnBuilder = new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model)
+
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadUnidirectionalTreeLstm(filename)
+
+    override def canTransduce: Boolean = false
+  }
+
+  class BidirectionalTreeLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
+      extends LoaderTester(layers, inputDim, hiddenDim, "BidirectionalTreeLstmLoader") {
+
+    def makeBuilder(model: ParameterCollection): RnnBuilder = new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model)
+
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadBidirectionalTreeLstm(filename)
+
+    override def canTransduce: Boolean = false
+  }
+
   class SimpleRnnLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int, supportLags: Boolean)
-      extends LoaderTester(layers, inputDim, hiddenDim, "SimpleRnn" + "_" + supportLags) {
+      extends LoaderTester(layers, inputDim, hiddenDim, "SimpleRnnLoader" + "_" + supportLags) {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new SimpleRnnBuilder(layers, inputDim, hiddenDim, model, supportLags)
 
@@ -119,7 +154,7 @@ class TestLoader extends FlatSpec with Matchers {
   }
 
   class GruLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
-      extends LoaderTester(layers, inputDim, hiddenDim, "Gru") {
+      extends LoaderTester(layers, inputDim, hiddenDim, "GruLoader") {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new GruBuilder(layers, inputDim, hiddenDim, model)
 
@@ -138,6 +173,9 @@ class TestLoader extends FlatSpec with Matchers {
     new CompactVanillaLstmLoaderTester(layers, inputDim, hiddenDim).test
     new CoupledLstmLoaderTester(layers, inputDim, hiddenDim).test
     new VanillaLstmLoaderTester(layers, inputDim, hiddenDim).test
+    new UnidirectionalTreeLstmLoaderTester(layers, inputDim, hiddenDim).test
+    new BidirectionalTreeLstmLoaderTester(layers, inputDim, hiddenDim).test
+
     new GruLoaderTester(layers, inputDim, hiddenDim).test
 
     new LstmLoaderTester(layers, inputDim, hiddenDim, lnLSTM = false).test
@@ -145,91 +183,5 @@ class TestLoader extends FlatSpec with Matchers {
 
     new SimpleRnnLoaderTester(layers, inputDim, hiddenDim, supportLags = false).test
     new SimpleRnnLoaderTester(layers, inputDim, hiddenDim, supportLags = true).test
-  }
-
-
-  val layers = 1 // Loop over this for sure
-  val inputDim = 99
-  val hiddenDim = 22 // Must be even for bidirectional tree builder
-  val input: Expression = Expression.randomNormal(Dim(inputDim))
-  val inputs = Array(input)
-
-  behavior of "UnidirectionalTreeLSTMBuilder"
-
-  ignore should "load the builder with proper dimensions" in {
-    val filename = "TestUnidirectionalTreeLSTMLoader.txt"
-    val oldModel = new ParameterCollection
-
-    val oldBuilder = new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, oldModel)
-    val test: IntVector = new IntVector(0.until(inputDim))
-    oldBuilder.setNumElements(inputDim)
-    // from tree, def addInput(id: Int, children: IntVector, x: Expression): Expression = {
-    // from rnn   def addInput(prev: Int, x: Expression): Expression = {
-    oldBuilder.newGraph()
-    oldBuilder.startNewSequence()
-//    oldBuilder.addInput(0, test, input)
-    val oldTransduced = Transducer.transduce(oldBuilder, inputs) // This doesn't work!
-    val oldSum = Expression.sumElems(oldTransduced.get)
-
-    new ClosableModelSaver(filename).autoClose { saver =>
-      saver.addModel(oldModel)
-    }
-
-    val (optionBuilder, optionNewModel, _) = Loader.loadUnidirectionalTreeLstm(filename)
-    val newBuilder = optionBuilder.get
-    val newModel = optionNewModel.get
-    newBuilder.newGraph()
-    newBuilder.startNewSequence()
-    val newTransduced = Transducer.transduce(newBuilder, inputs)
-//    val newSum = Expression.sumElems(newTransduced.get)
-//
-    oldModel.parametersList.foreach { parameterStorage =>
-      println(parameterStorage.dim)
-    }
-
-    newModel.parametersList.foreach { parameterStorage =>
-      println(parameterStorage.dim)
-    }
-
-//    println(oldSum.value.toFloat)
-//    println(newSum.value.toFloat)
-//    oldSum.value.toFloat should be (newSum.value.toFloat)
-  }
-
-  behavior of "BidirectionalTreeLSTMBuilder"
-
-  ignore should "load the builder with proper dimensions" in {
-    val filename = "TestBidirectionalTreeLSTMLoader.txt"
-    val oldModel = new ParameterCollection
-
-    val oldBuilder = new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, oldModel)
-    oldBuilder.newGraph()
-    oldBuilder.startNewSequence()
-//    val oldTransduced = Transducer.transduce(oldBuilder, inputs)
-//    val oldSum = Expression.sumElems(oldTransduced.get)
-
-    new ClosableModelSaver(filename).autoClose { saver =>
-      saver.addModel(oldModel)
-    }
-
-    val (optionBuilder, newOptionModel, _) = Loader.loadBidirectionalTreeLstm(filename)
-    val newBuilder = optionBuilder.get
-    val newModel = newOptionModel.get
-    newBuilder.newGraph()
-    newBuilder.startNewSequence()
-//    val newTransduced = Transducer.transduce(newBuilder, inputs)
-//    val newSum = Expression.sumElems(newTransduced.get)
-//
-//    oldModel.parametersList.foreach { parameterStorage =>
-//      println(parameterStorage.dim)
-//    }
-//
-//    newModel.parametersList.foreach { parameterStorage =>
-//      println(parameterStorage.dim)
-//    }
-//
-//    println(oldSum.value.toFloat)
-//    println(newSum.value.toFloat)
-//    oldSum.value.toFloat should be (newSum.value.toFloat)
   }
 }
