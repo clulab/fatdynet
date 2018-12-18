@@ -403,190 +403,149 @@ object Loader {
     (optionBuilder, optionModel, expressions)
   }
 
-//
-//  def loadBidirectionalTreeLstm(path: String, namespace: String = ""): (Option[BidirectionalTreeLSTMBuilder], Map[String, Expression]) = {
-//    val model = new ParameterCollection
-//    var inputDim = -1
-//    var hiddenDim = -1
-//    var layers = 0
-//
-//    def modelFilter(modelLoader: ModelLoader, objectType: String, objectName: String, dims: Array[Int]) = {
-//      if (objectType == "#Parameter#" && objectName.matches(".*/bidirectional-tree-lstm-builder/vanilla-lstm-builder/_[0-9]+$")) {
-//        val param = model.addParameters(Dim(dims))
-//        modelLoader.populateParameter(param, key = objectName)
-//
-//        // This is only going to support one model, at least one per namespace.
-//        if (layers == 0)
-//          inputDim = dims(1)
-//        else if (layers == 1)
-//          hiddenDim = dims(1)
-//        layers += 1
-//        false
-//      }
-//      else
-//        true
-//    }
-//
-//    // Could throw exception rather than use option or turn this into a collection.
-//    val expressions = filteredLoadExpressions(path, namespace, modelFilter)
-//    val builder =
-//      if (layers >= 2)
-//        Option(new BidirectionalTreeLSTMBuilder(layers - 2, inputDim, hiddenDim, model))
-//      else
-//        None
-//
-//    (builder, expressions)
-//  }
-//
-//  def loadSimpleRnn(path: String, namespace: String = ""): (Option[SimpleRnnBuilder], Map[String, Expression]) = {
-//    val model = new ParameterCollection
-//    var inputDim = -1
-//    var hiddenDim = -1
-//    var layers = 0
-//
-//    def modelFilter(modelLoader: ModelLoader, objectType: String, objectName: String, dims: Array[Int]) = {
-//      if (objectType == "#Parameter#" && objectName.matches(".*/simple-rnn-builder/_[0-9]+$")) {
-//        val param = model.addParameters(Dim(dims))
-//        modelLoader.populateParameter(param, key = objectName)
-//
-//        // This is only going to support one model, at least one per namespace.
-//        if (layers == 0)
-//          inputDim = dims(1)
-//        else if (layers == 1)
-//          hiddenDim = dims(1)
-//        layers += 1
-//        false
-//      }
-//      else
-//        true
-//    }
-//
-//    // Could throw exception rather than use option or turn this into a collection.
-//    val expressions = filteredLoadExpressions(path, namespace, modelFilter)
-//    val builder =
-//      if (layers >= 2)
-//        Option(new SimpleRnnBuilder(layers - 2, inputDim, hiddenDim, model))
-//      else
-//        None
-//
-//    (builder, expressions)
-//  }
-//
-//  def loadGru(path: String, namespace: String = ""): (Option[GruBuilder], Map[String, Expression]) = {
-//    val model = new ParameterCollection
-//    var inputDim = -1
-//    var hiddenDim = -1
-//    var layers = 0
-//
-//    def modelFilter(modelLoader: ModelLoader, objectType: String, objectName: String, dims: Array[Int]) = {
-//      if (objectType == "#Parameter#" && objectName.matches(".*/gru-builder/_[0-9]+$")) {
-//        val param = model.addParameters(Dim(dims))
-//        modelLoader.populateParameter(param, key = objectName)
-//
-//        // This is only going to support one model, at least one per namespace.
-//        if (layers == 0)
-//          inputDim = dims(1)
-//        else if (layers == 1)
-//          hiddenDim = dims(1)
-//        layers += 1
-//        false
-//      }
-//      else
-//        true
-//    }
-//
-//    // Could throw exception rather than use option or turn this into a collection.
-//    val expressions = filteredLoadExpressions(path, namespace, modelFilter)
-//    val builder =
-//      if (layers >= 2)
-//        Option(new GruBuilder(layers - 2, inputDim, hiddenDim, model))
-//      else
-//        None
-//
-//    (builder, expressions)
-//  }
-//
-//  val W2V_SIZE = 1234
-//  val VOC_SIZE = 3671
-//
-//  val WEM_DIMENSIONS = 100
-//  val NUM_LAYERS = 1
-//  val FF_HIDDEN_DIM = 10
-//  val HIDDEN_DIM = 20
-//
-//  val W_KEY = "/W"
-//  val B_KEY = "/b"
-//  val V_KEY = "/V"
-//  val W2V_WEMB_KEY = "/w2v-wemb"
-//  val MISSING_WEB_KEY = "/missing-wemb"
-//
-//  def write(filename: String): Unit = {
-//    val pc = new ParameterCollection
-//
-//    val W_p: Parameter = pc.addParameters(Dim(Seq(FF_HIDDEN_DIM, HIDDEN_DIM)))
-//    val b_p: Parameter = pc.addParameters(Dim(Seq(FF_HIDDEN_DIM)))
-//    val V_p: Parameter = pc.addParameters(Dim(Seq(1, FF_HIDDEN_DIM)))
-//
-//    val w2v_wemb_lp: LookupParameter = pc.addLookupParameters(W2V_SIZE, Dim(Seq(WEM_DIMENSIONS)))
-//    val missing_wemb_lp: LookupParameter = pc.addLookupParameters(VOC_SIZE, Dim(Seq(WEM_DIMENSIONS)))
-//
-//    val model = new ParameterCollection
-//    /*val builder = */ new VanillaLstmBuilder(NUM_LAYERS, WEM_DIMENSIONS, HIDDEN_DIM, model)
-//
-//    new ClosableModelSaver(filename).autoClose { saver =>
-//      saver.addParameter(W_p, W_KEY)
-//      saver.addParameter(b_p, B_KEY)
-//      saver.addParameter(V_p, V_KEY)
-//      saver.addLookupParameter(w2v_wemb_lp, W2V_WEMB_KEY)
-//      saver.addLookupParameter(missing_wemb_lp, MISSING_WEB_KEY)
-//      saver.addModel(model)
-//    }
-//  }
-//
-//  // May have to have several versions to accounts for all builders
-//  def transduce(builder: RnnBuilder, inputs: Iterable[Expression]): Option[Expression] =
-//    inputs.foldLeft(None: Option[Expression]){ (_, input) => Some(builder.addInput(input)) }
-//  //        if (inputs.size == 0)
-//  //          None
-//  //        else {
-//  //          inputs.dropRight(1).foreach { builder.addInput(_) }
-//  //          Some(builder.addInput(inputs.last))
-//  //          }
-//
-//  def read(filename: String): Unit = {
-//    val (optionBuilder, expressions) = loadVanillaLstm(filename)
-//
-//    expressions.keys.foreach(println)
-//
-//    val builder = optionBuilder.get
-//    val W = expressions(W_KEY)
-//    val b = expressions(B_KEY)
-//    val V = expressions(V_KEY)
-//    val w2v_wemb = expressions(W2V_WEMB_KEY)
-//    val missing_wemb = expressions(MISSING_WEB_KEY)
-//
-//    // An example run...
-//    val inputs = 0.until(100) map { index =>
-//      if (index % 2 == 0)
-//        Expression.pick(w2v_wemb, index % W2V_SIZE, 1) // size implied from eventual dictionary
-//      else
-//        Expression.pick(missing_wemb, index % VOC_SIZE, 1) // size implied from eventual dictionary
-//    }
-//
-//    builder.newGraph()
-//    builder.startNewSequence()
-//
-//    val selected = transduce(builder, inputs).get
-//    val prediction = Expression.logistic(V * (W * selected + b))
-//
-//    print(prediction.value().toSeq())
-//  }
-//
-//  def main(args: Array[String]): Unit = {
-//    val filename = "model.dy.kwa"
-//
-//    Initialize.initialize(Map("random-seed" -> 2522620396l))
-//    write(filename)
-//    read(filename)
-//  }
+
+  def loadBidirectionalTreeLstm(path: String, namespace: String = ""): (Option[BidirectionalTreeLSTMBuilder], Option[ParameterCollection], Map[String, Expression]) = {
+    val pattern = "(.*)/bidirectional-tree-lstm-builder/vanilla-lstm-builder(_1)?/_[0-9]+$".r.pattern
+    var count = 0
+    var inputDim = -1
+    var hiddenDim = -1
+    var name = ""
+
+    def modelFilter(modelLoader: ModelLoader, objectType: String, objectName: String, dims: Array[Int]) = {
+      if (objectType == "#Parameter#") {
+        val matcher = pattern.matcher(objectName)
+
+        if (matcher.matches) {
+          if (count == 0) {
+            inputDim = dims.last
+            hiddenDim = dims.head / 2
+            name = matcher.group(1)
+          }
+          else
+            require(matcher.group(1) == name)
+          count += 1
+          false
+        }
+        else true
+      }
+      else true
+    }
+
+    val (optionBuilder, optionModel, expressions) = new ClosableModelLoader(path).autoClose { modelLoader =>
+      val expressions = filteredLoadExpressions(path, modelLoader, namespace, modelFilter)
+      val (optionModel, optionBuilder) =
+        if (count > 0 && count % 6 == 0) {
+          val model = new ParameterCollection
+          val builder = new BidirectionalTreeLSTMBuilder(count / 6, inputDim, hiddenDim, model)
+
+          modelLoader.populateModel(model, name)
+          (Some(model), Some(builder))
+        }
+        else
+          (None, None)
+
+      (optionBuilder, optionModel, expressions)
+    }
+
+    (optionBuilder, optionModel, expressions)
+  }
+
+  def loadSimpleRnn(path: String, namespace: String = ""): (Option[SimpleRnnBuilder], Option[ParameterCollection], Map[String, Expression]) = {
+    val pattern = "(.*)/simple-rnn-builder/_[0-9]+$".r.pattern
+    var count = 0
+    var singleDimCount = 0
+    var inputDim = -1
+    var hiddenDim = -1
+    var name = ""
+
+    def modelFilter(modelLoader: ModelLoader, objectType: String, objectName: String, dims: Array[Int]) = {
+      if (objectType == "#Parameter#") {
+        val matcher = pattern.matcher(objectName)
+
+        if (matcher.matches) {
+          if (count == 0) {
+            inputDim = dims.last
+            hiddenDim = dims.head
+            name = matcher.group(1)
+          }
+          else {
+            require(matcher.group(1) == name)
+            if (dims.size == 1)
+              singleDimCount += 1
+          }
+          count += 1
+          false
+        }
+        else true
+      }
+      else true
+    }
+
+    val (optionBuilder, optionModel, expressions) = new ClosableModelLoader(path).autoClose { modelLoader =>
+      val expressions = filteredLoadExpressions(path, modelLoader, namespace, modelFilter)
+      val (optionModel, optionBuilder) = {
+        val ratio = count / singleDimCount
+        if (count > 0 && count % singleDimCount == 0 && (ratio == 3 || ratio == 4)) {
+          val model = new ParameterCollection
+          val supportLags = ratio == 4
+          val builder = new SimpleRnnBuilder(count / ratio, inputDim, hiddenDim, model, supportLags)
+
+          modelLoader.populateModel(model, name)
+          (Some(model), Some(builder))
+        }
+        else
+          (None, None)
+      }
+
+      (optionBuilder, optionModel, expressions)
+    }
+
+    (optionBuilder, optionModel, expressions)
+  }
+
+  def loadGru(path: String, namespace: String = ""): (Option[GruBuilder], Option[ParameterCollection], Map[String, Expression]) = {
+    val pattern = "(.*)/gru-builder/_[0-9]+$".r.pattern
+    var count = 0
+    var inputDim = -1
+    var hiddenDim = -1
+    var name = ""
+
+    def modelFilter(modelLoader: ModelLoader, objectType: String, objectName: String, dims: Array[Int]) = {
+      if (objectType == "#Parameter#") {
+        val matcher = pattern.matcher(objectName)
+
+        if (matcher.matches) {
+          if (count == 0) {
+            inputDim = dims.last
+            hiddenDim = dims.head
+            name = matcher.group(1)
+          }
+          else
+            require(matcher.group(1) == name)
+          count += 1
+          false
+        }
+        else true
+      }
+      else true
+    }
+
+    val (optionBuilder, optionModel, expressions) = new ClosableModelLoader(path).autoClose { modelLoader =>
+      val expressions = filteredLoadExpressions(path, modelLoader, namespace, modelFilter)
+      val (optionModel, optionBuilder) =
+        if (count > 0 && count % 9 == 0) {
+          val model = new ParameterCollection
+          val builder = new GruBuilder(count / 9, inputDim, hiddenDim, model)
+
+          modelLoader.populateModel(model, name)
+          (Some(model), Some(builder))
+        }
+        else
+          (None, None)
+
+      (optionBuilder, optionModel, expressions)
+    }
+
+    (optionBuilder, optionModel, expressions)
+  }
 }

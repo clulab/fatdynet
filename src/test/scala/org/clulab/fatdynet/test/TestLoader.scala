@@ -7,6 +7,7 @@ import edu.cmu.dynet.{
 
   Dim,
   Expression,
+  IntVector,
 
   ParameterCollection,
 
@@ -35,8 +36,8 @@ class TestLoader extends FlatSpec with Matchers {
   Initialize.initialize(Map("random-seed" -> 2522620396l))
 
   val layers = 1 // Loop over this for sure
-  val inputDim =99
-  val hiddenDim = 21
+  val inputDim = 99
+  val hiddenDim = 22 // Must be even for bidirectional tree builder
 //  val input: Expression = Expression.parameter(new ParameterCollection().addParameters(Dim(inputDim)))
   val input: Expression = Expression.randomNormal(Dim(inputDim))
   val inputs = Array(input)
@@ -204,7 +205,7 @@ class TestLoader extends FlatSpec with Matchers {
   behavior of "VanillaLstmBuilder Loader"
 
   ignore should "load the builder with proper dimensions" in {
-    val filename = "TestVanillaLstmLoader.txt"
+    val filename = "TestSimpleRnnLoader.txt"
     val oldModel = new ParameterCollection
     val lnLSTM: Boolean = true // false is default, but also test true
 //    def setDropout(d: Float, dR: Float): Unit = builder.set_dropout(d, dR)
@@ -248,11 +249,15 @@ class TestLoader extends FlatSpec with Matchers {
     val oldModel = new ParameterCollection
 
     val oldBuilder = new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, oldModel)
+    val test: IntVector = new IntVector(0.until(inputDim))
+    oldBuilder.setNumElements(inputDim)
+    // from tree, def addInput(id: Int, children: IntVector, x: Expression): Expression = {
+    // from rnn   def addInput(prev: Int, x: Expression): Expression = {
     oldBuilder.newGraph()
     oldBuilder.startNewSequence()
-    // Perhaps need to add input?
-//    val oldTransduced = Transducer.transduce(oldBuilder, inputs) // This doesn't work!
-//    val oldSum = Expression.sumElems(oldTransduced.get)
+//    oldBuilder.addInput(0, test, input)
+    val oldTransduced = Transducer.transduce(oldBuilder, inputs) // This doesn't work!
+    val oldSum = Expression.sumElems(oldTransduced.get)
 
     new ClosableModelSaver(filename).autoClose { saver =>
       saver.addModel(oldModel)
@@ -279,71 +284,120 @@ class TestLoader extends FlatSpec with Matchers {
 //    oldSum.value.toFloat should be (newSum.value.toFloat)
   }
 
-//  behavior of "BidirectionalTreeLSTMBuilder"
+  behavior of "BidirectionalTreeLSTMBuilder"
+
+  ignore should "load the builder with proper dimensions" in {
+    val filename = "TestBidirectionalTreeLSTMLoader.txt"
+    val oldModel = new ParameterCollection
+
+    val oldBuilder = new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, oldModel)
+    oldBuilder.newGraph()
+    oldBuilder.startNewSequence()
+//    val oldTransduced = Transducer.transduce(oldBuilder, inputs)
+//    val oldSum = Expression.sumElems(oldTransduced.get)
+
+    new ClosableModelSaver(filename).autoClose { saver =>
+      saver.addModel(oldModel)
+    }
+
+    val (optionBuilder, newOptionModel, _) = Loader.loadBidirectionalTreeLstm(filename)
+    val newBuilder = optionBuilder.get
+    val newModel = newOptionModel.get
+    newBuilder.newGraph()
+    newBuilder.startNewSequence()
+//    val newTransduced = Transducer.transduce(newBuilder, inputs)
+//    val newSum = Expression.sumElems(newTransduced.get)
 //
-//  ignore should "load the builder with proper dimensions" in {
-//    val filename = "TestBidirectionalTreeLSTMLoader.txt"
-//    val model = new ParameterCollection
-//
-//    val oldBuilder = new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model)
-//    oldBuilder.newGraph()
-//    oldBuilder.startNewSequence()
-////    Transducer.transduce(oldBuilder, inputs)
-//
-//    new ClosableModelSaver(filename).autoClose { saver =>
-//      saver.addModel(model)
+//    oldModel.parametersList.foreach { parameterStorage =>
+//      println(parameterStorage.dim)
 //    }
 //
-//    val (optionBuilder, _) = Loader.loadBidirectionalTreeLstm(filename)
-//    val newBuilder = optionBuilder.get
-//    newBuilder.newGraph()
-//    newBuilder.startNewSequence()
-//    Transducer.transduce(newBuilder, inputs)
-//  }
-//
-//  behavior of "SimpleRnnBuilder"
-//
-//  ignore should "load the builder with proper dimensions" in {
-//    val filename = "TestSimpleRnnLoader.txt"
-//    val model = new ParameterCollection
-//    val supportLags: Boolean = false // default
-////    def addAuxiliaryInput(x: Expression, aux: Expression): Expression = {
-//
-//    val oldBuilder = new SimpleRnnBuilder(layers, inputDim, hiddenDim, model, supportLags)
-//    oldBuilder.newGraph()
-//    oldBuilder.startNewSequence()
-//    Transducer.transduce(oldBuilder, inputs)
-//
-//    new ClosableModelSaver(filename).autoClose { saver =>
-//      saver.addModel(model)
+//    newModel.parametersList.foreach { parameterStorage =>
+//      println(parameterStorage.dim)
 //    }
 //
-//    val (optionBuilder, _) = Loader.loadSimpleRnn(filename)
-//    val newBuilder = optionBuilder.get
-//    newBuilder.newGraph()
-//    newBuilder.startNewSequence()
-//    Transducer.transduce(newBuilder, inputs)
-//  }
-//
-//  behavior of "GruBuilder"
-//
-//  ignore should "load the builder with proper dimensions" in {
-//    val filename = "TestGruLoader.txt"
-//    val model = new ParameterCollection
-//
-//    val oldBuilder = new GruBuilder(layers, inputDim, hiddenDim, model)
-//    oldBuilder.newGraph()
-//    oldBuilder.startNewSequence()
-//    Transducer.transduce(oldBuilder, inputs)
-//
-//    new ClosableModelSaver(filename).autoClose { saver =>
-//      saver.addModel(model)
-//    }
-//
-//    val (optionBuilder, _) = Loader.loadGru(filename)
-//    val newBuilder = optionBuilder.get
-//    newBuilder.newGraph()
-//    newBuilder.startNewSequence()
-//    Transducer.transduce(newBuilder, inputs)
-//  }
+//    println(oldSum.value.toFloat)
+//    println(newSum.value.toFloat)
+//    oldSum.value.toFloat should be (newSum.value.toFloat)
+  }
+
+  behavior of "SimpleRnnBuilder"
+
+  ignore should "load the builder with proper dimensions" in {
+    val filename = "TestSimpleRnnLoader.txt"
+    val oldModel = new ParameterCollection
+    val model = new ParameterCollection
+    val supportLags: Boolean = true
+//    def addAuxiliaryInput(x: Expression, aux: Expression): Expression = {
+
+    val oldBuilder = new SimpleRnnBuilder(layers, inputDim, hiddenDim, model, supportLags)
+    oldBuilder.newGraph()
+    oldBuilder.startNewSequence()
+    val oldTransduced = Transducer.transduce(oldBuilder, inputs)
+    val oldSum = Expression.sumElems(oldTransduced.get)
+
+    new ClosableModelSaver(filename).autoClose { saver =>
+      saver.addModel(model)
+    }
+
+    val (optionBuilder, newOptionModel, _) = Loader.loadSimpleRnn(filename)
+    val newBuilder = optionBuilder.get
+    newBuilder.newGraph()
+    val newModel = newOptionModel.get
+    newBuilder.newGraph()
+    newBuilder.startNewSequence()
+    val newTransduced = Transducer.transduce(newBuilder, inputs)
+    val newSum = Expression.sumElems(newTransduced.get)
+
+    oldModel.parametersList.foreach { parameterStorage =>
+      println(parameterStorage.dim)
+    }
+
+    newModel.parametersList.foreach { parameterStorage =>
+      println(parameterStorage.dim)
+    }
+
+    println(oldSum.value.toFloat)
+    println(newSum.value.toFloat)
+    oldSum.value.toFloat should be (newSum.value.toFloat)
+  }
+
+  behavior of "GruBuilder"
+
+  ignore should "load the builder with proper dimensions" in {
+    val filename = "TestGruLoader.txt"
+    val oldModel = new ParameterCollection
+    val model = new ParameterCollection
+
+    val oldBuilder = new GruBuilder(layers, inputDim, hiddenDim, model)
+    oldBuilder.newGraph()
+    oldBuilder.startNewSequence()
+    val oldTransduced = Transducer.transduce(oldBuilder, inputs)
+    val oldSum = Expression.sumElems(oldTransduced.get)
+
+    new ClosableModelSaver(filename).autoClose { saver =>
+      saver.addModel(model)
+    }
+
+    val (optionBuilder, newOptionModel, _) = Loader.loadGru(filename)
+    val newBuilder = optionBuilder.get
+    newBuilder.newGraph()
+    val newModel = newOptionModel.get
+    newBuilder.newGraph()
+    newBuilder.startNewSequence()
+    val newTransduced = Transducer.transduce(newBuilder, inputs)
+    val newSum = Expression.sumElems(newTransduced.get)
+
+    oldModel.parametersList.foreach { parameterStorage =>
+      println(parameterStorage.dim)
+    }
+
+    newModel.parametersList.foreach { parameterStorage =>
+      println(parameterStorage.dim)
+    }
+
+    println(oldSum.value.toFloat)
+    println(newSum.value.toFloat)
+    oldSum.value.toFloat should be (newSum.value.toFloat)
+  }
 }
