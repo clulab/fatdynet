@@ -26,6 +26,45 @@ class TestLoader extends FlatSpec with Matchers {
     * Figure out how to do input on tree LSTMs.
     */
 
+  class ExpressionLoaderTester(val name: String) {
+    val testname: String = name
+    val filename: String = "Test" + testname + ".txt"
+
+    def test: Unit = {
+      behavior of testname
+
+      it should "serialize the builder properly" in {
+        val parameterName = "parameterTest"
+        val parameterSize = 101
+        val lookupParameterName = "lookupParameterTest"
+        val lookupParameterSize = 111
+
+        val oldParameters = new ParameterCollection()
+        val oldParameter = oldParameters.addParameters(Dim(parameterSize))
+        val oldLookupParameter = oldParameters.addLookupParameters(1L, Dim(lookupParameterSize))
+        val oldExpression = Expression.parameter(oldParameter)
+        val oldLookupExpression = Expression.lookup(oldLookupParameter, 0)
+        val oldFloat = Expression.sumElems(oldExpression).value.toFloat
+        val oldLookupFloat = Expression.sumElems(oldLookupExpression).value.toFloat
+
+        new ClosableModelSaver(filename).autoClose { saver =>
+          saver.addParameter(oldParameter, parameterName)
+          saver.addLookupParameter(oldLookupParameter, lookupParameterName)
+        }
+
+        val newExpressions = Loader.loadExpressions(filename)
+        val newExpression = newExpressions(parameterName)
+        val newLookupExpression = newExpressions(lookupParameterName)
+        val newFloat = Expression.sumElems(newExpression).value.toFloat
+        val newLookupFloat = Expression.sumElems(newLookupExpression).value.toFloat
+
+        oldFloat should be (newFloat)
+        oldLookupFloat should be (newLookupFloat)
+        new File(filename).delete
+      }
+    }
+  }
+
   abstract class LoaderTester(val layers: Int, val inputDim: Int, val hiddenDim: Int, val name: String) {
     val testname: String = name + "_" +  layers + "_" + inputDim + "_" + hiddenDim
     def makeBuilder(model: ParameterCollection): RnnBuilder
@@ -43,30 +82,59 @@ class TestLoader extends FlatSpec with Matchers {
       it should "serialize the builder properly" in {
         val oldModel = new ParameterCollection
         val oldBuilder = makeBuilder(oldModel)
+        val parameterName = "parameterTest"
+        val parameterSize = 101
+        val lookupParameterName = "lookupParameterTest"
+        val lookupParameterSize = 111
+        val modelName = "/model"
+
         oldBuilder.newGraph()
         oldBuilder.startNewSequence()
 
+        val oldParameters = new ParameterCollection()
+        val oldParameter = oldParameters.addParameters(Dim(parameterSize))
+        val oldLookupParameter = oldParameters.addLookupParameters(1L, Dim(lookupParameterSize))
+        val oldExpression = Expression.parameter(oldParameter)
+        val oldLookupExpression = Expression.lookup(oldLookupParameter, 0)
+        val oldFloat = Expression.sumElems(oldExpression).value.toFloat
+        val oldLookupFloat = Expression.sumElems(oldLookupExpression).value.toFloat
+
+        /**
+          * NOTE: If the model name is empty, then there can't seem to be any parameters.
+          * dynet seems to get mixed up when loading the model then and will throw
+          * an exception.
+          */
         new ClosableModelSaver(filename).autoClose { saver =>
-          saver.addModel(oldModel)
+          saver.addModel(oldModel, modelName)
+          saver.addParameter(oldParameter, parameterName)
+          saver.addLookupParameter(oldLookupParameter, lookupParameterName)
         }
 
-        val (optionBuilder, newOptionModel, _) = loadBuilder
+        val (optionBuilder, newOptionModel, newExpressions) = loadBuilder
         val newBuilder = optionBuilder.get
         val newModel = newOptionModel.get
+        val newExpression = newExpressions(parameterName)
+        val newLookupExpression = newExpressions(lookupParameterName)
+        val newFloat = Expression.sumElems(newExpression).value.toFloat
+        val newLookupFloat = Expression.sumElems(newLookupExpression).value.toFloat
+
         newBuilder.newGraph()
         newBuilder.startNewSequence()
 
+        oldFloat should be (newFloat)
+        oldLookupFloat should be (newLookupFloat)
+
         oldModel.parameterCount should be (newModel.parameterCount)
-        val oldParameters = oldModel.parametersList()
-        val newParameters = newModel.parametersList()
-        oldParameters.size should be (newParameters.size)
-        0.until(oldParameters.size).foreach { index =>
-          val oldDim: Dim = oldParameters(index).dim
-          val newDim = newParameters(index).dim
+        val oldParametersList = oldModel.parametersList()
+        val newParametersList = newModel.parametersList()
+        oldParametersList.size should be (newParametersList.size)
+        0.until(oldParametersList.size).foreach { index =>
+          val oldDim: Dim = oldParametersList(index).dim
+          val newDim = newParametersList(index).dim
           oldDim should be (newDim)
 
-          val oldValues = oldParameters(index).values.toSeq
-          val newValues = newParameters(index).values.toSeq
+          val oldValues = oldParametersList(index).values.toSeq
+          val newValues = newParametersList(index).values.toSeq
 
           oldValues should be (newValues)
         }
@@ -78,7 +146,7 @@ class TestLoader extends FlatSpec with Matchers {
           val newTransduced = Transducer.transduce(newBuilder, inputs)
           val newSum = Expression.sumElems(newTransduced.get)
 
-          oldSum.value.toFloat should be(newSum.value.toFloat)
+          oldSum.value.toFloat should be (newSum.value.toFloat)
         }
         new File(filename).delete
       }
@@ -167,6 +235,8 @@ class TestLoader extends FlatSpec with Matchers {
 //  new FastLstmBuilderTester(3, 54, 22).test
 //  new LstmLoaderTester(4, 9, 16, lnLSTM = false).test
 //  new VanillaLstmLoaderTester(2, 9, 22).test
+
+  new ExpressionLoaderTester("Expressions").test
 
   for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6) {
     new FastLstmLoaderTester(layers, inputDim, hiddenDim).test
