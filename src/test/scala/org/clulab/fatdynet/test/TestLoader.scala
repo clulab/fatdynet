@@ -52,9 +52,11 @@ class TestLoader extends FlatSpec with Matchers {
           saver.addLookupParameter(oldLookupParameter, lookupParameterName)
         }
 
-        val newExpressions = Loader.loadExpressions(filename)
-        val newExpression = newExpressions(parameterName)
-        val newLookupExpression = newExpressions(lookupParameterName)
+        val (newParameters, newLookupParameters) = Loader.loadParameters(filename)
+        val newParameter = newParameters(parameterName)
+        val newLookupParameter = newLookupParameters(lookupParameterName)
+        val newExpression = Expression.parameter(newParameter)
+        val newLookupExpression = Expression.lookup(newLookupParameter, 0)
         val newFloat = Expression.sumElems(newExpression).value.toFloat
         val newLookupFloat = Expression.sumElems(newLookupExpression).value.toFloat
 
@@ -68,7 +70,7 @@ class TestLoader extends FlatSpec with Matchers {
   abstract class LoaderTester(val layers: Int, val inputDim: Int, val hiddenDim: Int, val name: String) {
     val testname: String = name + "_" +  layers + "_" + inputDim + "_" + hiddenDim
     def makeBuilder(model: ParameterCollection): RnnBuilder
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression])
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter])
 
     def canTransduce: Boolean = true
 
@@ -87,9 +89,6 @@ class TestLoader extends FlatSpec with Matchers {
         val lookupParameterName = "lookupParameterTest"
         val lookupParameterSize = 111
         val modelName = "/model"
-
-        oldBuilder.newGraph()
-        oldBuilder.startNewSequence()
 
         val oldParameters = new ParameterCollection()
         val oldParameter = oldParameters.addParameters(Dim(parameterSize))
@@ -110,47 +109,61 @@ class TestLoader extends FlatSpec with Matchers {
           saver.addLookupParameter(oldLookupParameter, lookupParameterName)
         }
 
-        val (optionBuilder, newOptionModel, newExpressions) = loadBuilder
+        val (optionBuilder, newOptionModel, newParameters, newLookupParameters) = loadBuilder
         val newBuilder = optionBuilder.get
         val newModel = newOptionModel.get
-        val newExpression = newExpressions(parameterName)
-        val newLookupExpression = newExpressions(lookupParameterName)
+        val newParameter = newParameters(parameterName)
+        val newLookupParameter = newLookupParameters(lookupParameterName)
+        val newExpression = Expression.parameter(newParameter)
+        val newLookupExpression = Expression.lookup(newLookupParameter, 0)
         val newFloat = Expression.sumElems(newExpression).value.toFloat
         val newLookupFloat = Expression.sumElems(newLookupExpression).value.toFloat
-
-        newBuilder.newGraph()
-        newBuilder.startNewSequence()
 
         oldModel.parameterCount should be(newModel.parameterCount)
 
         // These parameter lists result in an exception in ParameterStorage.finalize
         // during garbage collection.  The values have been checked, however.
 
-//          val oldParametersList = oldModel.parametersList()
-//          val newParametersList = newModel.parametersList()
-//          oldParametersList.size should be(newParametersList.size)
-//          0.until(oldParametersList.size).foreach { index =>
-//            val oldDim: Dim = oldParametersList(index).dim
-//            val newDim = newParametersList(index).dim
-//            oldDim should be(newDim)
-//
-//            val oldValues = oldParametersList(index).values.toSeq
-//            val newValues = newParametersList(index).values.toSeq
-//
-//            oldValues should be(newValues)
-//          }
+          val oldParametersList = oldModel.parametersList()
+          val newParametersList = newModel.parametersList()
+          oldParametersList.size should be(newParametersList.size)
+          0.until(oldParametersList.size).foreach { index =>
+            val oldDim: Dim = oldParametersList(index).dim
+            val newDim = newParametersList(index).dim
+            oldDim should be(newDim)
+
+            val oldValues = oldParametersList(index).values.toSeq
+            val newValues = newParametersList(index).values.toSeq
+
+            oldValues should be(newValues)
+          }
 
         oldFloat should be(newFloat)
         oldLookupFloat should be(newLookupFloat)
 
         if (canTransduce) {
-          val oldTransduced = Transducer.transduce(oldBuilder, inputs)
-          val oldSum = Expression.sumElems(oldTransduced.get)
+          val rounds = 10
+          val oldFloats = new Array[Float](rounds)
+          val newFloats = new Array[Float](rounds)
+          oldBuilder.newGraph()
+          newBuilder.newGraph()
+          0.until(rounds).foreach { i =>
+            val oldTransduced = Transducer.transduce(oldBuilder, inputs).last
+            val oldSum = Expression.sumElems(oldTransduced)
+            val oldFloat = oldSum.value.toFloat
+            oldFloats(i) = oldFloat
 
-          val newTransduced = Transducer.transduce(newBuilder, inputs)
-          val newSum = Expression.sumElems(newTransduced.get)
+            val newTransduced = Transducer.transduce(newBuilder, inputs).last
+            val newSum = Expression.sumElems(newTransduced)
+            val newFloat = newSum.value.toFloat
+            newFloats(i) = newFloat
 
-          oldSum.value.toFloat should be (newSum.value.toFloat)
+            oldFloat should be(newFloat)
+          }
+          oldFloats.foreach { each => print(each); print(" ") }
+          newFloats.foreach { each => print(each); print(" ") }
+          Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
+          Array.fill(rounds) { newFloats(0) } should be (newFloats)
         }
         new File(filename).delete
       }
@@ -162,7 +175,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new FastLstmBuilder(layers, inputDim, hiddenDim, model)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadFastLstm(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadFastLstm(filename)
   }
 
   class LstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int, val lnLSTM: Boolean)
@@ -170,7 +183,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new LstmBuilder(layers, inputDim, hiddenDim, model, lnLSTM)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadLstm(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadLstm(filename)
   }
 
   class CompactVanillaLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
@@ -178,7 +191,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new CompactVanillaLSTMBuilder(layers, inputDim, hiddenDim, model)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadCompactVanillaLstm(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadCompactVanillaLstm(filename)
   }
 
   class CoupledLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
@@ -186,7 +199,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new CoupledLstmBuilder(layers, inputDim, hiddenDim, model)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadCoupledLstm(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadCoupledLstm(filename)
   }
 
   class VanillaLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
@@ -194,7 +207,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadVanillaLstm(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadVanillaLstm(filename)
   }
 
   class UnidirectionalTreeLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
@@ -202,7 +215,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadUnidirectionalTreeLstm(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadUnidirectionalTreeLstm(filename)
 
     override def canTransduce: Boolean = false
   }
@@ -212,7 +225,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadBidirectionalTreeLstm(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadBidirectionalTreeLstm(filename)
 
     override def canTransduce: Boolean = false
   }
@@ -222,7 +235,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new SimpleRnnBuilder(layers, inputDim, hiddenDim, model, supportLags)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadSimpleRnn(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadSimpleRnn(filename)
   }
 
   class GruLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
@@ -230,7 +243,7 @@ class TestLoader extends FlatSpec with Matchers {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new GruBuilder(layers, inputDim, hiddenDim, model)
 
-    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Expression]) = Loader.loadGru(filename)
+    def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadGru(filename)
   }
 
   Initialize.initialize(Map("random-seed" -> 2522620396L))
