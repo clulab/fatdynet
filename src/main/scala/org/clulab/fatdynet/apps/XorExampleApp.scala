@@ -132,14 +132,16 @@ object XorExampleApp {
 
     Initialize.initialize(Map("random-seed" -> 2522620396L))
 
-    val (xorParameters1, previewResults) = train
+    val (xorParameters1, initialResults) = train
+    ComputationGraph.renew
     val expectedResults = preview(xorParameters1)
     save(filename, xorParameters1)
 
     val xorParameters2 = load(filename)
+    ComputationGraph.renew
     val actualResults = preview(xorParameters2)
 
-    assert(previewResults.deep == expectedResults.deep)
+    assert(initialResults.deep == expectedResults.deep)
     assert(expectedResults.deep == actualResults.deep)
   }
 }
