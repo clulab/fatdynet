@@ -7,12 +7,12 @@ import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 
 case class XorParameters(p_W: Parameter, p_b: Parameter, p_V: Parameter, p_a: Parameter)
 
-case class Stimulus(x1: Int, x2: Int, y0: Int) {
+case class Transformation(input1: Int, input2: Int, output: Int) {
 
-  def encode(x_values: FloatVector, y_value: FloatPointer): Unit = {
-    x_values.update(0, x1)
-    x_values.update(1, x2)
-    y_value.set(y0)
+  def transform(input_values: FloatVector, output_value: FloatPointer): Unit = {
+    input_values.update(0, input1)
+    input_values.update(1, input2)
+    output_value.set(output)
   }
 }
 
@@ -23,15 +23,17 @@ object XorExampleApp {
 
   val ITERATIONS = 10
 
-  val stimuli = Array(
-    // x1, x2, y0 = x1 ^ x2, where -1 = false, 1 = true
-    Stimulus(-1, -1, -1),
-    Stimulus(-1,  1,  1),
-    Stimulus( 1, -1,  1),
-    Stimulus( 1,  1, -1)
+  val transformations = Array(
+    // input1, input2, output = input1 ^ input2, where -1 = false, 1 = true
+    Transformation(-1, -1, -1),
+    Transformation(-1,  1,  1),
+    Transformation( 1, -1,  1),
+    Transformation( 1,  1, -1)
   )
 
   protected def mkPredictionGraph(xorParameters: XorParameters, x_values: FloatVector): Expression = {
+    ComputationGraph.renew
+
     val W = Expression.parameter(xorParameters.p_W)
     val b = Expression.parameter(xorParameters.p_b)
     val V = Expression.parameter(xorParameters.p_V)
@@ -53,34 +55,29 @@ object XorExampleApp {
 
     // Xs will be the input values; expression is created later in mkPredictionGraph.
     val x_values = new FloatVector(INPUT_SIZE)
+    val y_pred = mkPredictionGraph(xorParameters, x_values)
+
     // Y will be the expected output value, which we _input_ from gold data.
+    // This is done after mkPredictionGraph so that the values are not made stale by it.
     val y_value = new FloatPointer // because OUTPUT_SIZE is 1
     val y = Expression.input(y_value)
-
-    val y_pred = mkPredictionGraph(xorParameters, x_values)
     val loss = Expression.squaredDistance(y_pred, y)
 
     println()
     println("Computation graphviz structure:")
     ComputationGraph.printGraphViz()
 
-    def encode(stimulus: Stimulus, x_values: FloatVector, y_value: FloatPointer): Unit = {
-      x_values.update(0, stimulus.x1)
-      x_values.update(1, stimulus.x2)
-      y_value.set(stimulus.y0)
-    }
-
     // Train
     for (iter <- 0 to ITERATIONS - 1) {
-      val loss_value = stimuli.map { stimulus =>
-        encode(stimulus, x_values, y_value)
+      val loss_value = transformations.map { transformation =>
+        transformation.transform(x_values, y_value)
 
         val loss_value = ComputationGraph.forward(loss).toFloat
 
         ComputationGraph.backward(loss)
         sgd.update()
         loss_value
-      }.sum / stimuli.length
+      }.sum / transformations.length
       sgd.learningRate *= 0.998f
       println("iter = " + iter + ", loss = " + loss_value)
     }
@@ -91,11 +88,11 @@ object XorExampleApp {
 
   protected def preview(xorParameters: XorParameters, x_values: FloatVector, y_value: FloatPointer, y_pred: Expression): Array[Float] = {
     println
-    stimuli.map { stimulus =>
-      stimulus.encode(x_values, y_value)
+    transformations.map { transformation =>
+      transformation.transform(x_values, y_value)
       ComputationGraph.forward(y_pred)
       val result = y_pred.value.toFloat
-      println(s"STIMULUS = $stimulus, PRED = $result")
+      println(s"TRANSFORMATION = $transformation, PRED = $result")
       result
     }
   }
@@ -133,12 +130,10 @@ object XorExampleApp {
     Initialize.initialize(Map("random-seed" -> 2522620396L))
 
     val (xorParameters1, initialResults) = train
-    ComputationGraph.renew
     val expectedResults = preview(xorParameters1)
     save(filename, xorParameters1)
 
     val xorParameters2 = load(filename)
-    ComputationGraph.renew
     val actualResults = preview(xorParameters2)
 
     assert(initialResults.deep == expectedResults.deep)
