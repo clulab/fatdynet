@@ -1,6 +1,7 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
+
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Loader
 import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
@@ -32,7 +33,7 @@ object XorExampleApp {
   )
 
   protected def mkPredictionGraph(xorParameters: XorParameters, x_values: FloatVector): Expression = {
-    ComputationGraph.renew
+    ComputationGraph.renew()
 
     val W = Expression.parameter(xorParameters.p_W)
     val b = Expression.parameter(xorParameters.p_b)
@@ -40,7 +41,7 @@ object XorExampleApp {
     val a = Expression.parameter(xorParameters.p_a)
     val x = Expression.input(Dim(x_values.length), x_values)
 
-    V * (Expression.tanh(W * x + b)) + a
+    V * Expression.tanh(W * x + b) + a
   }
 
   def train: (XorParameters, Array[Float]) = {
@@ -53,13 +54,13 @@ object XorExampleApp {
     val p_a = model.addParameters(Dim(OUTPUT_SIZE))
     val xorParameters = XorParameters(p_W, p_b, p_V, p_a)
 
-    // Xs will be the input values; expression is created later in mkPredictionGraph.
+    // Xs will be the input values; the corresponding expression is created later in mkPredictionGraph.
     val x_values = new FloatVector(INPUT_SIZE)
-    val y_pred = mkPredictionGraph(xorParameters, x_values)
-
     // Y will be the expected output value, which we _input_ from gold data.
-    // This is done after mkPredictionGraph so that the values are not made stale by it.
     val y_value = new FloatPointer // because OUTPUT_SIZE is 1
+
+    val y_pred = mkPredictionGraph(xorParameters, x_values)
+    // This is done after mkPredictionGraph so that the values are not made stale by it.
     val y = Expression.input(y_value)
     val loss = Expression.squaredDistance(y_pred, y)
 
@@ -68,41 +69,45 @@ object XorExampleApp {
     ComputationGraph.printGraphViz()
 
     // Train
-    for (iter <- 0 to ITERATIONS - 1) {
+    for (iter <- 0 until ITERATIONS) {
       val loss_value = transformations.map { transformation =>
         transformation.transform(x_values, y_value)
 
-        val loss_value = ComputationGraph.forward(loss).toFloat
+        val loss_value = ComputationGraph.forward(loss).toFloat()
 
         ComputationGraph.backward(loss)
         sgd.update()
         loss_value
       }.sum / transformations.length
+
+      println(s"iter = $iter, loss = $loss_value")
       sgd.learningRate *= 0.998f
-      println("iter = " + iter + ", loss = " + loss_value)
     }
 
-    val results = preview(xorParameters, x_values, y_value, y_pred)
+    val results = predict(xorParameters, x_values, y_value, y_pred)
+
     (xorParameters, results)
   }
 
-  protected def preview(xorParameters: XorParameters, x_values: FloatVector, y_value: FloatPointer, y_pred: Expression): Array[Float] = {
+  protected def predict(xorParameters: XorParameters, x_values: FloatVector, y_value: FloatPointer, y_pred: Expression): Array[Float] = {
     println
     transformations.map { transformation =>
       transformation.transform(x_values, y_value)
       ComputationGraph.forward(y_pred)
-      val result = y_pred.value.toFloat
+
+      val result = y_pred.value().toFloat()
+
       println(s"TRANSFORMATION = $transformation, PREDICTION = $result")
       result
     }
   }
 
-  def preview(xorParameters: XorParameters): Array[Float] = {
+  def predict(xorParameters: XorParameters): Array[Float] = {
     val x_values = new FloatVector(INPUT_SIZE)
     val y_value = new FloatPointer
     val y_pred = mkPredictionGraph(xorParameters, x_values)
 
-    preview(xorParameters, x_values, y_value, y_pred)
+    predict(xorParameters, x_values, y_value, y_pred)
   }
 
   def save(filename: String, xorParameters: XorParameters): Unit = {
@@ -115,7 +120,7 @@ object XorExampleApp {
   }
 
   def load(filename: String): XorParameters = {
-    val (parameters, lookupParameters) = Loader.loadParameters(filename)
+    val (parameters, _) = Loader.loadParameters(filename)
     val p_W = parameters("/W")
     val p_b = parameters("/b")
     val p_V = parameters("/V")
@@ -130,11 +135,11 @@ object XorExampleApp {
     Initialize.initialize(Map("random-seed" -> 2522620396L))
 
     val (xorParameters1, initialResults) = train
-    val expectedResults = preview(xorParameters1)
+    val expectedResults = predict(xorParameters1)
     save(filename, xorParameters1)
 
     val xorParameters2 = load(filename)
-    val actualResults = preview(xorParameters2)
+    val actualResults = predict(xorParameters2)
 
     assert(initialResults.deep == expectedResults.deep)
     assert(expectedResults.deep == actualResults.deep)
