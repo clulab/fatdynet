@@ -92,7 +92,7 @@ object XorExampleApp {
       transformation.transform(x_values, y_value)
       ComputationGraph.forward(y_pred)
       val result = y_pred.value.toFloat
-      println(s"TRANSFORMATION = $transformation, PRED = $result")
+      println(s"TRANSFORMATION = $transformation, PREDICTION = $result")
       result
     }
   }
