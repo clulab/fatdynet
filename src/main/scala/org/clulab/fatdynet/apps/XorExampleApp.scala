@@ -8,7 +8,7 @@ import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 
 case class XorParameters(p_W: Parameter, p_b: Parameter, p_V: Parameter, p_a: Parameter)
 
-case class Transformation(input1: Int, input2: Int, output: Int) {
+case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
   def transform(input_values: FloatVector, output_value: FloatPointer): Unit = {
     input_values.update(0, input1)
@@ -22,14 +22,14 @@ object XorExampleApp {
   val HIDDEN_SIZE = 8
   val OUTPUT_SIZE = 1
 
-  val ITERATIONS = 10
+  val ITERATIONS = 40
 
   val transformations = Array(
-    // input1, input2, output = input1 ^ input2, where -1 = false, 1 = true
-    Transformation(-1, -1, -1),
-    Transformation(-1,  1,  1),
-    Transformation( 1, -1,  1),
-    Transformation( 1,  1, -1)
+    // input1, input2, output = input1 ^ input2
+    XorTransformation(0, 0, 0),
+    XorTransformation(0, 1, 1),
+    XorTransformation(1, 0, 1),
+    XorTransformation(1, 1, 0)
   )
 
   protected def mkPredictionGraph(xorParameters: XorParameters, x_values: FloatVector): Expression = {
