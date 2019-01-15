@@ -11,6 +11,8 @@ case class ParityModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, m
 
 case class ParityTransformation(inputs: Array[Int], output: Int) {
 
+  override def toString(): String = getClass.getSimpleName + "(" + inputs.mkString("(", ", ", ")") + " -> " + output.toString() + ")"
+
   // Testing
   def transform(inputValues: Array[FloatPointer]): Unit = {
     inputs.indices.foreach { index =>
@@ -62,7 +64,6 @@ object ParityExampleApp {
     val a = Expression.parameter(parityModel.a)
     val xs = xValues.map(Expression.input)
 
-    builder.startNewSequence() // maybe with xs already there, how to get only the last one?
     val builderOutputs = Transducer.transduce(builder, xs)
     val builderOutput = builderOutputs.last
 

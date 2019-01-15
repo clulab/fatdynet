@@ -10,6 +10,8 @@ case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter)
 
 case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
+  override def toString(): String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
+
   // Testing
   def transform(inputValues: FloatVector): Unit = {
     inputValues.update(0, input1)
