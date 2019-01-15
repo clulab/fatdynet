@@ -43,11 +43,12 @@ object XorExampleApp {
   protected def mkPredictionGraph(xorModel: XorModel, x_values: FloatVector): Expression = {
     ComputationGraph.renew()
 
+    val x = Expression.input(Dim(x_values.length), x_values)
+
     val W = Expression.parameter(xorModel.w)
     val b = Expression.parameter(xorModel.b)
     val V = Expression.parameter(xorModel.v)
     val a = Expression.parameter(xorModel.a)
-    val x = Expression.input(Dim(x_values.length), x_values)
     val y = V * Expression.tanh(W * x + b) + a
 
     y

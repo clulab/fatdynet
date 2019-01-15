@@ -58,14 +58,14 @@ object ParityExampleApp {
   protected def mkPredictionGraph(parityModel: ParityModel, xValues: Array[FloatPointer], builder: RnnBuilder): Expression = {
     builder.newGraph()
 
+    val xs = xValues.map(Expression.input)
+    val builderOutputs = Transducer.transduce(builder, xs)
+    val builderOutput = builderOutputs.last
+
     val W = Expression.parameter(parityModel.w)
     val b = Expression.parameter(parityModel.b)
     val V = Expression.parameter(parityModel.v)
     val a = Expression.parameter(parityModel.a)
-    val xs = xValues.map(Expression.input)
-
-    val builderOutputs = Transducer.transduce(builder, xs)
-    val builderOutput = builderOutputs.last
 
     val y = V * Expression.tanh(W * builderOutput + b) + a
 
