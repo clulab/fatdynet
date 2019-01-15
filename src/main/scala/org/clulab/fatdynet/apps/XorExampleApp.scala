@@ -1,10 +1,11 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Loader
 import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
+
+import scala.util.Random
 
 case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter)
 
@@ -26,13 +27,15 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
 }
 
 object XorExampleApp {
+  protected val random: Random = new Random(1234L)
+
   val  INPUT_SIZE = 2
   val HIDDEN_SIZE = 8
   val OUTPUT_SIZE = 1
 
   val ITERATIONS = 40
 
-  val transformations = Array(
+  val transformations: Seq[XorTransformation] = Seq(
     // input1, input2, output = input1 ^ input2
     XorTransformation(0, 0, 0),
     XorTransformation(0, 1, 1),
@@ -40,10 +43,10 @@ object XorExampleApp {
     XorTransformation(1, 1, 0)
   )
 
-  protected def mkPredictionGraph(xorModel: XorModel, x_values: FloatVector): Expression = {
+  protected def mkPredictionGraph(xorModel: XorModel, xValues: FloatVector): Expression = {
     ComputationGraph.renew()
 
-    val x = Expression.input(Dim(x_values.length), x_values)
+    val x = Expression.input(Dim(xValues.length), xValues)
 
     val W = Expression.parameter(xorModel.w)
     val b = Expression.parameter(xorModel.b)
@@ -54,7 +57,7 @@ object XorExampleApp {
     y
   }
 
-  def train: (XorModel, Array[Float]) = {
+  def train: (XorModel, Seq[Float]) = {
     val model = new ParameterCollection
     val trainer = new SimpleSGDTrainer(model) // i.e., stochastic gradient descent trainer
 
@@ -74,13 +77,12 @@ object XorExampleApp {
     val y = Expression.input(yValue)
     val loss = Expression.squaredDistance(yPrediction, y)
 
-    println()
-    println("Computation graphviz structure:")
-    ComputationGraph.printGraphViz()
+//    println()
+//    println("Computation graphviz structure:")
+//    ComputationGraph.printGraphViz()
 
-    // Train
     for (iteration <- 0 until ITERATIONS) {
-      val lossValue = transformations.map { transformation =>
+      val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(xValues, yValue)
 
         val lossValue = ComputationGraph.forward(loss).toFloat()
@@ -99,7 +101,7 @@ object XorExampleApp {
     (xorModel, results)
   }
 
-  protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression): Array[Float] = {
+  protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression): Seq[Float] = {
     println
     transformations.map { transformation =>
       transformation.transform(xValues)
@@ -112,7 +114,7 @@ object XorExampleApp {
     }
   }
 
-  def predict(xorModel: XorModel): Array[Float] = {
+  def predict(xorModel: XorModel): Seq[Float] = {
     val xValues = new FloatVector(INPUT_SIZE)
     val yPrediction = mkPredictionGraph(xorModel, xValues)
 
@@ -150,7 +152,7 @@ object XorExampleApp {
     val xorModel2 = load(filename)
     val actualResults = predict(xorModel2)
 
-    assert(initialResults.deep == expectedResults.deep)
-    assert(expectedResults.deep == actualResults.deep)
+    assert(initialResults == expectedResults)
+    assert(expectedResults == actualResults)
   }
 }

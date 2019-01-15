@@ -1,11 +1,12 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Loader
 import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 import org.clulab.fatdynet.utils.Transducer
+
+import scala.util.Random
 
 case class ParityModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
 
@@ -14,28 +15,31 @@ case class ParityTransformation(inputs: Array[Int], output: Int) {
   override def toString(): String = getClass.getSimpleName + "(" + inputs.mkString("(", ", ", ")") + " -> " + output.toString() + ")"
 
   // Testing
-  def transform(inputValues: Array[FloatPointer]): Unit = {
+  def transform(inputValues: Array[Float]): Unit = {
     inputs.indices.foreach { index =>
-      inputValues(index) = new FloatPointer()
-      inputValues(index).set(inputs(index))
+      inputValues(index) = inputs(index)
     }
   }
 
   // Training
-  def transform(inputValues: Array[FloatPointer], outputValue: FloatPointer): Unit = {
+  def transform(inputValues: Array[Float], outputValue: FloatPointer): Unit = {
     transform(inputValues)
     outputValue.set(output)
   }
 }
 
 object ParityExampleApp {
+  protected val random: Random = new Random(1234L)
+
+  val LAYERS_SIZE = 1
+
   val  INPUT_SIZE = 1
   val HIDDEN_SIZE = 8
   val OUTPUT_SIZE = 1
 
   val ITERATIONS = 100
 
-  val transformations = Array(
+  val transformations: Seq[ParityTransformation] = Seq(
     // For oddParity
     ParityTransformation(Array(0), 1),
     ParityTransformation(Array(1), 0),
@@ -55,7 +59,10 @@ object ParityExampleApp {
     ParityTransformation(Array(1, 1, 1), 0)
   )
 
-  protected def mkPredictionGraph(parityModel: ParityModel, xValues: Array[FloatPointer], builder: RnnBuilder): Expression = {
+  protected def mkPredictionGraph(parityModel: ParityModel, xValues: Seq[Float], builder: RnnBuilder): Expression = {
+    // The graph will grow and grow without this next line.
+    ComputationGraph.renew()
+    // Use the new graph.
     builder.newGraph()
 
     val xs = xValues.map(Expression.input)
@@ -72,7 +79,7 @@ object ParityExampleApp {
     y
   }
 
-  def train: (ParityModel, Array[Float], RnnBuilder) = {
+  def train: (ParityModel, Seq[Float], RnnBuilder) = {
     val model = new ParameterCollection
     val trainer = new SimpleSGDTrainer(model) // i.e., stochastic gradient descent trainer
 
@@ -82,16 +89,14 @@ object ParityExampleApp {
     val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
 
     val rnnModel = new ParameterCollection
-    val builder = new LstmBuilder(1, INPUT_SIZE, HIDDEN_SIZE, rnnModel)
-
+    val builder = new LstmBuilder(LAYERS_SIZE, INPUT_SIZE, HIDDEN_SIZE, rnnModel)
     val parityModel = ParityModel(WParameter, bParameter, VParameter, aParameter, rnnModel)
 
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
 
-    // Train
     for (iteration <- 0 until ITERATIONS) {
-      val lossValue = transformations.map { transformation =>
-        val xValues = new Array[FloatPointer](transformation.inputs.length)
+      val lossValue = random.shuffle(transformations).map { transformation =>
+        val xValues = new Array[Float](transformation.inputs.length)
 
         transformation.transform(xValues, yValue)
 
@@ -102,6 +107,7 @@ object ParityExampleApp {
         val loss_value = loss.value().toFloat()
 
 //        println()
+//        println(transformation)
 //        println("Computation graphviz structure:")
 //        ComputationGraph.printGraphViz()
 
@@ -111,7 +117,7 @@ object ParityExampleApp {
       }.sum
 
       println(s"index = $iteration, loss = $lossValue")
-//      trainer.learningRate *= 0.998f
+      trainer.learningRate *= 0.998f
     }
 
     val results = predict(parityModel, builder)
@@ -119,10 +125,10 @@ object ParityExampleApp {
     (parityModel, results, builder)
   }
 
-  def predict(parityModel: ParityModel, builder: RnnBuilder): Array[Float] = {
+  def predict(parityModel: ParityModel, builder: RnnBuilder): Seq[Float] = {
     println
     transformations.map { transformation =>
-      val xValues = new Array[FloatPointer](transformation.inputs.length)
+      val xValues = new Array[Float](transformation.inputs.length)
 
       transformation.transform(xValues)
 
@@ -166,7 +172,7 @@ object ParityExampleApp {
     val (parityModel2, builder2) = load(filename)
     val actualResults = predict(parityModel2, builder2)
 
-    assert(initialResults.deep == expectedResults.deep)
-    assert(expectedResults.deep == actualResults.deep)
+    assert(initialResults == expectedResults)
+    assert(expectedResults == actualResults)
   }
 }
