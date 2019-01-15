@@ -6,14 +6,20 @@ import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Loader
 import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 
-case class XorParameters(p_W: Parameter, p_b: Parameter, p_V: Parameter, p_a: Parameter)
+case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter)
 
 case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
-  def transform(input_values: FloatVector, output_value: FloatPointer): Unit = {
-    input_values.update(0, input1)
-    input_values.update(1, input2)
-    output_value.set(output)
+  // Testing
+  def transform(inputValues: FloatVector): Unit = {
+    inputValues.update(0, input1)
+    inputValues.update(1, input2)
+  }
+
+  // Training
+  def transform(inputValues: FloatVector, outputValue: FloatPointer): Unit = {
+    transform(inputValues)
+    outputValue.set(output)
   }
 }
 
@@ -32,101 +38,101 @@ object XorExampleApp {
     XorTransformation(1, 1, 0)
   )
 
-  protected def mkPredictionGraph(xorParameters: XorParameters, x_values: FloatVector): Expression = {
+  protected def mkPredictionGraph(xorModel: XorModel, x_values: FloatVector): Expression = {
     ComputationGraph.renew()
 
-    val W = Expression.parameter(xorParameters.p_W)
-    val b = Expression.parameter(xorParameters.p_b)
-    val V = Expression.parameter(xorParameters.p_V)
-    val a = Expression.parameter(xorParameters.p_a)
+    val W = Expression.parameter(xorModel.w)
+    val b = Expression.parameter(xorModel.b)
+    val V = Expression.parameter(xorModel.v)
+    val a = Expression.parameter(xorModel.a)
     val x = Expression.input(Dim(x_values.length), x_values)
+    val y = V * Expression.tanh(W * x + b) + a
 
-    V * Expression.tanh(W * x + b) + a
+    y
   }
 
-  def train: (XorParameters, Array[Float]) = {
+  def train: (XorModel, Array[Float]) = {
     val model = new ParameterCollection
-    val sgd = new SimpleSGDTrainer(model) // i.e., stochastic gradient descent trainer
+    val trainer = new SimpleSGDTrainer(model) // i.e., stochastic gradient descent trainer
 
-    val p_W = model.addParameters(Dim(HIDDEN_SIZE, INPUT_SIZE))
-    val p_b = model.addParameters(Dim(HIDDEN_SIZE))
-    val p_V = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
-    val p_a = model.addParameters(Dim(OUTPUT_SIZE))
-    val xorParameters = XorParameters(p_W, p_b, p_V, p_a)
+    val WParameter = model.addParameters(Dim(HIDDEN_SIZE, INPUT_SIZE))
+    val bParameter = model.addParameters(Dim(HIDDEN_SIZE))
+    val VParameter = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
+    val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
+    val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter)
 
     // Xs will be the input values; the corresponding expression is created later in mkPredictionGraph.
-    val x_values = new FloatVector(INPUT_SIZE)
+    val xValues = new FloatVector(INPUT_SIZE)
     // Y will be the expected output value, which we _input_ from gold data.
-    val y_value = new FloatPointer // because OUTPUT_SIZE is 1
+    val yValue = new FloatPointer // because OUTPUT_SIZE is 1
 
-    val y_pred = mkPredictionGraph(xorParameters, x_values)
+    val yPrediction = mkPredictionGraph(xorModel, xValues)
     // This is done after mkPredictionGraph so that the values are not made stale by it.
-    val y = Expression.input(y_value)
-    val loss = Expression.squaredDistance(y_pred, y)
+    val y = Expression.input(yValue)
+    val loss = Expression.squaredDistance(yPrediction, y)
 
     println()
     println("Computation graphviz structure:")
     ComputationGraph.printGraphViz()
 
     // Train
-    for (iter <- 0 until ITERATIONS) {
-      val loss_value = transformations.map { transformation =>
-        transformation.transform(x_values, y_value)
+    for (iteration <- 0 until ITERATIONS) {
+      val lossValue = transformations.map { transformation =>
+        transformation.transform(xValues, yValue)
 
-        val loss_value = ComputationGraph.forward(loss).toFloat()
+        val lossValue = ComputationGraph.forward(loss).toFloat()
 
         ComputationGraph.backward(loss)
-        sgd.update()
-        loss_value
+        trainer.update()
+        lossValue
       }.sum / transformations.length
 
-      println(s"iter = $iter, loss = $loss_value")
-      sgd.learningRate *= 0.998f
+      println(s"index = $iteration, loss = $lossValue")
+      trainer.learningRate *= 0.998f
     }
 
-    val results = predict(xorParameters, x_values, y_value, y_pred)
+    val results = predict(xorModel, xValues, yPrediction)
 
-    (xorParameters, results)
+    (xorModel, results)
   }
 
-  protected def predict(xorParameters: XorParameters, x_values: FloatVector, y_value: FloatPointer, y_pred: Expression): Array[Float] = {
+  protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression): Array[Float] = {
     println
     transformations.map { transformation =>
-      transformation.transform(x_values, y_value)
-      ComputationGraph.forward(y_pred)
+      transformation.transform(xValues)
+      ComputationGraph.forward(yPrediction)
 
-      val result = y_pred.value().toFloat()
+      val yValue = yPrediction.value().toFloat()
 
-      println(s"TRANSFORMATION = $transformation, PREDICTION = $result")
-      result
+      println(s"TRANSFORMATION = $transformation, PREDICTION = $yValue")
+      yValue
     }
   }
 
-  def predict(xorParameters: XorParameters): Array[Float] = {
-    val x_values = new FloatVector(INPUT_SIZE)
-    val y_value = new FloatPointer
-    val y_pred = mkPredictionGraph(xorParameters, x_values)
+  def predict(xorModel: XorModel): Array[Float] = {
+    val xValues = new FloatVector(INPUT_SIZE)
+    val yPrediction = mkPredictionGraph(xorModel, xValues)
 
-    predict(xorParameters, x_values, y_value, y_pred)
+    predict(xorModel, xValues, yPrediction)
   }
 
-  def save(filename: String, xorParameters: XorParameters): Unit = {
+  def save(filename: String, xorModel: XorModel): Unit = {
     new ClosableModelSaver(filename).autoClose { saver =>
-      saver.addParameter(xorParameters.p_W, "/W")
-      saver.addParameter(xorParameters.p_b, "/b")
-      saver.addParameter(xorParameters.p_V, "/V")
-      saver.addParameter(xorParameters.p_a, "/a")
+      saver.addParameter(xorModel.w, "/W")
+      saver.addParameter(xorModel.b, "/b")
+      saver.addParameter(xorModel.v, "/V")
+      saver.addParameter(xorModel.a, "/a")
     }
   }
 
-  def load(filename: String): XorParameters = {
+  def load(filename: String): XorModel = {
     val (parameters, _) = Loader.loadParameters(filename)
-    val p_W = parameters("/W")
-    val p_b = parameters("/b")
-    val p_V = parameters("/V")
-    val p_a = parameters("/a")
+    val WParameters = parameters("/W")
+    val bParameters = parameters("/b")
+    val VParameters = parameters("/V")
+    val aParameters = parameters("/a")
 
-    XorParameters(p_W, p_b, p_V, p_a)
+    XorModel(WParameters, bParameters, VParameters, aParameters)
   }
 
   def main(args: Array[String]) {
@@ -134,12 +140,12 @@ object XorExampleApp {
 
     Initialize.initialize(Map("random-seed" -> 2522620396L))
 
-    val (xorParameters1, initialResults) = train
-    val expectedResults = predict(xorParameters1)
-    save(filename, xorParameters1)
+    val (xorModel1, initialResults) = train
+    val expectedResults = predict(xorModel1)
+    save(filename, xorModel1)
 
-    val xorParameters2 = load(filename)
-    val actualResults = predict(xorParameters2)
+    val xorModel2 = load(filename)
+    val actualResults = predict(xorModel2)
 
     assert(initialResults.deep == expectedResults.deep)
     assert(expectedResults.deep == actualResults.deep)

@@ -5,7 +5,6 @@ import edu.cmu.dynet._
 object Transducer {
 
   def transduce(builder: RnnBuilder, inputs: Iterable[Expression]): Iterable[Expression] = {
-    builder.startNewSequence()
-    inputs.map { input => builder.addInput(input) }
+    inputs.map(builder.addInput)
   }
 }
