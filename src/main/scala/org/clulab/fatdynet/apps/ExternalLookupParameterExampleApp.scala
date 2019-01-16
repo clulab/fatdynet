@@ -79,7 +79,7 @@ object ExternalLookupParameterExampleApp {
         val yPrediction = mkPredictionGraph(xorModel, transformation)
         val y = Expression.input(yValue)
         val loss = Expression.squaredDistance(yPrediction, y)
-        val lossValue = ComputationGraph.forward(loss).toFloat()
+        val lossValue = loss.value.toFloat // ComputationGraph.forward(loss).toFloat
 
         ComputationGraph.backward(loss)
         trainer.update()
@@ -101,7 +101,7 @@ object ExternalLookupParameterExampleApp {
     println
     val result = transformations.map { transformation =>
       val yPrediction = mkPredictionGraph(xorModel, transformation)
-      val yValue = yPrediction.value().toFloat()
+      val yValue = yPrediction.value.toFloat
       val correct = transformation.output == yValue.round
 
       if (correct)
