@@ -24,7 +24,7 @@ case class PairTransformation(inputs: Array[Int], output: Int) {
   // Training
   def transform(inputValues: Array[Float], outputValue: FloatPointer): Unit = {
     transform(inputValues)
-   outputValue.set(output)
+    outputValue.set(output)
   }
 }
 
