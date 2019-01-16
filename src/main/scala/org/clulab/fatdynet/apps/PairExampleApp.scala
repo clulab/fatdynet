@@ -8,27 +8,28 @@ import org.clulab.fatdynet.utils.Transducer
 
 import scala.util.Random
 
-case class PairModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
+object PairExampleApp {
 
-case class PairTransformation(inputs: Array[Int], output: Int) {
+  case class PairModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
 
-  override def toString(): String = getClass.getSimpleName + "(" + inputs.mkString("(", ", ", ")") + " -> " + output.toString() + ")"
+  case class PairTransformation(inputs: Array[Int], output: Int) {
 
-  // Testing
-  def transform(inputValues: Array[Float]): Unit = {
-    inputs.indices.foreach { index =>
-      inputValues(index) = inputs(index)
+    override def toString(): String = getClass.getSimpleName + "(" + inputs.mkString("(", ", ", ")") + " -> " + output.toString() + ")"
+
+    // Testing
+    def transform(inputValues: Array[Float]): Unit = {
+      inputs.indices.foreach { index =>
+        inputValues(index) = inputs(index)
+      }
+    }
+
+    // Training
+    def transform(inputValues: Array[Float], outputValue: FloatPointer): Unit = {
+      transform(inputValues)
+      outputValue.set(output)
     }
   }
 
-  // Training
-  def transform(inputValues: Array[Float], outputValue: FloatPointer): Unit = {
-    transform(inputValues)
-    outputValue.set(output)
-  }
-}
-
-object PairExampleApp {
   protected val random: Random = new Random(1234L)
 
   val LAYERS_SIZE = 1
