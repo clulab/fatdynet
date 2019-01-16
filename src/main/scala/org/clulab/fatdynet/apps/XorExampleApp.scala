@@ -110,9 +110,7 @@ object XorExampleApp {
       transformation.transform(xValues)
       // This is necessary in this version of the program, possibly because the values
       // of the input are changed without creating another ComputationGraph.
-      ComputationGraph.forward(yPrediction)
-
-      val yValue = yPrediction.value().toFloat()
+      val yValue = ComputationGraph.forward(yPrediction).toFloat
       val correct = transformation.output == yValue.round
 
       if (correct)
