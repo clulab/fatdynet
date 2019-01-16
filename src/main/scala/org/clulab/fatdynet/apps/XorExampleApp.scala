@@ -86,7 +86,7 @@ object XorExampleApp {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(xValues, yValue)
 
-        val lossValue = ComputationGraph.forward(loss).toFloat()
+        val lossValue = ComputationGraph.forward(loss).toFloat
 
         ComputationGraph.backward(loss)
         trainer.update()
