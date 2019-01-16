@@ -7,21 +7,17 @@ import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 
 import scala.util.Random
 
-object InternalLookupParameterExampleApp {
+object ExternalLookupParameterExampleApp {
 
-  case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, xParameter: LookupParameter)
+  case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter)
 
   case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int) {
 
     override def toString(): String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
 
-    def initialize(lookupParameter: LookupParameter): Unit = {
-      lookupParameter.initialize(index, Seq(input1.toFloat, input2.toFloat))
-    }
-
     // Testing
-    def transform(constParameter: Expression): Expression = {
-      Expression.pick(constParameter, index, 1L)
+    def transform: Expression = {
+      Expression.input(Dim(2), Seq(input1.toFloat, input2.toFloat))
     }
 
     // Training
@@ -53,8 +49,7 @@ object InternalLookupParameterExampleApp {
     val b = Expression.parameter(xorModel.b)
     val V = Expression.parameter(xorModel.v)
     val a = Expression.parameter(xorModel.a)
-    val allX = Expression.constParameter(xorModel.xParameter)
-    val x = xorTransformation.transform(allX)
+    val x = xorTransformation.transform
     val y = V * Expression.tanh(W * x + b) + a
 
     y
@@ -68,16 +63,14 @@ object InternalLookupParameterExampleApp {
     val bParameter = model.addParameters(Dim(HIDDEN_SIZE))
     val VParameter = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
     val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
-    val xParameter = model.addLookupParameters(transformations.size, Dim(INPUT_SIZE))
-    transformations.foreach { _.initialize(xParameter) }
-    val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter, xParameter)
+    val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter)
 
     // Y will be the expected output value, which we _input_ from gold data.
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
 
-//    println()
-//    println("Computation graphviz structure:")
-//    ComputationGraph.printGraphViz()
+    //    println()
+    //    println("Computation graphviz structure:")
+    //    ComputationGraph.printGraphViz()
 
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
@@ -130,7 +123,6 @@ object InternalLookupParameterExampleApp {
       saver.addParameter(xorModel.b, "/b")
       saver.addParameter(xorModel.v, "/V")
       saver.addParameter(xorModel.a, "/a")
-      saver.addLookupParameter(xorModel.xParameter, "/xor")
     }
   }
 
@@ -140,9 +132,8 @@ object InternalLookupParameterExampleApp {
     val bParameters = parameters("/b")
     val VParameters = parameters("/V")
     val aParameters = parameters("/a")
-    val xorParameters = lookupParameters("/xor")
 
-    XorModel(WParameters, bParameters, VParameters, aParameters, xorParameters)
+    XorModel(WParameters, bParameters, VParameters, aParameters)
   }
 
   def main(args: Array[String]) {
