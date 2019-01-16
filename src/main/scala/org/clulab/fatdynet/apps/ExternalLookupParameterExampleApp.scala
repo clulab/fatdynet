@@ -101,8 +101,6 @@ object ExternalLookupParameterExampleApp {
     println
     val result = transformations.map { transformation =>
       val yPrediction = mkPredictionGraph(xorModel, transformation)
-      ComputationGraph.forward(yPrediction)
-
       val yValue = yPrediction.value().toFloat()
       val correct = transformation.output == yValue.round
 
