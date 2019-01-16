@@ -30,10 +30,10 @@ object XorExampleApp {
   protected val random: Random = new Random(1234L)
 
   val  INPUT_SIZE = 2
-  val HIDDEN_SIZE = 8
+  val HIDDEN_SIZE = 2
   val OUTPUT_SIZE = 1
 
-  val ITERATIONS = 40
+  val ITERATIONS = 400
 
   val transformations: Seq[XorTransformation] = Seq(
     // input1, input2, output = input1 ^ input2
@@ -93,7 +93,7 @@ object XorExampleApp {
       }.sum / transformations.length
 
       println(s"index = $iteration, loss = $lossValue")
-      trainer.learningRate *= 0.998f
+      trainer.learningRate *= 0.999f
     }
 
     val results = predict(xorModel, xValues, yPrediction)
@@ -102,16 +102,25 @@ object XorExampleApp {
   }
 
   protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression): Seq[Float] = {
+    var count = 0
+
     println
-    transformations.map { transformation =>
+    val result = transformations.map { transformation =>
       transformation.transform(xValues)
       ComputationGraph.forward(yPrediction)
 
       val yValue = yPrediction.value().toFloat()
+      val correct = transformation.output == yValue.round
 
-      println(s"TRANSFORMATION = $transformation, PREDICTION = $yValue")
+      if (correct)
+        count += 1
+      println(s"TRANSFORMATION = $transformation, PREDICTION = $yValue, CORRECT = $correct")
       yValue
     }
+    val accuracy = count / transformations.size.toFloat
+
+    println(s"Accuracy: $count / ${transformations.size} = $accuracy")
+    result
   }
 
   def predict(xorModel: XorModel): Seq[Float] = {
