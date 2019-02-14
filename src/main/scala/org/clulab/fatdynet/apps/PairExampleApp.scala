@@ -1,8 +1,8 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Loader
+import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 import org.clulab.fatdynet.utils.Transducer
 
@@ -136,7 +136,8 @@ object PairExampleApp {
     val VParameter = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
     val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
 
-    val rnnModel = new ParameterCollection
+    // The trainer will only train what is in the model it is given, apparently.
+    val rnnModel = model // new ParameterCollection
     val builder = new LstmBuilder(LAYERS_SIZE, INPUT_SIZE, HIDDEN_SIZE, rnnModel)
     val pairModel = PairModel(WParameter, bParameter, VParameter, aParameter, rnnModel)
 

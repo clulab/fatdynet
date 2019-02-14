@@ -2,29 +2,8 @@ package org.clulab.fatdynet.utils
 
 import java.util.regex.Pattern
 
-import edu.cmu.dynet.{
-  Dim,
-  LookupParameter,
-  ModelLoader,
-  ModelSaver,
-  Parameter,
-  ParameterCollection,
+import edu.cmu.dynet._
 
-  FastLstmBuilder,
-  LstmBuilder,
-  CompactVanillaLSTMBuilder,
-  CoupledLstmBuilder,
-  VanillaLstmBuilder,
-
-  // TreeLSTMBuilder, // abstract
-    UnidirectionalTreeLSTMBuilder,
-    BidirectionalTreeLSTMBuilder,
-
-  RnnBuilder, // abstract
-  SimpleRnnBuilder,
-
-  GruBuilder
-}
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import scala.collection.mutable
@@ -99,7 +78,7 @@ abstract class Loader(path: String, namespace: String) {
             .filter(line => line.startsWith("#"))
             .foreach(line => readLine(5, line, modelLoader, parameters, lookupParameters, useParameters, useBuilder))
 
-        val model = new ParameterCollection
+        val model = new ParameterCollection // There should probably be only one ParameterCollection
         val optionBuilder = if (useBuilder) newBuilder(modelLoader, model) else None
 
         (parameters.toMap, lookupParameters.toMap, optionBuilder, model)

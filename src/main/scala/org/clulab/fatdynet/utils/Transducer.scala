@@ -6,6 +6,8 @@ object Transducer {
 
   def transduce(builder: RnnBuilder, inputs: Seq[Expression]): Seq[Expression] = {
     builder.startNewSequence()
-    inputs.map(builder.addInput)
+    inputs.map { input =>
+      builder.addInput(input)
+    }
   }
 }

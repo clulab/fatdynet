@@ -69,21 +69,31 @@ class TestLoader extends FlatSpec with Matchers {
 
   abstract class LoaderTester(val layers: Int, val inputDim: Int, val hiddenDim: Int, val name: String) {
     val testname: String = name + "_" +  layers + "_" + inputDim + "_" + hiddenDim
+
     def makeBuilder(model: ParameterCollection): RnnBuilder
     def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter])
-
     def canTransduce: Boolean = true
 
-    val filename: String = "Test" + testname + ".txt"
-    val input: Expression = Expression.randomNormal(Dim(inputDim))
-    val inputs = Array(input, input, input)
+    val pc = new ParameterCollection
+    val values: Array[Float] = new Array[Float](inputDim)
+    values.indices.foreach { index => values(index) = 5.0F}
 
-    def test: Unit = {
+    val filename: String = "Test" + testname + ".txt"
+    val input1: Expression = Expression.input(Dim(inputDim), values.toSeq)
+//    val input2: Expression = Expression.input(Dim(inputDim), values.toSeq)
+//    val input3: Expression = Expression.input(Dim(inputDim), values.toSeq)
+    val inputs = Array(input1) // , input2, input3)
+
+    def test: Unit = synchronized {
       behavior of testname
 
       it should "serialize the builder properly" in {
         val oldModel = new ParameterCollection
+
+        ComputationGraph.printGraphViz
         val oldBuilder = makeBuilder(oldModel)
+        ComputationGraph.printGraphViz
+
         val parameterName = "parameterTest"
         val parameterSize = 101
         val lookupParameterName = "lookupParameterTest"
@@ -109,7 +119,11 @@ class TestLoader extends FlatSpec with Matchers {
           saver.addLookupParameter(oldLookupParameter, lookupParameterName)
         }
 
+        ComputationGraph.renew()
+        ComputationGraph.printGraphViz
         val (optionBuilder, newOptionModel, newParameters, newLookupParameters) = loadBuilder
+        ComputationGraph.printGraphViz
+        ComputationGraph.renew()
         val newBuilder = optionBuilder.get
         val newModel = newOptionModel.get
         val newParameter = newParameters(parameterName)
@@ -145,14 +159,19 @@ class TestLoader extends FlatSpec with Matchers {
           val rounds = 10
           val oldFloats = new Array[Float](rounds)
           val newFloats = new Array[Float](rounds)
-          oldBuilder.newGraph()
-          newBuilder.newGraph()
           0.until(rounds).foreach { i =>
+            ComputationGraph.renew()
+            oldBuilder.newGraph()
+            ComputationGraph.printGraphViz
             val oldTransduced = Transducer.transduce(oldBuilder, inputs).last
             val oldSum = Expression.sumElems(oldTransduced)
             val oldFloat = oldSum.value.toFloat
             oldFloats(i) = oldFloat
 
+//            ComputationGraph.renew()
+            ComputationGraph.printGraphViz
+            newBuilder.newGraph()
+            ComputationGraph.printGraphViz
             val newTransduced = Transducer.transduce(newBuilder, inputs).last
             val newSum = Expression.sumElems(newTransduced)
             val newFloat = newSum.value.toFloat
@@ -204,8 +223,8 @@ class TestLoader extends FlatSpec with Matchers {
     def loadBuilder: (Option[RnnBuilder], Option[ParameterCollection], Map[String, Parameter], Map[String, LookupParameter]) = Loader.loadCoupledLstm(filename)
   }
 
-  class VanillaLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int)
-      extends LoaderTester(layers, inputDim, hiddenDim, "VanillaLstmLoader") {
+  class VanillaLstmLoaderTester(layers: Int, inputDim: Int, hiddenDim: Int, lnLSTM: Boolean)
+      extends LoaderTester(layers, inputDim, hiddenDim, "VanillaLstmLoader" + "_" + lnLSTM) {
 
     def makeBuilder(model: ParameterCollection): RnnBuilder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
 
@@ -251,21 +270,22 @@ class TestLoader extends FlatSpec with Matchers {
   Initialize.initialize(Map("random-seed" -> 2522620396L))
 
   // Single tests of crashing combinations
-//  new FastLstmBuilderTester(3, 54, 22).test
+//  new FastLstmLoaderTester(3, 54, 22).test
 //  new LstmLoaderTester(4, 9, 16, lnLSTM = false).test
-//  new VanillaLstmLoaderTester(2, 9, 22).test
+//  new VanillaLstmLoaderTester(2, 9, 22, lnLSTM = false).test
 
   new ExpressionLoaderTester("Expressions").test
 
-  for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6) {
+  for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6) synchronized {
     new FastLstmLoaderTester(layers, inputDim, hiddenDim).test
     new CompactVanillaLstmLoaderTester(layers, inputDim, hiddenDim).test
     new CoupledLstmLoaderTester(layers, inputDim, hiddenDim).test
-    new VanillaLstmLoaderTester(layers, inputDim, hiddenDim).test
     new UnidirectionalTreeLstmLoaderTester(layers, inputDim, hiddenDim).test
     new BidirectionalTreeLstmLoaderTester(layers, inputDim, hiddenDim).test
-
     new GruLoaderTester(layers, inputDim, hiddenDim).test
+
+    new VanillaLstmLoaderTester(layers, inputDim, hiddenDim, lnLSTM = false).test
+    new VanillaLstmLoaderTester(layers, inputDim, hiddenDim, lnLSTM = true).test
 
     new LstmLoaderTester(layers, inputDim, hiddenDim, lnLSTM = false).test
     new LstmLoaderTester(layers, inputDim, hiddenDim, lnLSTM = true).test
