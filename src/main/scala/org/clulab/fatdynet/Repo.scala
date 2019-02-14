@@ -1,5 +1,7 @@
 package org.clulab.fatdynet
 
+import edu.cmu.dynet._
+
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.Closer.AutoCloser
@@ -67,7 +69,6 @@ class Repo(val filename: String) {
     }
 
     designs
-    // TODO.  These designs must be grouped and organized into param, lparam, and model
   }
 
   def mapDesigns(designs: Seq[Design]): Map[String, Seq[Design]] = {
@@ -75,6 +76,25 @@ class Repo(val filename: String) {
     val designsByName = names.map { name => name -> designs.filter(_.name == name)}.toMap
 
     designsByName
+  }
+
+  def getModel(designs: Seq[Design], name: String): Model = {
+    val namedDesigns = designs.filter(_.name == name)
+    val orderedDesigns = namedDesigns
+    val parameterCollection = new ParameterCollection
+    val parameters: ArrayBuffer[Parameter] = new ArrayBuffer
+    val lookupParameters: ArrayBuffer[LookupParameter] = new ArrayBuffer
+    val rnnBuilders: ArrayBuffer[RnnBuilder] = new ArrayBuffer
+
+    orderedDesigns.foreach { design =>
+      if (design.designType == Design.parameterType)
+        parameters += design.buildParameter(parameterCollection).get
+      else if (design.designType == Design.lookupParameterType)
+        lookupParameters += design.buildLookupParameter(parameterCollection).get
+      else if (design.designType == Design.rnnBuilderType)
+        rnnBuilders += design.buildRnnBuilder(parameterCollection).get
+    }
+    new Model(name, parameterCollection, parameters, lookupParameters, rnnBuilders)
   }
 }
 

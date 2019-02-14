@@ -7,133 +7,129 @@ import scala.collection.mutable.ListBuffer
 
 // fileIndex, nameIndex, partIndex
 
-abstract class Design(val name: String, val globalIndex: Int, val localIndex: Int) {
+abstract class Design(val designType: Int, val name: String, val globalIndex: Int, val localIndex: Int) {
 
-  def path: String = name
+  def buildParameter(parameterCollection: ParameterCollection): Option[Parameter] = None
+
+  def buildLookupParameter(parameterCollection: ParameterCollection): Option[LookupParameter] = None
+
+  def buildRnnBuilder(parameterCollection: ParameterCollection): Option[RnnBuilder] = None
 }
 
-abstract class BuildableDesign[BuildableType](name: String, globalIndex: Int, localIndex: Int)
-    extends Design(name, globalIndex, localIndex) {
-  def build(parameterCollection: ParameterCollection): BuildableType
+object Design {
+  val parameterType: Int = 1
+  val lookupParameterType: Int = 2
+  val rnnBuilderType: Int = 3
+}
+
+abstract class BuildableDesign[BuildableType](designType: Int, name: String, globalIndex: Int, localIndex: Int)
+    extends Design(designType, name, globalIndex, localIndex) {
+//  def build(parameterCollection: ParameterCollection): BuildableType
 }
 
 class ParameterDesign(name: String, globalIndex: Int, localIndex: Int, val dims: Dim)
-    extends BuildableDesign[Parameter](name, globalIndex, localIndex) {
+    extends BuildableDesign[Parameter](Design.parameterType, name, globalIndex, localIndex) {
 
-  def build(parameterCollection: ParameterCollection): Parameter =
-    parameterCollection.addParameters(dims)
+  override def buildParameter(parameterCollection: ParameterCollection): Option[Parameter] =
+      build(parameterCollection)
+
+  def build(parameterCollection: ParameterCollection): Option[Parameter] =
+      Some(parameterCollection.addParameters(dims))
 }
 
 class LookupParameterDesign(name: String, globalIndex: Int, localIndex: Int, val n: Long, val dims: Dim)
-    extends BuildableDesign[LookupParameter](name, globalIndex, localIndex) {
+    extends BuildableDesign[LookupParameter](Design.lookupParameterType, name, globalIndex, localIndex) {
 
-  def build(parameterCollection: ParameterCollection): LookupParameter =
-    parameterCollection.addLookupParameters(n, dims)
+  override def buildLookupParameter(parameterCollection: ParameterCollection): Option[LookupParameter] =
+      build(parameterCollection)
+
+  def build(parameterCollection: ParameterCollection): Option[LookupParameter] =
+      Some(parameterCollection.addLookupParameters(n, dims))
 }
 
 abstract class RnnBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  val layers: Long, val inputDim: Long, val hiddenDim: Long)
-    extends BuildableDesign[RnnBuilder](name, globalIndex, localIndex) {
+    val layers: Long, val inputDim: Long, val hiddenDim: Long)
+    extends BuildableDesign[RnnBuilder](Design.rnnBuilderType, name, globalIndex, localIndex) {
 
-  def build(parameterCollection: ParameterCollection): RnnBuilder
+  override def buildRnnBuilder(parameterCollection: ParameterCollection): Option[RnnBuilder] =
+      build(parameterCollection)
+
+  def build(parameterCollection: ParameterCollection): Option[RnnBuilder] = None
 }
 
 class CompactVanillaLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long)
+    layers: Long, inputDim: Long, hiddenDim: Long)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): CompactVanillaLSTMBuilder =
-    new CompactVanillaLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection)
+  override def build(parameterCollection: ParameterCollection): Option[CompactVanillaLSTMBuilder] =
+      Some(new CompactVanillaLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class CoupledLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long)
+    layers: Long, inputDim: Long, hiddenDim: Long)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): CoupledLstmBuilder =
-    new CoupledLstmBuilder(layers, inputDim, hiddenDim, parameterCollection)
+  override def build(parameterCollection: ParameterCollection): Option[CoupledLstmBuilder] =
+      Some(new CoupledLstmBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class FastLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
   layers: Long, inputDim: Long, hiddenDim: Long)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): FastLstmBuilder =
-    new FastLstmBuilder(layers, inputDim, hiddenDim, parameterCollection)
+  override def build(parameterCollection: ParameterCollection): Option[FastLstmBuilder] =
+      Some(new FastLstmBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class GruBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long)
+    layers: Long, inputDim: Long, hiddenDim: Long)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): GruBuilder =
-    new GruBuilder(layers, inputDim, hiddenDim, parameterCollection)
+  override def build(parameterCollection: ParameterCollection): Option[GruBuilder] =
+      Some(new GruBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class LstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
   layers: Long, inputDim: Long, hiddenDim: Long, val lnLSTM: Boolean)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): LstmBuilder  =
-    new LstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM)
+  override def build(parameterCollection: ParameterCollection): Option[LstmBuilder]  =
+      Some(new LstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM))
 }
 
 abstract class TreeLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long)
+    layers: Long, inputDim: Long, hiddenDim: Long)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 }
 
 class BidirectionalTreeLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long)
+    layers: Long, inputDim: Long, hiddenDim: Long)
     extends TreeLstmBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): BidirectionalTreeLSTMBuilder =
-    new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection)
+  override def build(parameterCollection: ParameterCollection): Option[BidirectionalTreeLSTMBuilder] =
+      Some(new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class UnidirectionalTreeLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long)
+    layers: Long, inputDim: Long, hiddenDim: Long)
     extends TreeLstmBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): UnidirectionalTreeLSTMBuilder =
-    new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection)
+  override def build(parameterCollection: ParameterCollection): Option[UnidirectionalTreeLSTMBuilder] =
+      Some(new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class SimpleRnnBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long, val supportLags: Boolean)
+    layers: Long, inputDim: Long, hiddenDim: Long, val supportLags: Boolean)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): SimpleRnnBuilder =
-    new SimpleRnnBuilder(layers, inputDim, hiddenDim, parameterCollection)
+  override def build(parameterCollection: ParameterCollection): Option[SimpleRnnBuilder] =
+      Some(new SimpleRnnBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class VanillaLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
-  layers: Long, inputDim: Long, hiddenDim: Long, val lnLSTM: Boolean)
+    layers: Long, inputDim: Long, hiddenDim: Long, val lnLSTM: Boolean)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
-  def build(parameterCollection: ParameterCollection): VanillaLstmBuilder =
-    new VanillaLstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM)
-}
-
-class CompositeBuild
-
-class CompositeDesign(name: String, globalIndex: Int, localIndex: Int)
-    extends BuildableDesign[CompositeBuild](name, globalIndex, localIndex) {
-  val parameterDesigns: Seq[ParameterDesign] = ListBuffer.empty
-  val lookupParameterDesigns: Seq[LookupParameterDesign] = ListBuffer.empty
-  val rnnBuilderDesigns: Seq[RnnBuilderDesign] = ListBuffer.empty
-
-  // Needs to put these into right order
-  def build(parameterCollection: ParameterCollection): CompositeBuild = null
-
-  //  // Maybe only have on RnnDesign as top level
-  //  val compactVanillaLstmDesigns: Seq[CompactVanillaLstmBuilderDesign] = ListBuffer.empty
-  //  val coupledLstmDesigns: Seq[CoupledLstmBuilderDesign] = ListBuffer.empty
-  //  val fastLstmDesigns: Seq[FastLstmBuilderDesign] = ListBuffer.empty
-  //  val gruDesigns: Seq[GruBuilderDesign] = ListBuffer.empty
-  //  val lstmDesigns: Seq[LstmBuilderDesign] = ListBuffer.empty
-  //  val bidirectionalTreeLstmDesigns: Seq[BidirectionalTreeLstmBuilderDesign] = ListBuffer.empty
-  //  val unidirectionalTreeLstmDesigns: Seq[UnidirectionalTreeLstmBuilderDesign] = ListBuffer.empty
-  //  val simpleRnnDesigns: Seq[SimpleRnnBuilderDesign] = ListBuffer.empty
-  //  val vanillaLstmDesigns: Seq[VanillaLstmBuilderDesign] = ListBuffer.empty
+  override def build(parameterCollection: ParameterCollection): Option[VanillaLstmBuilder] =
+      Some(new VanillaLstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM))
 }
