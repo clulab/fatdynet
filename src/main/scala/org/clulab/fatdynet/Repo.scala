@@ -71,30 +71,28 @@ class Repo(val filename: String) {
     designs
   }
 
-  def mapDesigns(designs: Seq[Design]): Map[String, Seq[Design]] = {
-    val names = designs.map(_.name)
-    val designsByName = names.map { name => name -> designs.filter(_.name == name)}.toMap
+  protected def orderDesigns(designs: Seq[Design]): Seq[Design] = {
+    val reorderable = designs
+        .filter { _.isReorderable }
+        .forall {_.isNumbered }
 
-    designsByName
+    if (reorderable) {
+
+
+      designs
+    }
+    else designs
   }
 
   def getModel(designs: Seq[Design], name: String): Model = {
+    val parameterCollection = new ParameterCollection
     val namedDesigns = designs.filter(_.name == name)
     val orderedDesigns = namedDesigns
-    val parameterCollection = new ParameterCollection
-    val parameters: ArrayBuffer[Parameter] = new ArrayBuffer
-    val lookupParameters: ArrayBuffer[LookupParameter] = new ArrayBuffer
-    val rnnBuilders: ArrayBuffer[RnnBuilder] = new ArrayBuffer
-
-    orderedDesigns.foreach { design =>
-      if (design.designType == Design.parameterType)
-        parameters += design.buildParameter(parameterCollection).get
-      else if (design.designType == Design.lookupParameterType)
-        lookupParameters += design.buildLookupParameter(parameterCollection).get
-      else if (design.designType == Design.rnnBuilderType)
-        rnnBuilders += design.buildRnnBuilder(parameterCollection).get
+    val artifacts = orderedDesigns.map { design =>
+        design.build(parameterCollection)
     }
-    new Model(name, parameterCollection, parameters, lookupParameters, rnnBuilders)
+
+    new Model(name, parameterCollection, artifacts, orderedDesigns)
   }
 }
 
