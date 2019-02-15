@@ -14,12 +14,32 @@ abstract class Parser(val name: String) {
   def finish(): Design
 }
 
-class ParameterParser(name: String, val dims: Array[Int]) extends Parser(name) {
+abstract class ParamParser(name: String, val dims: Array[Int], index: Option[Int]) extends Parser(name)
+
+object ParamParser {
+  val nameRegex = "^(.*)"
+  val indexRegex = "_(0|[1-9][0-9]*)$"
+  val pattern = (nameRegex + "/" + indexRegex).r.pattern
+
+  def getNameAndIndex(objectName: String): (String, Option[Int]) = {
+    val matcher = pattern.matcher(objectName)
+
+    if (matcher.matches) {
+      val name = matcher.group(1)
+      val index = Option(matcher.group(2)).map(_.toInt)
+
+      (name, index)
+    }
+    else (objectName, None)
+  }
+}
+
+class ParameterParser(name: String, dims: Array[Int], index: Option[Int]) extends ParamParser(name, dims, index) {
 
   override def parse(header: Header): Boolean = false // Only single line possible
 
   override def finish(): Design = {
-    new ParameterDesign(name, globalIndex = 5, localIndex = 3, Dim(dims))
+    new ParameterDesign(name, index, Dim(dims))
   }
 }
 
@@ -28,16 +48,20 @@ object ParameterParser {
 
   def mkParser(header: Header): Option[Parser] = {
     if (header.objectType != objectType) None
-    else Some(new ParameterParser(header.objectName, header.dims))
+    else {
+      val (name, index) = ParamParser.getNameAndIndex(header.objectName)
+
+      Some(new ParameterParser(name, header.dims, index))
+    }
   }
 }
 
-class LookupParameterParser(name: String, val dims: Array[Int]) extends Parser(name) {
+class LookupParameterParser(name: String, dims: Array[Int], index: Option[Int]) extends ParamParser(name, dims, index) {
 
   override def parse(header: Header): Boolean = false // Only single line possible
 
   override def finish(): Design = {
-    new LookupParameterDesign(name, globalIndex = 5, localIndex = 3, dims.last, Dim(dims.dropRight(1)))
+    new LookupParameterDesign(name, index, dims.last, Dim(dims.dropRight(1)))
   }
 }
 
@@ -46,7 +70,11 @@ object LookupParameterParser {
 
   def mkParser(header: Header): Option[Parser] = {
     if (header.objectType != objectType) None
-    else Some(new LookupParameterParser(header.objectName, header.dims))
+    else {
+      val (name, index) = ParamParser.getNameAndIndex(header.objectName)
+
+      Some(new LookupParameterParser(name, header.dims, index))
+    }
   }
 }
 
@@ -147,13 +175,16 @@ abstract class SimpleDoubleParser(name: String, outerIndex: Int) extends SimpleP
 abstract class ComplexParser(name: String, outerIndex: Int) extends RnnParser(name, outerIndex) {
   protected val lnLstmPattern: Pattern = ComplexParser.lnLstmPattern
   protected var lnLstmCount = 0
+  protected var lnLstmSize = -1
 
   override def parse(header: Header): Boolean = {
     val matcher = pattern.matcher(header.objectName)
 
     if (isMatch(matcher)) {
-      if (innerIndex == 0)
+      if (innerIndex == 0) {
         inputDim = header.dims.last
+        lnLstmSize = header.dims.head
+      }
       else if (innerIndex == 1)
         hiddenDim = header.dims.last
       innerIndex += 1
@@ -162,8 +193,8 @@ abstract class ComplexParser(name: String, outerIndex: Int) extends RnnParser(na
     }
     else {
       val lnLstmMatcher = lnLstmPattern.matcher(header.objectName)
-
-      if (count > 0 && lnLstmMatcher.matches && ComplexParser.getLstmName(lnLstmMatcher) == name) {
+      // We can't tell a normal variable apart from the lnLstm values, but the dimension is a good hint.
+      if (count > 0 && header.dims.head == lnLstmSize && lnLstmMatcher.matches && ComplexParser.getLstmName(lnLstmMatcher) == name) {
           // && ComplexParser.getLstmIndex(lnLstmMatcher) == lnLstmCount) {
           // This will not work if there are multiple ComplexRnns in the same file.  The index is not reset.
         lnLstmCount += 1
@@ -262,8 +293,8 @@ class LstmParser(name: String, outerIndex: Int) extends ComplexParser(name, oute
 
   def finish(): Design = {
     if (!(innerIndex > 0 && innerIndex % 3 == 0 && (lnLstmCount == 0 || lnLstmCount == innerIndex * 2)))
-      throw new Exception(s"For the ${this.getClass.getSimpleName}, the innerIndex should be a positive multiple of 3.  It is is $innerIndex." +
-          "Also, lnLstmCount should be 0 or twice innerIndex.  It is $lnLstmCount.")
+      throw new Exception(s"For the ${this.getClass.getSimpleName}, the innerIndex should be a positive multiple of 3.  It is $innerIndex.  " +
+          s"Also, lnLstmCount should be 0 or twice innerIndex.  It is $lnLstmCount.")
     new LstmBuilderDesign(name, 5, 4, layers = innerIndex / 3, inputDim, hiddenDim, lnLstmCount > 0)
   }
 }
@@ -387,7 +418,7 @@ class SimpleRnnParser(name: String, outerIndex: Int) extends RnnParser(name, out
 
     if (!(innerIndex > 0 && innerIndex % singleDimCount == 0 && (ratio == 3 || ratio == 4)))
       throw new Exception(s"For the ${this.getClass.getSimpleName}, the innerIndex of $innerIndex should be a positive multiple of singleDimCount, which is $singleDimCount.  " +
-          "The multiple should be 3 or 4.  It is $ratio.")
+          s"The multiple should be 3 or 4.  It is $ratio.")
     new SimpleRnnBuilderDesign(name, 5, 4, layers = innerIndex / ratio, inputDim, hiddenDim, supportLags)
   }
 }
@@ -409,8 +440,8 @@ class VanillaLstmParser(name: String, outerIndex: Int) extends ComplexParser(nam
     val divisor = 3
 
     if (!(innerIndex > 0 && innerIndex % divisor == 0 && (lnLstmCount == 0 || lnLstmCount == innerIndex * 2)))
-      throw new Exception(s"For the ${this.getClass.getSimpleName}, the innerIndex should be a positive multiple of $divisor.  It is is $innerIndex." +
-          "Also, lnLstmCount should be 0 or twice innerIndex.  It is $lnLstmCount.")
+      throw new Exception(s"For the ${this.getClass.getSimpleName}, the innerIndex should be a positive multiple of $divisor.  It is is $innerIndex.  " +
+          s"Also, lnLstmCount should be 0 or twice innerIndex.  It is $lnLstmCount.")
     new VanillaLstmBuilderDesign(name, 3, 5, layers = innerIndex / divisor, inputDim, hiddenDim, lnLstmCount > 0)
   }
 }

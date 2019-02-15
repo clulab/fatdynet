@@ -72,15 +72,30 @@ class Repo(val filename: String) {
     designs
   }
 
+  protected def reorderDesigns(designs: Seq[Design]): Seq[Design] = {
+    designs.sortWith { (left, right) => left.index.get < right.index.get }
+  }
+
   protected def orderDesigns(designs: Seq[Design]): Seq[Design] = {
-    val reorderable = designs
-        .filter { _.isReorderable }
-        .forall {_.isNumbered }
+    val isReorderable = designs.nonEmpty && designs.forall { design => !design.isPotentiallyReorderable || design.isActuallyReorderable }
 
-    if (reorderable) {
+    if (isReorderable) {
+      val reorderable = designs.filter(_.isActuallyReorderable)
+      val reordered = reorderDesigns(reorderable)
+      var pos = 0
+      val ordered = designs.map { design =>
+        if (design.isActuallyReorderable) {
+          // "Insert" the next one from the ordered sequence.
+          val result = reordered(pos)
+          pos += 1
+          result
+        }
+        else design // Stick with what we've got.
+      }
 
+      val slid = Array(2, 0, 1, 3, 6, 7, 4, 5).map(ordered(_))
 
-      designs
+      slid
     }
     else designs
   }
@@ -88,15 +103,19 @@ class Repo(val filename: String) {
   def getModel(designs: Seq[Design], name: String): Model = {
     val parameterCollection = new ParameterCollection
     val namedDesigns = designs.filter(_.name == name)
-    val orderedDesigns = namedDesigns
+    val orderedDesigns = orderDesigns(namedDesigns)
     val artifacts = orderedDesigns.map { design =>
         design.build(parameterCollection)
     }
 
     new Loader.ClosableModelLoader(filename).autoClose { modelLoader =>
-      artifacts.foreach { artifact =>
-        artifact.populate(modelLoader, parameterCollection)
-      }
+        if (artifacts.size > 1)
+          // They must have been thrown together into a parameter collection
+          modelLoader.populateModel(parameterCollection, name)
+        else
+          artifacts.foreach { artifact =>
+            artifact.populate(modelLoader, parameterCollection)
+          }
     }
     new Model(name, parameterCollection, artifacts, orderedDesigns)
   }

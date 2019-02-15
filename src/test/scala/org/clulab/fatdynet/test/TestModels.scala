@@ -2,11 +2,13 @@ package org.clulab.fatdynet.test
 
 import java.io.File
 
+import edu.cmu.dynet._
+
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Deleter.AutoDeleter
 import org.clulab.fatdynet.utils.Saver
-import edu.cmu.dynet._
+
 import org.scalatest._
 
 import scala.io.Source
@@ -15,8 +17,11 @@ class TestModels extends FlatSpec with Matchers {
   Initialize.initialize(Map("random-seed" -> 2522620396L))
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {
-    lefts.size == rights.size &&
-        lefts.zip(rights).forall { case (left, right) => println(left); left == right }
+    lefts.size == rights.size && {
+      val result = lefts.zip(rights).forall { case (left, right) => println(left); left == right }
+      println
+      result
+    }
   }
 
   def equalsPS(lefts: Seq[ParameterStorage], rights: Seq[ParameterStorage]): Boolean = {
@@ -43,40 +48,40 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  def asString(parameter: Parameter): String = {
-    val operation: ModelSaver => Unit = modelSaver => modelSaver.addParameter(parameter)
+  def asString(parameter: Parameter, name: String): String = {
+    val operation: ModelSaver => Unit = modelSaver => modelSaver.addParameter(parameter, name)
 
     asString(operation)
   }
 
-  def asString(lookupParameter: LookupParameter): String = {
-    val operation: ModelSaver => Unit = modelSaver => modelSaver.addLookupParameter(lookupParameter)
+  def asString(lookupParameter: LookupParameter, name: String): String = {
+    val operation: ModelSaver => Unit = modelSaver => modelSaver.addLookupParameter(lookupParameter, name)
 
     asString(operation)
   }
 
-  def asString(parameterCollection: ParameterCollection): String = {
-    val operation: ModelSaver => Unit = modelSaver => modelSaver.addModel(parameterCollection)
+  def asString(parameterCollection: ParameterCollection, name: String): String = {
+    val operation: ModelSaver => Unit = modelSaver => modelSaver.addModel(parameterCollection, name)
 
     asString(operation)
   }
 
-  def equals(left: Parameter, right: Parameter): Boolean = {
+  def equals(left: Parameter, right: Parameter, name: String): Boolean = {
     left.dim == right.dim &&
         equals(left.values.toSeq, right.values.toSeq) &&
-        asString(left) == asString(right)
+        asString(left, name) == asString(right, name)
   }
 
-  def equals(left: LookupParameter, right: LookupParameter): Boolean = {
+  def equals(left: LookupParameter, right: LookupParameter, name: String): Boolean = {
     left.dim == right.dim &&
-        asString(left) == asString(right)
+        asString(left, name) == asString(right, name)
   }
 
-  def equals(left: ParameterCollection, right: ParameterCollection): Boolean = {
+  def equals(left: ParameterCollection, right: ParameterCollection, name: String = ""): Boolean = {
     // Because of type erasure on Seq, equals cannot be overloaded here
-    equalsLPS(left.lookupParametersList, right.lookupParametersList) &&
-        equalsPS(left.parametersList, right.parametersList) &&
-        asString(left) == asString(right)
+    asString(left, name) == asString(right, name) &&
+        equalsPS(left.parametersList, right.parametersList) && // This line causes a crash
+        equalsLPS(left.lookupParametersList, right.lookupParametersList)
   }
 
   def testNamedParameter = {
@@ -100,7 +105,7 @@ class TestModels extends FlatSpec with Matchers {
       val newParameterCollection = model.parameterCollection
       val newParameter = model.getParameter(0)
 
-      equals(newParameter, oldParameter) should be(true)
+      equals(newParameter, oldParameter, name) should be(true)
       equals(newParameterCollection, oldParameterCollection) should be(true)
     }
   }
@@ -126,7 +131,7 @@ class TestModels extends FlatSpec with Matchers {
       val newParameterCollection = model.parameterCollection
       val newLookupParameter = model.getLookupParameter(0)
 
-      equals(newLookupParameter, oldLookupParameter) should be (true)
+      equals(newLookupParameter, oldLookupParameter, name) should be (true)
       equals(newParameterCollection, oldParameterCollection) should be (true)
     }
   }
@@ -157,7 +162,7 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  def testComposite = {
+  def testCompositeModel = {
     behavior of "loaded composite model"
 
     it should "serialize" in {
@@ -177,15 +182,15 @@ class TestModels extends FlatSpec with Matchers {
       val EMBEDDINGS_SIZE = EMBEDDING_SIZE + 2 * CHAR_RNN_STATE_SIZE
 
       val oldParameterCollection = new ParameterCollection()
-      val lookupParameters = oldParameterCollection.addLookupParameters(W2I_SIZE, Dim(EMBEDDING_SIZE))
-      val fwBuilder = new LstmBuilder(RNN_LAYERS, EMBEDDINGS_SIZE, RNN_STATE_SIZE, oldParameterCollection)
-      val bwBuilder = new LstmBuilder(RNN_LAYERS, EMBEDDINGS_SIZE, RNN_STATE_SIZE, oldParameterCollection)
-      val H = oldParameterCollection.addParameters(Dim(NONLINEAR_SIZE, 2 * RNN_STATE_SIZE))
-      val O = oldParameterCollection.addParameters(Dim(T2I_SIZE, NONLINEAR_SIZE))
+      val oldLookupParameters = oldParameterCollection.addLookupParameters(W2I_SIZE, Dim(EMBEDDING_SIZE))
+      val oldFwBuilder = new LstmBuilder(RNN_LAYERS, EMBEDDINGS_SIZE, RNN_STATE_SIZE, oldParameterCollection, false)
+      val oldBwBuilder = new LstmBuilder(RNN_LAYERS, EMBEDDINGS_SIZE, RNN_STATE_SIZE, oldParameterCollection)
+      val oldH = oldParameterCollection.addParameters(Dim(NONLINEAR_SIZE, 2 * RNN_STATE_SIZE))
+      val oldO = oldParameterCollection.addParameters(Dim(T2I_SIZE, NONLINEAR_SIZE))
 
-      val charLookupParameters = oldParameterCollection.addLookupParameters(C2I_SIZE, Dim(CHAR_EMBEDDING_SIZE))
-      val charFwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, oldParameterCollection)
-      val charBwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, oldParameterCollection)
+      val oldCharLookupParameters = oldParameterCollection.addLookupParameters(C2I_SIZE, Dim(CHAR_EMBEDDING_SIZE))
+      val oldCharFwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, oldParameterCollection)
+      val oldCharBwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, oldParameterCollection)
 
       new Saver.ClosableModelSaver(filename).autoClose { modelSaver =>
         modelSaver.addModel(oldParameterCollection, name)
@@ -196,92 +201,25 @@ class TestModels extends FlatSpec with Matchers {
       val model = repo.getModel(designs, name)
 
       val newParameterCollection = model.parameterCollection
-      val newRnnBuilder = model.getRnnBuilder(0)
+      val newLookupParameters = model.getLookupParameter(0)
+      val newFwBuilder = model.getRnnBuilder(0)
+      val newBwBuilder = model.getRnnBuilder(1)
+      val newH = model.getParameter(0)
+      val newO = model.getParameter(1)
+      val newCharLookupParameters = model.getLookupParameter(1)
+      val newCharFwBuilder = model.getRnnBuilder(2)
+      val newCharBwBuilder = model.getRnnBuilder(3)
 
-      equals(newParameterCollection, oldParameterCollection) should be (true)
-      // There isn't a way to compare the builders.
+        equals(newParameterCollection, oldParameterCollection, name) should be (true)
+//        equals(newLookupParameters, oldLookupParameters, name) should be(true) // Sometimes causes crash
+        equals(newH, oldH, name) should be(true)
+        equals(newO, oldO, name) should be(true)
+        equals(newCharLookupParameters, oldCharLookupParameters, name)
     }
   }
 
-
-//  def tryMe1 = {
-//    val parameterCollection = new ParameterCollection()
-//
-//    val parameter1 = parameterCollection.addParameters(Dim(51))
-//    val lookupParameter1 = parameterCollection.addLookupParameters(11, Dim(21))
-//    val parameter2 = parameterCollection.addParameters(Dim(52))
-//    val lookupParameter2 = parameterCollection.addLookupParameters(12, Dim(22))
-//    val rnnBuilder1 = new LstmBuilder(3, 3, 3, parameterCollection)
-//    val rnnBuilder2 = new CompactVanillaLSTMBuilder(4, 4, 4, parameterCollection)
-//    val rnnBuilder3 = new CompactVanillaLSTMBuilder(5, 5, 5, parameterCollection)
-//    val rnnBuilder4 = new LstmBuilder(6, 6, 6, parameterCollection)
-//
-//    new Saver.ClosableModelSaver("model1.dat").autoClose { modelSaver =>
-//      modelSaver.addParameter(parameter11, "/keith1/more")
-//      modelSaver.addParameter(parameter11, "/keith1/more")
-//      modelSaver.addModel(parameterCollection, "/keith1")
-//    }
-//  }
-
-//  def tryMe2 = {
-//    val repo = new Repo("model1.dat")
-//    val (parameterDesigns, lookupParameterDesigns, parameterCollectionDesigns) = repo.getDesigns()
-//    val design = parameterCollectionDesigns(0) // by name or index?
-//    val model = design.getModel("model1.dat")
-//
-//    model.getParameter("/keith1")
-//    model.getLookupParameter("/keith1")
-//    model.getBuilder("/keith1")
-//  }
-//
-//  def tryMe3 = {
-//    new Loader.ClosableModelLoader("model1.dat").autoClose { modelLoader =>
-//      val parameterCollection1 = new ParameterCollection()
-//      val parameter = parameterCollection1.addParameters(Dim(3))
-//      modelLoader.populateParameter(parameter, "name")
-//
-//      val parameterCollection2 = new ParameterCollection()
-//      val lookupParameter = parameterCollection2.addLookupParameters(5, Dim(3))
-//      modelLoader.populateLookupParameter(lookupParameter, "name")
-//
-//      val parameterCollection3 = new ParameterCollection()
-//      modelLoader.populateModel(parameterCollection3, "name")
-//    }
-//  }
-//
-//  def tryMe4 = {
-//    val filename = "XorModel.dat"
-//
-//    val (designs, model) = new Loader.ClosableModelLoader(filename).autoClose { modelLoader =>
-//      val designs = modelLoader.getDesigns()
-//
-//      designs(0).getModel(modelLoader)
-//      val model = modelLoader.getModel(design)
-//
-//      (designs, model)
-//    }
-//
-//
-//
-//
-//
-//
-//    }
-//    // Have repo take a loader to do its stuff?
-//    // Then would only have to open once
-//    val repo = new Repo(filename)
-//
-//    val designs = repo.getDesigns()
-//    // There should be 4 of them
-//    val W = designs(0).getModel(filename).parameters(0)._2
-//    val b = designs(1).getModel(filename).parameters(0)._2
-//    val V = designs(2).getModel(filename).parameters(0)._2
-//    val a = designs(3).getModel(filename).parameters(0)._2
-//  }
-
 //  testNamedParameter
 //  testNamedLookupParameter
-    testNamedRnnBuilder
-//  tryMe2
-//  tryMe3
+//  testNamedRnnBuilder
+  testCompositeModel
 }

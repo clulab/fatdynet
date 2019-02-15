@@ -5,8 +5,6 @@ import edu.cmu.dynet._
 
 import scala.collection.mutable.ListBuffer
 
-// fileIndex, nameIndex, partIndex
-
 class Artifact(val name: String, val parameter: Option[Parameter],
     val lookupParameter: Option[LookupParameter], val rnnBuilder: Option[RnnBuilder]) {
 
@@ -32,47 +30,36 @@ class Artifact(val name: String, val parameter: Option[Parameter],
   }
 }
 
-abstract class Design(val name: String, val globalIndex: Int, val localIndex: Int) {
+abstract class Design(val name: String, val index: Option[Int]) {
 
   def build(parameterCollection: ParameterCollection): Artifact
 
-  def isReorderable = false
+  def isPotentiallyReorderable = false
 
-  def getNumber: Option[Int] = {
-    val matcher = Design.numberedPattern.matcher(name)
-
-    if (matcher.matches()) Some(matcher.group(1).toInt)
-    else None
-  }
-
-  def isNumbered: Boolean = getNumber.nonEmpty
+  def isActuallyReorderable = isPotentiallyReorderable && index.nonEmpty
 }
 
-object Design {
-  val numberedPattern = "/_(0|[1-9][0-9]*)$".r.pattern
-}
+class ParameterDesign(name: String, index: Option[Int], val dims: Dim)
+    extends Design(name, index) {
 
-class ParameterDesign(name: String, globalIndex: Int, localIndex: Int, val dims: Dim)
-    extends Design(name, globalIndex, localIndex) {
+  override def isPotentiallyReorderable: Boolean = true
 
   override def build(parameterCollection: ParameterCollection): Artifact =
       new Artifact(name, parameterCollection.addParameters(dims))
-
-  override def isReorderable = true
 }
 
-class LookupParameterDesign(name: String, globalIndex: Int, localIndex: Int, val n: Long, val dims: Dim)
-    extends Design(name, globalIndex, localIndex) {
+class LookupParameterDesign(name: String, index: Option[Int], val n: Long, val dims: Dim)
+    extends Design(name, index) {
+
+  override def isPotentiallyReorderable: Boolean = true
 
   override def build(parameterCollection: ParameterCollection): Artifact =
       new Artifact(name, parameterCollection.addLookupParameters(n, dims))
-
-  override def isReorderable = true
 }
 
 abstract class RnnBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     val layers: Long, val inputDim: Long, val hiddenDim: Long)
-    extends Design(name, globalIndex, localIndex) {
+    extends Design(name, None) {
 
   def newArtifact(rnnBuilder: RnnBuilder): Artifact = new Artifact(name, rnnBuilder)
 }
