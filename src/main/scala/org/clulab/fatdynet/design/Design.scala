@@ -7,20 +7,29 @@ import scala.collection.mutable.ListBuffer
 
 // fileIndex, nameIndex, partIndex
 
-class Artifact(val parameter: Option[Parameter],
+class Artifact(val name: String, val parameter: Option[Parameter],
     val lookupParameter: Option[LookupParameter], val rnnBuilder: Option[RnnBuilder]) {
 
-  def this(parameter: Parameter) = this(Some(parameter), None, None)
+  def this(name: String, parameter: Parameter) = this(name, Some(parameter), None, None)
 
-  def this(lookupParameter: LookupParameter) = this(None, Some(lookupParameter), None)
+  def this(name: String, lookupParameter: LookupParameter) = this(name, None, Some(lookupParameter), None)
 
-  def this(rnnBuilder: RnnBuilder) = this(None, None, Some(rnnBuilder))
+  def this(name: String, rnnBuilder: RnnBuilder) = this(name, None, None, Some(rnnBuilder))
 
   def isParameter: Boolean = parameter.isDefined
 
   def isLookupParameter: Boolean = lookupParameter.isDefined
 
   def isRnnBuilder: Boolean = rnnBuilder.isDefined
+
+  def populate(modelLoader: ModelLoader, parameterCollection: ParameterCollection): Unit = {
+    if (isParameter)
+      modelLoader.populateParameter(parameter.get, name)
+    else if (isLookupParameter)
+      modelLoader.populateLookupParameter(lookupParameter.get, name)
+    else if (isRnnBuilder)
+      modelLoader.populateModel(parameterCollection, name)
+  }
 }
 
 abstract class Design(val name: String, val globalIndex: Int, val localIndex: Int) {
@@ -47,7 +56,7 @@ class ParameterDesign(name: String, globalIndex: Int, localIndex: Int, val dims:
     extends Design(name, globalIndex, localIndex) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(parameterCollection.addParameters(dims))
+      new Artifact(name, parameterCollection.addParameters(dims))
 
   override def isReorderable = true
 }
@@ -56,21 +65,24 @@ class LookupParameterDesign(name: String, globalIndex: Int, localIndex: Int, val
     extends Design(name, globalIndex, localIndex) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(parameterCollection.addLookupParameters(n, dims))
+      new Artifact(name, parameterCollection.addLookupParameters(n, dims))
 
   override def isReorderable = true
 }
 
 abstract class RnnBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     val layers: Long, val inputDim: Long, val hiddenDim: Long)
-    extends Design(name, globalIndex, localIndex)
+    extends Design(name, globalIndex, localIndex) {
+
+  def newArtifact(rnnBuilder: RnnBuilder): Artifact = new Artifact(name, rnnBuilder)
+}
 
 class CompactVanillaLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     layers: Long, inputDim: Long, hiddenDim: Long)
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new CompactVanillaLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new CompactVanillaLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class CoupledLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -78,7 +90,7 @@ class CoupledLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new CoupledLstmBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new CoupledLstmBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class FastLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -86,7 +98,7 @@ class FastLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new FastLstmBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new FastLstmBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class GruBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -94,7 +106,7 @@ class GruBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new GruBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new GruBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class LstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -102,7 +114,7 @@ class LstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact  =
-      new Artifact(new LstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM))
+      newArtifact(new LstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM))
 }
 
 abstract class TreeLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -114,7 +126,7 @@ class BidirectionalTreeLstmBuilderDesign(name: String, globalIndex: Int, localIn
     extends TreeLstmBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class UnidirectionalTreeLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -122,7 +134,7 @@ class UnidirectionalTreeLstmBuilderDesign(name: String, globalIndex: Int, localI
     extends TreeLstmBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class SimpleRnnBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -130,7 +142,7 @@ class SimpleRnnBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new SimpleRnnBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new SimpleRnnBuilder(layers, inputDim, hiddenDim, parameterCollection))
 }
 
 class VanillaLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
@@ -138,5 +150,5 @@ class VanillaLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      new Artifact(new VanillaLstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM))
+      newArtifact(new VanillaLstmBuilder(layers, inputDim, hiddenDim, parameterCollection, lnLSTM))
 }

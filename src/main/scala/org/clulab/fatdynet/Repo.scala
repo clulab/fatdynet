@@ -6,6 +6,7 @@ import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Header
+import org.clulab.fatdynet.utils.Loader
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -92,6 +93,11 @@ class Repo(val filename: String) {
         design.build(parameterCollection)
     }
 
+    new Loader.ClosableModelLoader(filename).autoClose { modelLoader =>
+      artifacts.foreach { artifact =>
+        artifact.populate(modelLoader, parameterCollection)
+      }
+    }
     new Model(name, parameterCollection, artifacts, orderedDesigns)
   }
 }
