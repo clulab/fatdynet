@@ -79,10 +79,11 @@ class Repo(val filename: String) {
   protected def orderDesigns(designs: Seq[Design]): Seq[Design] = {
     val isReorderable = designs.nonEmpty && designs.forall { design => !design.isPotentiallyReorderable || design.isActuallyReorderable }
 
-    if (isReorderable) {
+    if (false) { // isReorderable) {
       val reorderable = designs.filter(_.isActuallyReorderable)
       val reordered = reorderDesigns(reorderable)
       var pos = 0
+      // Try to avoid this by saving in a canonical order.
       val ordered = designs.map { design =>
         if (design.isActuallyReorderable) {
           // "Insert" the next one from the ordered sequence.
@@ -93,9 +94,7 @@ class Repo(val filename: String) {
         else design // Stick with what we've got.
       }
 
-      val slid = Array(2, 0, 1, 3, 6, 7, 4, 5).map(ordered(_))
-
-      slid
+      ordered
     }
     else designs
   }
