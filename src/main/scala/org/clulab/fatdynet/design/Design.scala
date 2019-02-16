@@ -129,7 +129,7 @@ class SimpleRnnBuilderDesign(name: String, globalIndex: Int, localIndex: Int,
     extends RnnBuilderDesign(name, globalIndex, localIndex, layers, inputDim, hiddenDim) {
 
   override def build(parameterCollection: ParameterCollection): Artifact =
-      newArtifact(new SimpleRnnBuilder(layers, inputDim, hiddenDim, parameterCollection))
+      newArtifact(new SimpleRnnBuilder(layers, inputDim, hiddenDim, parameterCollection, supportLags))
 }
 
 class VanillaLstmBuilderDesign(name: String, globalIndex: Int, localIndex: Int,

@@ -1,12 +1,11 @@
 package org.clulab.fatdynet
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
+import org.clulab.fatdynet.utils.ClosableModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Header
-import org.clulab.fatdynet.utils.Loader
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -107,7 +106,7 @@ class Repo(val filename: String) {
         design.build(parameterCollection)
     }
 
-    new Loader.ClosableModelLoader(filename).autoClose { modelLoader =>
+    new ClosableModelLoader(filename).autoClose { modelLoader =>
         if (artifacts.size > 1)
           // They must have been thrown together into a parameter collection
           modelLoader.populateModel(parameterCollection, name)

@@ -8,7 +8,7 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.Closer.AutoCloser
-import org.clulab.fatdynet.utils.Saver.ClosableModelSaver
+import org.clulab.fatdynet.utils.CloseableModelSaver
 
 import org.scalatest._
 
@@ -52,7 +52,7 @@ class TestRepo extends FlatSpec with Matchers {
         for (_ <- 0 until count)
           build(oldModel)
 
-        new ClosableModelSaver(filename).autoClose { saver =>
+        new CloseableModelSaver(filename).autoClose { saver =>
           saver.addModel(oldModel, modelName)
         }
 
@@ -161,7 +161,7 @@ class TestRepo extends FlatSpec with Matchers {
   class VanillaLstmParserTester(layers: Int, inputDim: Int, hiddenDim: Int, val lnLSTM: Boolean)
       extends RnnParserTester(layers, inputDim, hiddenDim, "VanillaLstmLoader" + "_" + lnLSTM) {
 
-    // These two should fail because they are hidden by LstmParserTester.
+    // These should fail because they are hidden by LstmParserTester.
     override def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns(Array(VanillaLstmParser.mkParser _))
 
     def build(model: ParameterCollection): Unit = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model, lnLSTM)

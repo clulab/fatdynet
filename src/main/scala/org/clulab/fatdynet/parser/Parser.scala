@@ -194,7 +194,9 @@ abstract class ComplexParser(name: String, outerIndex: Int) extends RnnParser(na
     else {
       val lnLstmMatcher = lnLstmPattern.matcher(header.objectName)
       // We can't tell a normal variable apart from the lnLstm values, but the dimension is a good hint.
-      if (count > 0 && header.dims.head == lnLstmSize && lnLstmMatcher.matches && ComplexParser.getLstmName(lnLstmMatcher) == name) {
+      // If one of the proper dimension has been found, lnLstmCount > 0, then accept the rest
+      if (count > 0 && lnLstmMatcher.matches && ComplexParser.getLstmName(lnLstmMatcher) == name &&
+          ((lnLstmCount % 6) < 4 && header.dims.head == lnLstmSize) || ((lnLstmCount % 6) >=4 && header.dims.head == hiddenDim)) {
           // && ComplexParser.getLstmIndex(lnLstmMatcher) == lnLstmCount) {
           // This will not work if there are multiple ComplexRnns in the same file.  The index is not reset.
         lnLstmCount += 1

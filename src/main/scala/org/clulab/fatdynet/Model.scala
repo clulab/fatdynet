@@ -5,11 +5,13 @@ import edu.cmu.dynet._
 import org.clulab.fatdynet.design.Artifact
 import org.clulab.fatdynet.design.Design
 
-class Model(val name: String, val parameterCollection: ParameterCollection,
+class Model(val name: String, protected val parameterCollection: ParameterCollection,
     val artifacts: Seq[Artifact], val designs: Seq[Design]) {
   require(artifacts.size == designs.size)
 
   protected val artifactsAndDesigns: Seq[(Artifact, Design)] = artifacts.zip(designs)
+
+  def getParameterCollection: ParameterCollection = parameterCollection
 
   def getParameter(index: Int): Parameter = getParameterAndDesign(index)._1
 

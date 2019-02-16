@@ -5,22 +5,22 @@ import java.io.File
 import edu.cmu.dynet._
 
 import org.clulab.fatdynet.Repo
+import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Deleter.AutoDeleter
-import org.clulab.fatdynet.utils.Saver
 
 import org.scalatest._
 
 import scala.io.Source
 
 class TestModels extends FlatSpec with Matchers {
-  Initialize.initialize(Map("random-seed" -> 2522620396L))
+  Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
   // How to arrange for more memory?
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {
     lefts.size == rights.size && {
-      val result = lefts.zip(rights).forall { case (left, right) => println(left); left == right }
-      println
+      val result = lefts.zip(rights).forall { case (left, right) => /*println(left);*/ left == right }
+//      println
       result
     }
   }
@@ -41,7 +41,7 @@ class TestModels extends FlatSpec with Matchers {
     val filename = tmpFile.getCanonicalPath
 
     new AutoDeleter(tmpFile).autoDelete { file =>
-      new Saver.ClosableModelSaver(filename).autoClose { modelSaver =>
+      new CloseableModelSaver(filename).autoClose { modelSaver =>
         operation(modelSaver)
       }
       val string = Source.fromFile(filename).mkString
@@ -81,7 +81,7 @@ class TestModels extends FlatSpec with Matchers {
   def equals(left: ParameterCollection, right: ParameterCollection, name: String = ""): Boolean = {
     // Because of type erasure on Seq, equals cannot be overloaded here
     asString(left, name) == asString(right, name) &&
-//        equalsPS(left.parametersList, right.parametersList) && // This line causes a crash
+        equalsPS(left.parametersList, right.parametersList) &&
         equalsLPS(left.lookupParametersList, right.lookupParametersList)
   }
 
@@ -95,7 +95,7 @@ class TestModels extends FlatSpec with Matchers {
       val oldParameterCollection = new ParameterCollection()
       val oldParameter = oldParameterCollection.addParameters(Dim(51))
 
-      new Saver.ClosableModelSaver(filename).autoClose { modelSaver =>
+      new CloseableModelSaver(filename).autoClose { modelSaver =>
         modelSaver.addParameter(oldParameter, name)
       }
 
@@ -121,7 +121,7 @@ class TestModels extends FlatSpec with Matchers {
       val oldParameterCollection = new ParameterCollection()
       val oldLookupParameter = oldParameterCollection.addLookupParameters(51, Dim(52))
 
-      new Saver.ClosableModelSaver(filename).autoClose { modelSaver =>
+      new CloseableModelSaver(filename).autoClose { modelSaver =>
         modelSaver.addLookupParameter(oldLookupParameter, name)
       }
 
@@ -147,7 +147,7 @@ class TestModels extends FlatSpec with Matchers {
       val oldParameterCollection = new ParameterCollection()
       val oldRnnBuilder = new SimpleRnnBuilder(layers = 2, inputDim = 3, hiddenDim = 4, oldParameterCollection)
 
-      new Saver.ClosableModelSaver(filename).autoClose { modelSaver =>
+      new CloseableModelSaver(filename).autoClose { modelSaver =>
         modelSaver.addModel(oldParameterCollection, name)
       }
 
@@ -193,7 +193,7 @@ class TestModels extends FlatSpec with Matchers {
       val oldLookupParameters = oldParameterCollection.addLookupParameters(W2I_SIZE, Dim(EMBEDDING_SIZE))
       val oldCharLookupParameters = oldParameterCollection.addLookupParameters(C2I_SIZE, Dim(CHAR_EMBEDDING_SIZE))
 
-      new Saver.ClosableModelSaver(filename).autoClose { modelSaver =>
+      new CloseableModelSaver(filename).autoClose { modelSaver =>
         modelSaver.addModel(oldParameterCollection, name)
       }
 
@@ -211,7 +211,7 @@ class TestModels extends FlatSpec with Matchers {
       val newLookupParameters = model.getLookupParameter(0)
       val newCharLookupParameters = model.getLookupParameter(1)
 
-//      equals(newLookupParameters, oldLookupParameters, name) should be (true) // Sometimes causes crash
+      equals(newLookupParameters, oldLookupParameters, name) should be (true) // Sometimes causes crash
       equals(newH, oldH, name) should be (true)
       equals(newO, oldO, name) should be (true)
       equals(newCharLookupParameters, oldCharLookupParameters, name)
@@ -241,7 +241,7 @@ class TestModels extends FlatSpec with Matchers {
       // This was moved to bottom for bitwise comparison.
       val old_w2v_wemb = oldParameterCollection.addLookupParameters(W2I_SIZE, Dim(EMBEDDING_SIZE))
 
-      new Saver.ClosableModelSaver(filename).autoClose { modelSaver =>
+      new CloseableModelSaver(filename).autoClose { modelSaver =>
         modelSaver.addModel(oldParameterCollection, name)
       }
 
@@ -264,9 +264,9 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  testNamedParameter
+//  testNamedParameter
 //  testNamedLookupParameter
-  testNamedRnnBuilder
+//  testNamedRnnBuilder
   testMihaiModel
-  testEnriqueModel
+//  testEnriqueModel
 }

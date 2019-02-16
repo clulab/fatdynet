@@ -1,13 +1,14 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
+
+import org.clulab.fatdynet.Repo
+import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
-import org.clulab.fatdynet.utils.Loader
-import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 
 import scala.util.Random
 
-case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter)
+case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
 
 case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
@@ -65,7 +66,7 @@ object XorExampleApp {
     val bParameter = model.addParameters(Dim(HIDDEN_SIZE))
     val VParameter = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
     val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
-    val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter)
+    val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter, model)
 
     // Xs will be the input values; the corresponding expression is created later in mkPredictionGraph.
     val xValues = new FloatVector(INPUT_SIZE)
@@ -131,22 +132,22 @@ object XorExampleApp {
   }
 
   def save(filename: String, xorModel: XorModel): Unit = {
-    new ClosableModelSaver(filename).autoClose { saver =>
-      saver.addParameter(xorModel.w, "/W")
-      saver.addParameter(xorModel.b, "/b")
-      saver.addParameter(xorModel.v, "/V")
-      saver.addParameter(xorModel.a, "/a")
+    new CloseableModelSaver(filename).autoClose { saver =>
+      saver.addModel(xorModel.model, "/model")
     }
   }
 
   def load(filename: String): XorModel = {
-    val (parameters, _) = Loader.loadParameters(filename)
-    val WParameters = parameters("/W")
-    val bParameters = parameters("/b")
-    val VParameters = parameters("/V")
-    val aParameters = parameters("/a")
+    val repo = new Repo(filename)
+    val designs = repo.getDesigns()
+    val model = repo.getModel(designs, "/model")
 
-    XorModel(WParameters, bParameters, VParameters, aParameters)
+    val WParameter = model.getParameter(0)
+    val bParameter = model.getParameter(1)
+    val VParameter = model.getParameter(2)
+    val aParameter = model.getParameter(3)
+
+    XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
   }
 
   def main(args: Array[String]) {
