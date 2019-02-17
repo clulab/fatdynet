@@ -1,10 +1,11 @@
 package org.clulab.fatdynet.utils
 
+import scala.language.reflectiveCalls
 import scala.util.control.NonFatal
 
 object Closer {
 
-  protected type Closeable = {def close() : Unit}
+  protected type Closeable = {def close(): Unit}
 
   def close[Resource <: Closeable](resource: => Resource): Unit = resource.close()
 

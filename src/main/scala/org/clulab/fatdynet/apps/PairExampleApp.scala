@@ -1,14 +1,15 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
+
+import org.clulab.fatdynet.Repo
+import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
-import org.clulab.fatdynet.utils.Loader
-import org.clulab.fatdynet.utils.Loader.ClosableModelSaver
 import org.clulab.fatdynet.utils.Transducer
 
 import scala.util.Random
 
-case class PairModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
+case class PairModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, rnnBuilder: RnnBuilder, model: ParameterCollection)
 
 case class PairTransformation(inputs: Array[Int], output: Int) {
 
@@ -37,7 +38,7 @@ object PairExampleApp {
   val HIDDEN_SIZE = 4
   val OUTPUT_SIZE = 1
 
-  val ITERATIONS = 2000
+  val ITERATIONS = 200
 
   val transformations: Seq[PairTransformation] = Seq(
     // For pairs of ones anywhere in sequence
@@ -126,7 +127,7 @@ object PairExampleApp {
     y
   }
 
-  def train: (PairModel, Seq[Float], RnnBuilder) = {
+  def train: (PairModel, Seq[Float]) = {
     val model = new ParameterCollection
     val trainer = new SimpleSGDTrainer(model) // i.e., stochastic gradient descent trainer
 
@@ -134,10 +135,8 @@ object PairExampleApp {
     val bParameter = model.addParameters(Dim(HIDDEN_SIZE))
     val VParameter = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
     val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
-
-    val rnnModel = new ParameterCollection
-    val builder = new LstmBuilder(LAYERS_SIZE, INPUT_SIZE, HIDDEN_SIZE, rnnModel)
-    val pairModel = PairModel(WParameter, bParameter, VParameter, aParameter, rnnModel)
+    val rnnBuilder = new LstmBuilder(LAYERS_SIZE, INPUT_SIZE, HIDDEN_SIZE, model)
+    val pairModel = PairModel(WParameter, bParameter, VParameter, aParameter, rnnBuilder, model)
 
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
 
@@ -147,7 +146,7 @@ object PairExampleApp {
 
         transformation.transform(xValues, yValue)
 
-        val yPrediction = mkPredictionGraph(pairModel, xValues, builder)
+        val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
         val y = Expression.input(transformation.output)
 
         val loss = Expression.squaredDistance(yPrediction, y)
@@ -166,9 +165,9 @@ object PairExampleApp {
       trainer.learningRate *= 0.999f
     }
 
-    val results = predict(pairModel, builder)
+    val results = predict(pairModel, rnnBuilder)
 
-    (pairModel, results, builder)
+    (pairModel, results)
   }
 
   def predict(pairModel: PairModel, builder: RnnBuilder): Seq[Float] = {
@@ -196,23 +195,23 @@ object PairExampleApp {
   }
 
   def save(filename: String, pairModel: PairModel): Unit = {
-    new ClosableModelSaver(filename).autoClose { saver =>
-      saver.addParameter(pairModel.w, "/W")
-      saver.addParameter(pairModel.b, "/b")
-      saver.addParameter(pairModel.v, "/V")
-      saver.addParameter(pairModel.a, "/a")
+    new CloseableModelSaver(filename).autoClose { saver =>
       saver.addModel(pairModel.model, "/model")
     }
   }
 
-  def load(filename: String): (PairModel, RnnBuilder) = {
-    val (optionBuilder, optionModel, parameters, _) = Loader.loadLstm(filename)
-    val WParameters = parameters("/W")
-    val bParameters = parameters("/b")
-    val VParameters = parameters("/V")
-    val aParameters = parameters("/a")
+  def load(filename: String): PairModel = {
+    val repo = new Repo(filename)
+    val designs = repo.getDesigns()
+    val model = repo.getModel(designs, "/model")
 
-    (PairModel(WParameters, bParameters, VParameters, aParameters, optionModel.get), optionBuilder.get)
+    val WParameter = model.getParameter(0)
+    val bParameter = model.getParameter(1)
+    val VParameter = model.getParameter(2)
+    val aParameter = model.getParameter(3)
+    val rnnBuilder = model.getRnnBuilder(0)
+
+    PairModel(WParameter, bParameter, VParameter, aParameter, rnnBuilder, model.getParameterCollection)
   }
 
   def main(args: Array[String]) {
@@ -220,12 +219,12 @@ object PairExampleApp {
 
     Initialize.initialize(Map("random-seed" -> 2522620396L))
 
-    val (pairModel1, initialResults, builder1) = train
-    val expectedResults = predict(pairModel1, builder1)
+    val (pairModel1, initialResults) = train
+    val expectedResults = predict(pairModel1, pairModel1.rnnBuilder)
     save(filename, pairModel1)
 
-    val (pairModel2, builder2) = load(filename)
-    val actualResults = predict(pairModel2, builder2)
+    val pairModel2 = load(filename)
+    val actualResults = predict(pairModel2, pairModel2.rnnBuilder)
 
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)
