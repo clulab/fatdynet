@@ -38,7 +38,7 @@ object PairExampleApp {
   val HIDDEN_SIZE = 4
   val OUTPUT_SIZE = 1
 
-  val ITERATIONS = 2000
+  val ITERATIONS = 200
 
   val transformations: Seq[PairTransformation] = Seq(
     // For pairs of ones anywhere in sequence

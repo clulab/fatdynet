@@ -15,7 +15,6 @@ import scala.io.Source
 
 class TestModels extends FlatSpec with Matchers {
   Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
-  // How to arrange for more memory?
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {
     lefts.size == rights.size && {
@@ -103,7 +102,7 @@ class TestModels extends FlatSpec with Matchers {
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
-      val newParameterCollection = model.parameterCollection
+      val newParameterCollection = model.getParameterCollection
       val newParameter = model.getParameter(0)
 
       equals(newParameter, oldParameter, name) should be (true)
@@ -129,7 +128,7 @@ class TestModels extends FlatSpec with Matchers {
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
-      val newParameterCollection = model.parameterCollection
+      val newParameterCollection = model.getParameterCollection
       val newLookupParameter = model.getLookupParameter(0)
 
       equals(newLookupParameter, oldLookupParameter, name) should be (true)
@@ -155,7 +154,7 @@ class TestModels extends FlatSpec with Matchers {
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
-      val newParameterCollection = model.parameterCollection
+      val newParameterCollection = model.getParameterCollection
       val newRnnBuilder = model.getRnnBuilder(0)
 
       equals(newParameterCollection, oldParameterCollection) should be (true)
@@ -201,7 +200,7 @@ class TestModels extends FlatSpec with Matchers {
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
-      val newParameterCollection = model.parameterCollection
+      val newParameterCollection = model.getParameterCollection
       val newFwBuilder = model.getRnnBuilder(0)
       val newBwBuilder = model.getRnnBuilder(1)
       val newH = model.getParameter(0)
@@ -249,7 +248,7 @@ class TestModels extends FlatSpec with Matchers {
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
-      val newParameterCollection = model.parameterCollection
+      val newParameterCollection = model.getParameterCollection
       val new_w2v_wemb = model.getLookupParameter(0)
       val newW = model.getParameter(0)
       val newb = model.getParameter(1)

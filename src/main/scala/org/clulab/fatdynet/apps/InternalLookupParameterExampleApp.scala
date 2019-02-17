@@ -1,33 +1,35 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import scala.util.Random
 
-case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
+object InternalLookupParameterExampleApp {
 
-case class XorTransformation(input1: Int, input2: Int, output: Int) {
+  case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, xParameter: LookupParameter, model: ParameterCollection)
 
-  override def toString(): String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
+  case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int) {
 
-  // Testing
-  def transform(inputValues: FloatVector): Unit = {
-    inputValues.update(0, input1)
-    inputValues.update(1, input2)
+    override def toString(): String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
+
+    def initialize(lookupParameter: LookupParameter): Unit = {
+      lookupParameter.initialize(index, Seq(input1.toFloat, input2.toFloat))
+    }
+
+    // Testing
+    def transform(constParameter: Expression): Expression = {
+      Expression.pick(constParameter, index, 1L)
+    }
+
+    // Training
+    def transform(outputValue: FloatPointer): Unit = {
+      outputValue.set(output)
+    }
   }
 
-  // Training
-  def transform(inputValues: FloatVector, outputValue: FloatPointer): Unit = {
-    transform(inputValues)
-    outputValue.set(output)
-  }
-}
-
-object XorExampleApp {
   protected val random: Random = new Random(1234L)
 
   val  INPUT_SIZE = 2
@@ -37,22 +39,22 @@ object XorExampleApp {
   val ITERATIONS = 400
 
   val transformations: Seq[XorTransformation] = Seq(
-    // input1, input2, output = input1 ^ input2
-    XorTransformation(0, 0, 0),
-    XorTransformation(0, 1, 1),
-    XorTransformation(1, 0, 1),
-    XorTransformation(1, 1, 0)
+    // index, input1, input2, output = input1 ^ input2
+    XorTransformation(0, 0, 0, 0),
+    XorTransformation(1, 0, 1, 1),
+    XorTransformation(2, 1, 0, 1),
+    XorTransformation(3, 1, 1, 0)
   )
 
-  protected def mkPredictionGraph(xorModel: XorModel, xValues: FloatVector): Expression = {
+  protected def mkPredictionGraph(xorModel: XorModel, xorTransformation: XorTransformation): Expression = {
     ComputationGraph.renew()
-
-    val x = Expression.input(Dim(xValues.length), xValues)
 
     val W = Expression.parameter(xorModel.w)
     val b = Expression.parameter(xorModel.b)
     val V = Expression.parameter(xorModel.v)
     val a = Expression.parameter(xorModel.a)
+    val allX = Expression.constParameter(xorModel.xParameter)
+    val x = xorTransformation.transform(allX)
     val y = V * Expression.tanh(W * x + b) + a
 
     y
@@ -66,17 +68,12 @@ object XorExampleApp {
     val bParameter = model.addParameters(Dim(HIDDEN_SIZE))
     val VParameter = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
     val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
-    val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter, model)
+    val xParameter = model.addLookupParameters(transformations.size, Dim(INPUT_SIZE))
+    transformations.foreach { _.initialize(xParameter) }
+    val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter, xParameter, model)
 
-    // Xs will be the input values; the corresponding expression is created later in mkPredictionGraph.
-    val xValues = new FloatVector(INPUT_SIZE)
     // Y will be the expected output value, which we _input_ from gold data.
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
-
-    val yPrediction = mkPredictionGraph(xorModel, xValues)
-    // This is done after mkPredictionGraph so that the values are not made stale by it.
-    val y = Expression.input(yValue)
-    val loss = Expression.squaredDistance(yPrediction, y)
 
 //    println()
 //    println("Computation graphviz structure:")
@@ -84,9 +81,12 @@ object XorExampleApp {
 
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
-        transformation.transform(xValues, yValue)
+        transformation.transform(yValue)
 
-        val lossValue = ComputationGraph.forward(loss).toFloat()
+        val yPrediction = mkPredictionGraph(xorModel, transformation)
+        val y = Expression.input(yValue)
+        val loss = Expression.squaredDistance(yPrediction, y)
+        val lossValue = loss.value.toFloat // ComputationGraph.forward(loss).toFloat
 
         ComputationGraph.backward(loss)
         trainer.update()
@@ -97,20 +97,18 @@ object XorExampleApp {
       trainer.learningRate *= 0.999f
     }
 
-    val results = predict(xorModel, xValues, yPrediction)
+    val results = predict(xorModel)
 
     (xorModel, results)
   }
 
-  protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression): Seq[Float] = {
+  protected def predict(xorModel: XorModel): Seq[Float] = {
     var count = 0
 
     println
     val result = transformations.map { transformation =>
-      transformation.transform(xValues)
-      // This is necessary in this version of the program, possibly because the values
-      // of the input are changed without creating another ComputationGraph.
-      val yValue = ComputationGraph.forward(yPrediction).toFloat
+      val yPrediction = mkPredictionGraph(xorModel, transformation)
+      val yValue = yPrediction.value.toFloat
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -124,13 +122,6 @@ object XorExampleApp {
     result
   }
 
-  def predict(xorModel: XorModel): Seq[Float] = {
-    val xValues = new FloatVector(INPUT_SIZE)
-    val yPrediction = mkPredictionGraph(xorModel, xValues)
-
-    predict(xorModel, xValues, yPrediction)
-  }
-
   def save(filename: String, xorModel: XorModel): Unit = {
     new CloseableModelSaver(filename).autoClose { saver =>
       saver.addModel(xorModel.model, "/model")
@@ -142,12 +133,13 @@ object XorExampleApp {
     val designs = repo.getDesigns()
     val model = repo.getModel(designs, "/model")
 
+    val lookupParameter = model.getLookupParameter(0)
     val WParameter = model.getParameter(0)
     val bParameter = model.getParameter(1)
     val VParameter = model.getParameter(2)
     val aParameter = model.getParameter(3)
 
-    XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
+    XorModel(WParameter, bParameter, VParameter, aParameter, lookupParameter, model.getParameterCollection)
   }
 
   def main(args: Array[String]) {

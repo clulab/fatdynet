@@ -61,7 +61,7 @@ class TestTransducer extends FlatSpec with Matchers {
         val designs = getDesigns(repo)
         val model = repo.getModel(designs, modelName)
 
-        val newParameterCollection = model.parameterCollection
+        val newParameterCollection = model.getParameterCollection
         val newRnnBuilder = model.getRnnBuilder(0)
 
         if (canTransduce) {
