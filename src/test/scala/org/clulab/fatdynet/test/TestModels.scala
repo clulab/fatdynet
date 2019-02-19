@@ -107,6 +107,8 @@ class TestModels extends FlatSpec with Matchers {
 
       equals(newParameter, oldParameter, name) should be (true)
       equals(newParameterCollection, oldParameterCollection) should be (true)
+
+      new File(filename).delete
     }
   }
 
@@ -133,6 +135,8 @@ class TestModels extends FlatSpec with Matchers {
 
       equals(newLookupParameter, oldLookupParameter, name) should be (true)
       equals(newParameterCollection, oldParameterCollection) should be (true)
+
+      new File(filename).delete
     }
   }
 
@@ -159,6 +163,8 @@ class TestModels extends FlatSpec with Matchers {
 
       equals(newParameterCollection, oldParameterCollection) should be (true)
       // There isn't a way to compare the builders.
+
+      new File(filename).delete
     }
   }
 
@@ -215,6 +221,8 @@ class TestModels extends FlatSpec with Matchers {
       equals(newO, oldO, name) should be (true)
       equals(newCharLookupParameters, oldCharLookupParameters, name)
       equals(newParameterCollection, oldParameterCollection, name) should be (true)
+
+      new File(filename).delete
     }
   }
 
@@ -260,6 +268,8 @@ class TestModels extends FlatSpec with Matchers {
       equals(newb, oldb, name) should be(true)
       equals(newV, oldV, name) should be(true)
       equals(newParameterCollection, oldParameterCollection, name) should be(true)
+
+      new File(filename).delete
     }
   }
 
