@@ -83,10 +83,11 @@ class TestTransducer extends FlatSpec with Matchers {
 
             oldFloat should be(newFloat)
           }
-          oldFloats.foreach { each => print(each); print(" ") }
-          println
-          newFloats.foreach { each => print(each); print(" ") }
-          println
+//          oldFloats.foreach { each => print(each); print(" ") }
+//          println
+//          newFloats.foreach { each => print(each); print(" ") }
+//          println
+          // It should have gotten the same answer each round.
           Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
           Array.fill(rounds) { newFloats(0) } should be (newFloats)
         }
