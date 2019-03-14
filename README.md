@@ -102,7 +102,7 @@ organization := "org.clulab"
 scalaVersion := "2.12.4"
 
 libraryDependencies ++= Seq(
-  "org.clulab" %% "fatdynet" % "0.1.0"
+  "org.clulab" %% "fatdynet" % "0.2.0"
 )
 ```
 
