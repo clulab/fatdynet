@@ -1,5 +1,9 @@
 package org.clulab.fatdynet
 
+import java.io.{File => JFile}
+import java.io.FileInputStream
+import java.io.InputStream
+
 import edu.cmu.dynet._
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
@@ -8,9 +12,88 @@ import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Header
 
 import scala.collection.mutable.ArrayBuffer
+import scala.io.BufferedSource
+import scala.io.Codec
 import scala.io.Source
+import scala.io.Source.DefaultBufSize
 
 class Repo(val filename: String) {
+
+  object HeaderIterator {
+    val head = '#'
+    val cr = '\r'
+    val nl = '\n'
+  }
+
+  class HeaderIterator(iter: Iterator[Char]) extends Iterator[Header] {
+    var lineNo: Int = -2
+
+    override def hasNext: Boolean = iter.hasNext && iter.next() == HeaderIterator.head
+
+    override def next(): Header = {
+      var found = false
+
+      val stringBuilder = new StringBuffer(HeaderIterator.head.toString)
+      lineNo += 2
+
+      while (!found && iter.hasNext) {
+        val c = iter.next
+
+        if (c == HeaderIterator.nl)
+          found = true
+        else if (c != HeaderIterator.cr)
+          stringBuilder.append(c)
+      }
+
+      val line = stringBuilder.toString
+      val header = new Header(line, lineNo)
+
+      iter.drop(header.length)
+      var c = iter.next
+      if (c == HeaderIterator.cr)
+        c = iter.next
+      require(c == HeaderIterator.nl)
+
+      new Header(line, lineNo)
+    }
+  }
+
+  class RepoSource(inputStream: InputStream, bufferSize: Int)(implicit override val codec: Codec)
+      extends BufferedSource(inputStream, bufferSize)(codec) {
+
+    def getHeaders: HeaderIterator = new HeaderIterator(iter)
+  }
+
+  object RepoSource {
+    def fromFile(name: String)(implicit codec: Codec): RepoSource =
+      fromFile(new JFile(name))(codec)
+
+    def fromFile(file: JFile)(implicit codec: Codec): RepoSource =
+      fromFile(file, Source.DefaultBufSize)(codec)
+
+    def fromFile(file: JFile, bufferSize: Int)(implicit codec: Codec): RepoSource = {
+      val inputStream = new FileInputStream(file)
+
+      createBufferedSource(
+        inputStream,
+        bufferSize,
+        () => fromFile(file, bufferSize)(codec),
+        () => inputStream.close()
+      )(codec) withDescription ("file:" + file.getAbsolutePath)
+    }
+
+    def createBufferedSource(
+      inputStream: InputStream,
+      bufferSize: Int = DefaultBufSize,
+      reset: () => Source = null,
+      close: () => Unit = null
+    )(implicit codec: Codec): RepoSource = {
+      // workaround for default arguments being unable to refer to other parameters
+      val resetFn = if (reset == null) () => createBufferedSource(inputStream, bufferSize, reset, close)(codec) else reset
+
+      new RepoSource(inputStream, bufferSize)(codec) withReset resetFn withClose close
+    }
+  }
 
   class ParseException(cause: Exception, line: Option[String] = None, lineNo: Option[Int] = None) extends RuntimeException {
 
@@ -21,11 +104,10 @@ class Repo(val filename: String) {
     }
   }
 
-  protected def getDesigns(parserFactories: Seq[Repo.ParserFactory], designs: ArrayBuffer[Design], optionParser: Option[Parser], line: String, lineNo: Int): Option[Parser] = {
+  protected def getDesigns(parserFactories: Seq[Repo.ParserFactory], designs: ArrayBuffer[Design], optionParser: Option[Parser], header: Header): Option[Parser] = {
     var currentOptionsParser = optionParser
 
     try {
-      val header = new Header(line, lineNo)
       val parsed = currentOptionsParser.isDefined && currentOptionsParser.get.parse(header)
 
       if (currentOptionsParser.isDefined && !parsed) {
@@ -41,7 +123,7 @@ class Repo(val filename: String) {
       }
     }
     catch {
-      case exception: Exception => throw new ParseException(exception, line, lineNo)
+      case exception: Exception => throw new ParseException(exception, header.line, header.lineNo)
     }
     currentOptionsParser
   }
@@ -49,16 +131,23 @@ class Repo(val filename: String) {
   def getDesigns(parserFactories: Seq[Repo.ParserFactory] = Repo.parserFactories): Seq[Design] = {
     val designs: ArrayBuffer[Design] = new ArrayBuffer
 
+    def getHeadersSlowly(source: Source): Iterator[Header] = {
+      source
+          .getLines
+          .zipWithIndex
+          .filter { case (line, _) => line.startsWith("#") }
+          .map { case (line, lineNo) => new Header(line, lineNo) }
+    }
+
+    def getHeadersQuickly(repoSource: RepoSource): Iterator[Header] = repoSource.getHeaders
+
     try {
       var currentParser: Option[Parser] = None
-
-      Source.fromFile(filename).autoClose { source =>
-        source
-            .getLines
-            .zipWithIndex
-            .filter { case (line, _) => line.startsWith("#") }
-            .foreach { case (line, lineNo) =>
-              currentParser = getDesigns(parserFactories, designs, currentParser, line, lineNo)
+      RepoSource.fromFile(filename).autoClose { source =>
+        getHeadersSlowly(source)
+//        getHeadersQuickly(source)
+            .foreach { header =>
+              currentParser = getDesigns(parserFactories, designs, currentParser, header)
             }
         currentParser.foreach { parser => designs += parser.finish() } // Force finish at end of file.
       }
