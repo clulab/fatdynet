@@ -3,8 +3,6 @@ package org.clulab.fatdynet
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
-import java.io.IOException
-import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
@@ -14,77 +12,12 @@ import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.ClosableModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Header
+import org.clulab.fatdynet.utils.HeaderIterator
 
 import scala.collection.mutable.ArrayBuffer
-import scala.io.BufferedSource
-import scala.io.Codec
 import scala.io.Source
-import scala.io.Source.DefaultBufSize
 
 class Repo(val filename: String) {
-
-
-
-  object HeaderIterator {
-    val head = '#'
-    val cr = '\r'
-    val nl = '\n'
-  }
-
-  class HeaderIterator(bufferedReader: InputStreamReader) extends Iterator[Header] {
-    var hasNextOpt: Option[Boolean] = None
-    var lineNo: Int = -2
-
-    protected def read(): Char = {
-      val value = bufferedReader.read
-
-      if (value == -1)
-        throw new IOException("Unexpected EOF")
-      value.toChar
-    }
-
-    override def hasNext: Boolean = {
-      if (hasNextOpt.isEmpty) {
-        var value = bufferedReader.read
-
-        hasNextOpt = Some(value != -1 && value.toChar == HeaderIterator.head)
-      }
-      hasNextOpt.get
-    }
-
-    override def next(): Header = {
-      if (hasNextOpt.isEmpty)
-        hasNext
-      if (hasNextOpt.get) {
-        hasNextOpt = None
-        val stringBuilder = new StringBuffer(HeaderIterator.head.toString)
-        lineNo += 2
-
-        var found = false
-        while (!found) {
-          val c = read()
-
-          if (c == HeaderIterator.nl)
-            found = true
-          else if (c != HeaderIterator.cr)
-            stringBuilder.append(c)
-        }
-
-        val line = stringBuilder.toString
-        val header = new Header(line, lineNo)
-
-        bufferedReader.skip(header.length - 1)
-        var c = read()
-        if (c == HeaderIterator.cr)
-          c = read()
-        require(c == HeaderIterator.nl)
-
-        header
-      }
-      else
-        throw new IOException()
-    }
-  }
 
   class ParseException(cause: Exception, line: Option[String] = None, lineNo: Option[Int] = None) extends RuntimeException {
 
@@ -130,16 +63,16 @@ class Repo(val filename: String) {
           .map { case (line, lineNo) => new Header(line, lineNo) }
     }
 
-    def newBufferedReader(filename: String): InputStreamReader = {
+    def newBufferedReader(filename: String): BufferedReader = {
       val file = new File(filename)
       val fileInputStream = new FileInputStream(file)
       val inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8.toString)
-  //    val bufferedReader = new BufferedReader(inputStreamReader, 2048)
+      val bufferedReader = new BufferedReader(inputStreamReader, 2048)
 
-      inputStreamReader
+      bufferedReader
     }
 
-    def getHeadersQuickly(bufferedReader: InputStreamReader): Iterator[Header] = new HeaderIterator(bufferedReader)
+    def getHeadersQuickly(bufferedReader: BufferedReader): Iterator[Header] = new HeaderIterator(bufferedReader)
 
     try {
       var currentParser: Option[Parser] = None
@@ -148,7 +81,7 @@ class Repo(val filename: String) {
       newBufferedReader(filename).autoClose { bufferedReader =>
         getHeadersQuickly(bufferedReader)
             .foreach { header =>
-              println(header)
+//              println(header)
               currentParser = getDesigns(parserFactories, designs, currentParser, header)
             }
         currentParser.foreach { parser => designs += parser.finish() } // Force finish at end of file.
