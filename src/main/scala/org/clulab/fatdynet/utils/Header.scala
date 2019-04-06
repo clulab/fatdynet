@@ -5,4 +5,7 @@ class Header(val line: String, val lineNo: Int) {
   val length = len.toInt
   // Skip leading { and trailing }
   val dims = dimension.substring(1, dimension.length - 1).split(',').map(_.toInt)
+
+  override def toString: String =
+    s"line: $line, lineNo: $lineNo, length: $length"
 }

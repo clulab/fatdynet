@@ -1,8 +1,12 @@
 package org.clulab.fatdynet
 
-import java.io.{File => JFile}
+import java.io.BufferedReader
+import java.io.File
 import java.io.FileInputStream
+import java.io.IOException
 import java.io.InputStream
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 
 import edu.cmu.dynet._
 import org.clulab.fatdynet.design._
@@ -19,79 +23,66 @@ import scala.io.Source.DefaultBufSize
 
 class Repo(val filename: String) {
 
+
+
   object HeaderIterator {
     val head = '#'
     val cr = '\r'
     val nl = '\n'
   }
 
-  class HeaderIterator(iter: Iterator[Char]) extends Iterator[Header] {
+  class HeaderIterator(bufferedReader: InputStreamReader) extends Iterator[Header] {
+    var hasNextOpt: Option[Boolean] = None
     var lineNo: Int = -2
 
-    override def hasNext: Boolean = iter.hasNext && iter.next() == HeaderIterator.head
+    protected def read(): Char = {
+      val value = bufferedReader.read
+
+      if (value == -1)
+        throw new IOException("Unexpected EOF")
+      value.toChar
+    }
+
+    override def hasNext: Boolean = {
+      if (hasNextOpt.isEmpty) {
+        var value = bufferedReader.read
+
+        hasNextOpt = Some(value != -1 && value.toChar == HeaderIterator.head)
+      }
+      hasNextOpt.get
+    }
 
     override def next(): Header = {
-      var found = false
+      if (hasNextOpt.isEmpty)
+        hasNext
+      if (hasNextOpt.get) {
+        hasNextOpt = None
+        val stringBuilder = new StringBuffer(HeaderIterator.head.toString)
+        lineNo += 2
 
-      val stringBuilder = new StringBuffer(HeaderIterator.head.toString)
-      lineNo += 2
+        var found = false
+        while (!found) {
+          val c = read()
 
-      while (!found && iter.hasNext) {
-        val c = iter.next
+          if (c == HeaderIterator.nl)
+            found = true
+          else if (c != HeaderIterator.cr)
+            stringBuilder.append(c)
+        }
 
-        if (c == HeaderIterator.nl)
-          found = true
-        else if (c != HeaderIterator.cr)
-          stringBuilder.append(c)
+        val line = stringBuilder.toString
+        val header = new Header(line, lineNo)
+
+        bufferedReader.skip(header.length - 1)
+        var c = read()
+        if (c == HeaderIterator.cr)
+          c = read()
+        require(c == HeaderIterator.nl)
+
+        header
       }
-
-      val line = stringBuilder.toString
-      val header = new Header(line, lineNo)
-
-      iter.drop(header.length)
-      var c = iter.next
-      if (c == HeaderIterator.cr)
-        c = iter.next
-      require(c == HeaderIterator.nl)
-
-      new Header(line, lineNo)
-    }
-  }
-
-  class RepoSource(inputStream: InputStream, bufferSize: Int)(implicit override val codec: Codec)
-      extends BufferedSource(inputStream, bufferSize)(codec) {
-
-    def getHeaders: HeaderIterator = new HeaderIterator(iter)
-  }
-
-  object RepoSource {
-    def fromFile(name: String)(implicit codec: Codec): RepoSource =
-      fromFile(new JFile(name))(codec)
-
-    def fromFile(file: JFile)(implicit codec: Codec): RepoSource =
-      fromFile(file, Source.DefaultBufSize)(codec)
-
-    def fromFile(file: JFile, bufferSize: Int)(implicit codec: Codec): RepoSource = {
-      val inputStream = new FileInputStream(file)
-
-      createBufferedSource(
-        inputStream,
-        bufferSize,
-        () => fromFile(file, bufferSize)(codec),
-        () => inputStream.close()
-      )(codec) withDescription ("file:" + file.getAbsolutePath)
-    }
-
-    def createBufferedSource(
-      inputStream: InputStream,
-      bufferSize: Int = DefaultBufSize,
-      reset: () => Source = null,
-      close: () => Unit = null
-    )(implicit codec: Codec): RepoSource = {
-      // workaround for default arguments being unable to refer to other parameters
-      val resetFn = if (reset == null) () => createBufferedSource(inputStream, bufferSize, reset, close)(codec) else reset
-
-      new RepoSource(inputStream, bufferSize)(codec) withReset resetFn withClose close
+      else
+        throw new IOException()
     }
   }
 
@@ -139,14 +130,25 @@ class Repo(val filename: String) {
           .map { case (line, lineNo) => new Header(line, lineNo) }
     }
 
-    def getHeadersQuickly(repoSource: RepoSource): Iterator[Header] = repoSource.getHeaders
+    def newBufferedReader(filename: String): InputStreamReader = {
+      val file = new File(filename)
+      val fileInputStream = new FileInputStream(file)
+      val inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8.toString)
+  //    val bufferedReader = new BufferedReader(inputStreamReader, 2048)
+
+      inputStreamReader
+    }
+
+    def getHeadersQuickly(bufferedReader: InputStreamReader): Iterator[Header] = new HeaderIterator(bufferedReader)
 
     try {
       var currentParser: Option[Parser] = None
-      RepoSource.fromFile(filename).autoClose { source =>
-        getHeadersSlowly(source)
-//        getHeadersQuickly(source)
+//      Source.fromFile(filename).autoClose { source =>
+//        getHeadersSlowly(source)
+      newBufferedReader(filename).autoClose { bufferedReader =>
+        getHeadersQuickly(bufferedReader)
             .foreach { header =>
+              println(header)
               currentParser = getDesigns(parserFactories, designs, currentParser, header)
             }
         currentParser.foreach { parser => designs += parser.finish() } // Force finish at end of file.
