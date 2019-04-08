@@ -1,11 +1,18 @@
 package org.clulab.fatdynet
 
+import java.io.BufferedReader
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
+
 import edu.cmu.dynet._
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.ClosableModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Header
+import org.clulab.fatdynet.utils.HeaderIterator
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
@@ -21,11 +28,10 @@ class Repo(val filename: String) {
     }
   }
 
-  protected def getDesigns(parserFactories: Seq[Repo.ParserFactory], designs: ArrayBuffer[Design], optionParser: Option[Parser], line: String, lineNo: Int): Option[Parser] = {
+  protected def getDesigns(parserFactories: Seq[Repo.ParserFactory], designs: ArrayBuffer[Design], optionParser: Option[Parser], header: Header): Option[Parser] = {
     var currentOptionsParser = optionParser
 
     try {
-      val header = new Header(line, lineNo)
       val parsed = currentOptionsParser.isDefined && currentOptionsParser.get.parse(header)
 
       if (currentOptionsParser.isDefined && !parsed) {
@@ -41,7 +47,7 @@ class Repo(val filename: String) {
       }
     }
     catch {
-      case exception: Exception => throw new ParseException(exception, line, lineNo)
+      case exception: Exception => throw new ParseException(exception, header.line, header.lineNo)
     }
     currentOptionsParser
   }
@@ -49,16 +55,34 @@ class Repo(val filename: String) {
   def getDesigns(parserFactories: Seq[Repo.ParserFactory] = Repo.parserFactories): Seq[Design] = {
     val designs: ArrayBuffer[Design] = new ArrayBuffer
 
+    def getHeadersSlowly(source: Source): Iterator[Header] = {
+      source
+          .getLines
+          .zipWithIndex
+          .filter { case (line, _) => line.startsWith("#") }
+          .map { case (line, lineNo) => new Header(line, lineNo) }
+    }
+
+    def newBufferedReader(filename: String): BufferedReader = {
+      val file = new File(filename)
+      val fileInputStream = new FileInputStream(file)
+      val inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8.toString)
+      val bufferedReader = new BufferedReader(inputStreamReader, 2048)
+
+      bufferedReader
+    }
+
+    def getHeadersQuickly(bufferedReader: BufferedReader): Iterator[Header] = new HeaderIterator(bufferedReader)
+
     try {
       var currentParser: Option[Parser] = None
-
-      Source.fromFile(filename).autoClose { source =>
-        source
-            .getLines
-            .zipWithIndex
-            .filter { case (line, _) => line.startsWith("#") }
-            .foreach { case (line, lineNo) =>
-              currentParser = getDesigns(parserFactories, designs, currentParser, line, lineNo)
+//      Source.fromFile(filename).autoClose { source =>
+//        getHeadersSlowly(source)
+      newBufferedReader(filename).autoClose { bufferedReader =>
+        getHeadersQuickly(bufferedReader)
+            .foreach { header =>
+//              println(header)
+              currentParser = getDesigns(parserFactories, designs, currentParser, header)
             }
         currentParser.foreach { parser => designs += parser.finish() } // Force finish at end of file.
       }
