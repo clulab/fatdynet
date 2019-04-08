@@ -5,9 +5,16 @@ import java.io.IOException
 
 class Header(val line: String, val lineNo: Int) {
   val Array(objectType, objectName, dimension, len, _) = line.split(' ')
-  val length = len.toInt
   // Skip leading { and trailing }
   val dims = dimension.substring(1, dimension.length - 1).split(',').map(_.toInt)
+  val length = {
+    val size = len.toLong
+    val length = dims.foldLeft(16L){ (product, next) => product * next } + 1
+
+//    if (size != length)
+//      println(s"Size $size doesn't equal length $length!  This is a bug!")
+    length
+  }
 
   override def toString: String =
     s"lineNo: $lineNo, length: $length, line: $line"
@@ -15,8 +22,12 @@ class Header(val line: String, val lineNo: Int) {
 
 object HeaderIterator {
   val head = '#'
-  val cr = '\r'
-  val nl = '\n'
+  // Some of this is just in case the line endings were somehow mangled.
+  val crChar = '\r'
+  val lfChar = '\n'
+  val crString = crChar.toString
+  val lfString = lfChar.toString
+  val crlf = crString + lfString
 }
 
 class HeaderIterator(bufferedReader: BufferedReader) extends Iterator[Header] {
@@ -28,6 +39,16 @@ class HeaderIterator(bufferedReader: BufferedReader) extends Iterator[Header] {
 
     if (value == -1)
       throw new IOException("Unexpected EOF")
+    value.toChar
+  }
+
+  protected def read(expected: String, line: String): Char = {
+    val value = bufferedReader.read
+
+    if (value == -1)
+      throw new IOException("Unexpected EOF")
+    if (!expected.contains(value))
+      throw new IOException(s"Expected one of '$expected' buf found '${value.toChar}' after $line")
     value.toChar
   }
 
@@ -52,9 +73,9 @@ class HeaderIterator(bufferedReader: BufferedReader) extends Iterator[Header] {
       while (!found) {
         val c = read()
 
-        if (c == HeaderIterator.nl)
+        if (c == HeaderIterator.lfChar)
           found = true
-        else if (c != HeaderIterator.cr)
+        else if (c != HeaderIterator.crChar)
           stringBuilder.append(c)
       }
 
@@ -62,10 +83,9 @@ class HeaderIterator(bufferedReader: BufferedReader) extends Iterator[Header] {
       val header = new Header(line, lineNo)
 
       bufferedReader.skip(header.length - 1)
-      var c = read()
-      if (c == HeaderIterator.cr)
-        c = read()
-      require(c == HeaderIterator.nl)
+      var c = read(HeaderIterator.crlf, line)
+      if (c == HeaderIterator.crChar)
+        c = read(HeaderIterator.lfString, line)
 
       header
     }
