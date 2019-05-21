@@ -123,7 +123,7 @@ The source code used for the libraries of this project is based on
 - dynet commit d9d3e80 (version 2.1)
 - eigen commit b2e267d
 
-with some modifications explained on the project's [wiki pages](./wiki).
+with some modifications explained on the project's [wiki pages](https://github.com/clulab/fatdynet/wiki).
 
 The build environment included
 - java 1.8.0_162
@@ -139,4 +139,4 @@ and those in lib-2.11 were built with
 - cmake .. -DSCALA_VERSION=2.11.11 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
 - make
 
-For more details see [Compiling DyNet with SWIG Support](./wiki/Compiling-DyNet-with-SWIG-Support).
+For more details see [Compiling DyNet with SWIG Support](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-with-SWIG-Support).
