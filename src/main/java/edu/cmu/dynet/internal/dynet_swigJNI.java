@@ -14,7 +14,7 @@ public class dynet_swigJNI {
 
     static {
         try {
-            File tempFile = File.createTempFile("dynet", ".dll"); // kwa
+            File tempFile = File.createTempFile("dynet", ".dll");
             String libname = System.mapLibraryName("dynet_swig");
 
             if (libname.endsWith("dylib")) {
@@ -964,6 +964,7 @@ public class dynet_swigJNI {
   public final static native void TextFileSaver_save__SWIG_3(long jarg1, TextFileSaver jarg1_, long jarg2, Parameter jarg2_);
   public final static native void TextFileSaver_save__SWIG_4(long jarg1, TextFileSaver jarg1_, long jarg2, LookupParameter jarg2_, String jarg3);
   public final static native void TextFileSaver_save__SWIG_5(long jarg1, TextFileSaver jarg1_, long jarg2, LookupParameter jarg2_);
+  public final static native void delete_BaseFileLoader(long jarg1);
   public final static native long new_TextFileLoader(String jarg1);
   public final static native void delete_TextFileLoader(long jarg1);
   public final static native void TextFileLoader_populate__SWIG_0(long jarg1, TextFileLoader jarg1_, long jarg2, ParameterCollection jarg2_, String jarg3);
@@ -974,6 +975,16 @@ public class dynet_swigJNI {
   public final static native void TextFileLoader_populate__SWIG_5(long jarg1, TextFileLoader jarg1_, long jarg2, LookupParameter jarg2_);
   public final static native long TextFileLoader_load_param(long jarg1, TextFileLoader jarg1_, long jarg2, ParameterCollection jarg2_, String jarg3);
   public final static native long TextFileLoader_load_lookup_param(long jarg1, TextFileLoader jarg1_, long jarg2, ParameterCollection jarg2_, String jarg3);
+  public final static native long new_ZipFileLoader(String jarg1, String jarg2);
+  public final static native void delete_ZipFileLoader(long jarg1);
+  public final static native void ZipFileLoader_populate__SWIG_0(long jarg1, ZipFileLoader jarg1_, long jarg2, ParameterCollection jarg2_, String jarg3);
+  public final static native void ZipFileLoader_populate__SWIG_1(long jarg1, ZipFileLoader jarg1_, long jarg2, ParameterCollection jarg2_);
+  public final static native void ZipFileLoader_populate__SWIG_2(long jarg1, ZipFileLoader jarg1_, long jarg2, Parameter jarg2_, String jarg3);
+  public final static native void ZipFileLoader_populate__SWIG_3(long jarg1, ZipFileLoader jarg1_, long jarg2, Parameter jarg2_);
+  public final static native void ZipFileLoader_populate__SWIG_4(long jarg1, ZipFileLoader jarg1_, long jarg2, LookupParameter jarg2_, String jarg3);
+  public final static native void ZipFileLoader_populate__SWIG_5(long jarg1, ZipFileLoader jarg1_, long jarg2, LookupParameter jarg2_);
+  public final static native long ZipFileLoader_load_param(long jarg1, ZipFileLoader jarg1_, long jarg2, ParameterCollection jarg2_, String jarg3);
+  public final static native long ZipFileLoader_load_lookup_param(long jarg1, ZipFileLoader jarg1_, long jarg2, ParameterCollection jarg2_, String jarg3);
   public final static native long ParameterInitNormal_SWIGUpcast(long jarg1);
   public final static native long ParameterInitUniform_SWIGUpcast(long jarg1);
   public final static native long ParameterInitConst_SWIGUpcast(long jarg1);
@@ -1002,5 +1013,7 @@ public class dynet_swigJNI {
   public final static native long UnidirectionalTreeLSTMBuilder_SWIGUpcast(long jarg1);
   public final static native long BidirectionalTreeLSTMBuilder_SWIGUpcast(long jarg1);
   public final static native long TextFileSaver_SWIGUpcast(long jarg1);
+  public final static native long BaseFileLoader_SWIGUpcast(long jarg1);
   public final static native long TextFileLoader_SWIGUpcast(long jarg1);
+  public final static native long ZipFileLoader_SWIGUpcast(long jarg1);
 }

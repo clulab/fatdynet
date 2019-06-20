@@ -8,7 +8,7 @@
 
 package edu.cmu.dynet.internal;
 
-public class TextFileLoader extends Loader {
+public class TextFileLoader extends BaseFileLoader {
   private transient long swigCPtr;
 
   protected TextFileLoader(long cPtr, boolean cMemoryOwn) {
