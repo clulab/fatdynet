@@ -1,29 +1,27 @@
 package org.clulab.fatdynet
 
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileInputStream
-import java.io.InputStreamReader
-import java.nio.charset.StandardCharsets
 
 import edu.cmu.dynet._
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
-import org.clulab.fatdynet.utils.ClosableModelLoader
+import org.clulab.fatdynet.utils.BaseTextLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Header
 import org.clulab.fatdynet.utils.HeaderIterator
+import org.clulab.fatdynet.utils.RawTextLoader
+import org.clulab.fatdynet.utils.ZipTextLoader
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
-class Repo(val filename: String) {
+class Repo(val textLoader: BaseTextLoader) {
 
   class ParseException(cause: Exception, line: Option[String] = None, lineNo: Option[Int] = None) extends RuntimeException {
 
     def this(cause: Exception, line: String, lineNo: Int) = this(cause, Option(line), Option(lineNo))
 
-    override def toString(): String = {
+    override def toString: String = {
       cause.getMessage
     }
   }
@@ -63,22 +61,13 @@ class Repo(val filename: String) {
           .map { case (line, lineNo) => new Header(line, lineNo) }
     }
 
-    def newBufferedReader(filename: String): BufferedReader = {
-      val file = new File(filename)
-      val fileInputStream = new FileInputStream(file)
-      val inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8.toString)
-      val bufferedReader = new BufferedReader(inputStreamReader, 2048)
-
-      bufferedReader
-    }
-
     def getHeadersQuickly(bufferedReader: BufferedReader): Iterator[Header] = new HeaderIterator(bufferedReader)
 
     try {
       var currentParser: Option[Parser] = None
 //      Source.fromFile(filename).autoClose { source =>
 //        getHeadersSlowly(source)
-      newBufferedReader(filename).autoClose { bufferedReader =>
+      textLoader.newBufferedReader().autoClose { bufferedReader =>
         getHeadersQuickly(bufferedReader)
             .foreach { header =>
 //              println(header)
@@ -130,7 +119,7 @@ class Repo(val filename: String) {
         design.build(parameterCollection)
     }
 
-    new ClosableModelLoader(filename).autoClose { modelLoader =>
+    textLoader.newModelLoader().autoClose { modelLoader =>
         if (artifacts.size > 1)
           // They must have been thrown together into a parameter collection
           modelLoader.populateModel(parameterCollection, name)
@@ -163,4 +152,12 @@ object Repo {
     ParameterParser.mkParser,
     LookupParameterParser.mkParser
   )
+
+  def apply(filename: String): Repo = {
+    new Repo(new RawTextLoader(filename))
+  }
+
+  def apply(filename: String, zipname: String): Repo = {
+    new Repo(new ZipTextLoader(filename, zipname))
+  }
 }

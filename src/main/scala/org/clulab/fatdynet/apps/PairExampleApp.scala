@@ -201,7 +201,7 @@ object PairExampleApp {
   }
 
   def load(filename: String): PairModel = {
-    val repo = new Repo(filename)
+    val repo = Repo(filename)
     val designs = repo.getDesigns()
     val model = repo.getModel(designs, "/model")
 

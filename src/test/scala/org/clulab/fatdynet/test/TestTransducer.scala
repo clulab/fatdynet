@@ -57,7 +57,7 @@ class TestTransducer extends FlatSpec with Matchers {
           saver.addModel(oldModel, modelName)
         }
 
-        val repo = new Repo(filename)
+        val repo = Repo(filename)
         val designs = getDesigns(repo)
         val model = repo.getModel(designs, modelName)
 

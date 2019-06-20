@@ -11,7 +11,7 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.net.URI
 
-import collection.JavaConversions._
+import collection.JavaConverters._
 import scala.io.Source
 
 class TestModelLoader extends FlatSpec with Matchers {
@@ -37,15 +37,14 @@ class TestModelLoader extends FlatSpec with Matchers {
   )
 
   def newModel(): Model = {
-    // This model is intended to closely resemble one in use at clulab.
     case class Sizeable(size: Int)
 
     val w2i = Sizeable(100)
     val t2i = Sizeable(230)
     val c2i = Sizeable(123)
-
     val embeddingDim = 300
 
+    // This model is intended to closely resemble one in use at clulab.
     val parameters = new ParameterCollection()
     val lookupParameters = parameters.addLookupParameters(w2i.size, Dim(embeddingDim))
     val embeddingSize = embeddingDim + 2 * CHAR_RNN_STATE_SIZE
@@ -81,7 +80,6 @@ class TestModelLoader extends FlatSpec with Matchers {
       saver.addModel(model.parameters, key)
       saver.done()
     }
-
 
     // See https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
     {
@@ -128,9 +126,17 @@ class TestModelLoader extends FlatSpec with Matchers {
       saver.done()
     }
 
-    val origText = Source.fromFile(origFilename).mkString
-    val textText = Source.fromFile(copyFromTextFilename).mkString
-    val zipText = Source.fromFile(copyFromZipFilename).mkString
+    def textFromFile(filename: String): String = {
+      val source = Source.fromFile(filename)
+      val text = source.mkString
+
+      source.close()
+      text
+    }
+
+    val origText = textFromFile(origFilename)
+    val textText = textFromFile(copyFromTextFilename)
+    val zipText = textFromFile(copyFromZipFilename)
 
     textText should be (origText)
     zipText should be (origText)
