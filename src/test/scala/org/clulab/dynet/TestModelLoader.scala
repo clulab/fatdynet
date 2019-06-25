@@ -1,14 +1,73 @@
 package org.clulab.dynet
 
-import edu.cmu.dynet._
-
 import java.io.File
 
+import edu.cmu.dynet._
+
+// This version tests the Scala interfaces.
 class TestModelLoader extends TestLoader {
 
-  Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+  def save(filename: String, model: TestModelLoader.Model, key: String) = {
+    val saver = new ModelSaver(filename)
 
-  behavior of "serialized models"
+    saver.addModel(model.parameters, key)
+    saver.done()
+  }
+
+  def save(filename: String, modelA: TestModelLoader.Model, keyA: String, modelB: TestModelLoader.Model, keyB: String): Unit = {
+    val saver = new ModelSaver(filename)
+
+    saver.addModel(modelA.parameters, keyA)
+    saver.addModel(modelB.parameters, keyB)
+    saver.done()
+  }
+
+  def loadRaw(filename: String, key: String): TestModelLoader.Model = {
+    val model = newModel()
+    val loader = new ModelLoader(filename)
+
+    loader.populateModel(model.parameters, key)
+    loader.done()
+    model
+  }
+
+  def loadZip(filename: String, zipname: String, key: String): TestModelLoader.Model = {
+    val model = newModel()
+    val loader = new ZipModelLoader(filename, zipname)
+
+    loader.populateModel(model.parameters, key)
+    loader.done()
+    model
+  }
+
+  def newModel(): TestModelLoader.Model = {
+    // This model is intended to closely resemble one in use at clulab.
+    val parameters = new ParameterCollection()
+    val lookupParameters = parameters.addLookupParameters(w2i.size, Dim(embeddingDim))
+    val embeddingSize = embeddingDim + 2 * CHAR_RNN_STATE_SIZE
+    val fwBuilder = new LstmBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
+    val bwBuilder = new LstmBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
+    val H = parameters.addParameters(Dim(NONLINEAR_SIZE, 2 * RNN_STATE_SIZE))
+    val O = parameters.addParameters(Dim(t2i.size, NONLINEAR_SIZE))
+    val T = parameters.addLookupParameters(t2i.size, Dim(t2i.size))
+
+    val charLookupParameters = parameters.addLookupParameters(c2i.size, Dim(CHAR_EMBEDDING_SIZE))
+    val charFwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
+    val charBwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
+
+    TestModelLoader.Model(parameters, lookupParameters, fwBuilder, bwBuilder, H, O, T,
+      charLookupParameters, charFwBuilder, charBwBuilder)
+  }
+
+  def initialize(): Unit = {
+    Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+  }
+
+  initialize()
+
+  behavior of "serialized Scala models"
+
+  // The rest of this should be the same in Java and Scala.
 
   it should "survive a round trip" in {
     val origFilenameA = "modelA.rnn"
@@ -41,10 +100,10 @@ class TestModelLoader extends TestLoader {
       zip(origFilenameAB, zipFilenameAB)
     }
 
-    val copyFromTextModelA1 = load(origFilenameA, keyA)
-    val copyFromTextModelB1 = load(origFilenameB, keyB)
-    val copyFromTextModelA2 = load(origFilenameAB, keyA)
-    val copyFromTextModelB2 = load(origFilenameAB, keyB)
+    val copyFromTextModelA1 = loadRaw(origFilenameA, keyA)
+    val copyFromTextModelB1 = loadRaw(origFilenameB, keyB)
+    val copyFromTextModelA2 = loadRaw(origFilenameAB, keyA)
+    val copyFromTextModelB2 = loadRaw(origFilenameAB, keyB)
 
     val copyFromZipModelA1 = loadZip(origFilenameA, zipFilenameA, keyA)
     val copyFromZipModelB1 = loadZip(origFilenameB, zipFilenameB, keyB)
@@ -59,7 +118,7 @@ class TestModelLoader extends TestLoader {
     save(copyFromZipFilenameA1, copyFromZipModelA1, keyA)
     save(copyFromZipFilenameA2, copyFromZipModelA2, keyA)
     save(copyFromZipFilenameB1, copyFromZipModelB1, keyB)
-    save(copyFromZipFilenameB2, copyFromZipModelB1, keyB)
+    save(copyFromZipFilenameB2, copyFromZipModelB2, keyB)
 
     val origTextA = textFromFile(origFilenameA)
     val textTextA1 = textFromFile(copyFromTextFilenameA1)
@@ -100,4 +159,20 @@ class TestModelLoader extends TestLoader {
     new File(copyFromZipFilenameB1).delete
     new File(copyFromZipFilenameB2).delete
   }
+}
+
+object TestModelLoader {
+
+  case class Model(
+    parameters: ParameterCollection,
+    lookupParameters: LookupParameter,
+    fwRnnBuilder: RnnBuilder,
+    bwRnnBuilder: RnnBuilder,
+    H: Parameter,
+    O: Parameter,
+    T: LookupParameter,
+    charLookupParameters: LookupParameter,
+    charFwRnnBuilder: RnnBuilder,
+    charBwRnnBuilder: RnnBuilder
+  )
 }
