@@ -3,18 +3,20 @@ package org.clulab.dynet
 import java.io.File
 
 import edu.cmu.dynet._
+import org.clulab.fatdynet.utils.Zipper
+import org.clulab.dynet.models.scala.{HotModel => Model}
 
 // This version tests the Scala interfaces.
 class TestModelLoader extends TestLoader {
 
-  def save(filename: String, model: TestModelLoader.Model, key: String) = {
+  def save(filename: String, model: Model, key: String): Unit = {
     val saver = new ModelSaver(filename)
 
     saver.addModel(model.parameters, key)
     saver.done()
   }
 
-  def save(filename: String, modelA: TestModelLoader.Model, keyA: String, modelB: TestModelLoader.Model, keyB: String): Unit = {
+  def save(filename: String, modelA: Model, keyA: String, modelB: Model, keyB: String): Unit = {
     val saver = new ModelSaver(filename)
 
     saver.addModel(modelA.parameters, keyA)
@@ -22,7 +24,7 @@ class TestModelLoader extends TestLoader {
     saver.done()
   }
 
-  def loadRaw(filename: String, key: String): TestModelLoader.Model = {
+  def loadRaw(filename: String, key: String): Model = {
     val model = newModel()
     val loader = new ModelLoader(filename)
 
@@ -31,7 +33,7 @@ class TestModelLoader extends TestLoader {
     model
   }
 
-  def loadZip(filename: String, zipname: String, key: String): TestModelLoader.Model = {
+  def loadZip(filename: String, zipname: String, key: String): Model = {
     val model = newModel()
     val loader = new ZipModelLoader(filename, zipname)
 
@@ -40,7 +42,7 @@ class TestModelLoader extends TestLoader {
     model
   }
 
-  def newModel(): TestModelLoader.Model = {
+  def newModel(): Model = {
     // This model is intended to closely resemble one in use at clulab.
     val parameters = new ParameterCollection()
     val lookupParameters = parameters.addLookupParameters(w2i.size, Dim(embeddingDim))
@@ -55,7 +57,7 @@ class TestModelLoader extends TestLoader {
     val charFwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
     val charBwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
 
-    TestModelLoader.Model(parameters, lookupParameters, fwBuilder, bwBuilder, H, O, T,
+    Model(parameters, lookupParameters, fwBuilder, bwBuilder, H, O, T,
       charLookupParameters, charFwBuilder, charBwBuilder)
   }
 
@@ -95,9 +97,9 @@ class TestModelLoader extends TestLoader {
       save(origFilenameB, modelB, keyB)
       save(origFilenameAB, modelA, keyA, modelB, keyB)
 
-      zip(origFilenameA, zipFilenameA)
-      zip(origFilenameB, zipFilenameB)
-      zip(origFilenameAB, zipFilenameAB)
+      Zipper.addToZip(origFilenameA, zipFilenameA)
+      Zipper.addToZip(origFilenameB, zipFilenameB)
+      Zipper.addToZip(origFilenameAB, zipFilenameAB)
     }
 
     val copyFromTextModelA1 = loadRaw(origFilenameA, keyA)
@@ -159,20 +161,4 @@ class TestModelLoader extends TestLoader {
     new File(copyFromZipFilenameB1).delete
     new File(copyFromZipFilenameB2).delete
   }
-}
-
-object TestModelLoader {
-
-  case class Model(
-    parameters: ParameterCollection,
-    lookupParameters: LookupParameter,
-    fwRnnBuilder: RnnBuilder,
-    bwRnnBuilder: RnnBuilder,
-    H: Parameter,
-    O: Parameter,
-    T: LookupParameter,
-    charLookupParameters: LookupParameter,
-    charFwRnnBuilder: RnnBuilder,
-    charBwRnnBuilder: RnnBuilder
-  )
 }

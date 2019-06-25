@@ -10,15 +10,15 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
-//import java.nio.charset.StandardCharsets
+import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 
 class ClosableModelLoader(filename: String) extends ModelLoader(filename) {
-  def close(): Unit = done
+  def close(): Unit = done()
 }
 
 class ClosableZipModelLoader(filename: String, zipname: String) extends ZipModelLoader(filename, zipname) {
-  def close(): Unit = done
+  def close(): Unit = done()
 }
 
 // The reason for these first three classes is is so that the ModelLoader
@@ -80,7 +80,7 @@ class RawTextLoader(filename: String) extends BaseTextLoader {
   def newBufferedReader(): BufferedReader = {
     val file = new File(filename)
     val fileInputStream = new FileInputStream(file)
-    val inputStreamReader = new InputStreamReader(fileInputStream) // , StandardCharsets.UTF_8.toString)
+    val inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8.toString)
     val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
     bufferedReader
@@ -95,7 +95,7 @@ class ZipTextLoader(filename: String, zipname: String) extends BaseTextLoader {
     val zipFile = new ZipFile(zipname)
     val zipEntry = zipFile.getEntry(filename)
     val inputStream = zipFile.getInputStream(zipEntry)
-    val inputStreamReader = new InputStreamReader(inputStream)
+    val inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8.toString)
     val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
     bufferedReader

@@ -111,6 +111,18 @@ class Repo(val textLoader: BaseTextLoader) {
     else designs
   }
 
+  def getModel(designs: Seq[Design], index: Int = 0): Model = {
+    require(index < designs.size)
+    val design = designs(index)
+    val parameterCollection = new ParameterCollection
+    val artifact = design.build(parameterCollection)
+
+    textLoader.newModelLoader().autoClose { modelLoader =>
+      artifact.populate(modelLoader, parameterCollection)
+    }
+    new Model(design.name, parameterCollection, Seq(artifact), Seq(design))
+  }
+
   def getModel(designs: Seq[Design], name: String): Model = {
     val parameterCollection = new ParameterCollection
     val namedDesigns = designs.filter(_.name == name)
