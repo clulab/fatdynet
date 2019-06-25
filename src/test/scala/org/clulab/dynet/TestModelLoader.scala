@@ -2,148 +2,102 @@ package org.clulab.dynet
 
 import edu.cmu.dynet._
 
-import org.scalatest._
-
 import java.io.File
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
-import java.net.URI
 
-import collection.JavaConverters._
-import scala.io.Source
-
-class TestModelLoader extends FlatSpec with Matchers {
-
-  val RNN_STATE_SIZE = 50
-  val NONLINEAR_SIZE = 32
-  val RNN_LAYERS = 1
-  val CHAR_RNN_LAYERS = 1
-  val CHAR_EMBEDDING_SIZE = 32
-  val CHAR_RNN_STATE_SIZE = 16
-
-  case class Model(
-    parameters: ParameterCollection,
-    lookupParameters: LookupParameter,
-    fwRnnBuilder: RnnBuilder,
-    bwRnnBuilder: RnnBuilder,
-    H: Parameter,
-    O: Parameter,
-    T: LookupParameter,
-    charLookupParameters: LookupParameter,
-    charFwRnnBuilder: RnnBuilder,
-    charBwRnnBuilder: RnnBuilder
-  )
-
-  def newModel(): Model = {
-    case class Sizeable(size: Int)
-
-    val w2i = Sizeable(100)
-    val t2i = Sizeable(230)
-    val c2i = Sizeable(123)
-    val embeddingDim = 300
-
-    // This model is intended to closely resemble one in use at clulab.
-    val parameters = new ParameterCollection()
-    val lookupParameters = parameters.addLookupParameters(w2i.size, Dim(embeddingDim))
-    val embeddingSize = embeddingDim + 2 * CHAR_RNN_STATE_SIZE
-    val fwBuilder = new LstmBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
-    val bwBuilder = new LstmBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
-    val H = parameters.addParameters(Dim(NONLINEAR_SIZE, 2 * RNN_STATE_SIZE))
-    val O = parameters.addParameters(Dim(t2i.size, NONLINEAR_SIZE))
-    val T = parameters.addLookupParameters(t2i.size, Dim(t2i.size))
-
-    val charLookupParameters = parameters.addLookupParameters(c2i.size, Dim(CHAR_EMBEDDING_SIZE))
-    val charFwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
-    val charBwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
-
-    Model(parameters, lookupParameters, fwBuilder, bwBuilder, H, O, T,
-      charLookupParameters, charFwBuilder, charBwBuilder)
-  }
+class TestModelLoader extends TestLoader {
 
   Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
 
   behavior of "serialized models"
 
   it should "survive a round trip" in {
-    val origFilename = "model.rnn"
-    val zipFilename = "model.jar"
-    val copyFromTextFilename = "modelTextCopy.rnn"
-    val copyFromZipFilename = "modelZipCopy.rnn"
-    val key = "/key"
+    val origFilenameA = "modelA.rnn"
+    val origFilenameB = "modelB.rnn"
+    val origFilenameAB = "modelAB.rnn"
+    val zipFilenameA = "modelA.jar"
+    val zipFilenameB = "modelB.jar"
+    val zipFilenameAB = "modelAB.jar"
+    val copyFromTextFilenameA1 = "modelTextCopyA1.rnn"
+    val copyFromTextFilenameA2 = "modelTextCopyA2.rnn"
+    val copyFromTextFilenameB1 = "modelTextCopyB1.rnn"
+    val copyFromTextFilenameB2 = "modelTextCopyB2.rnn"
+    val copyFromZipFilenameA1 = "modelZipCopyA1.rnn"
+    val copyFromZipFilenameA2 = "modelZipCopyA2.rnn"
+    val copyFromZipFilenameB1 = "modelZipCopyB1.rnn"
+    val copyFromZipFilenameB2 = "modelZipCopyB2.rnn"
+    val keyA = "/keyA"
+    val keyB = "/keyB"
 
     {
-      val model = newModel()
-      val saver = new ModelSaver(origFilename)
+      val modelA = newModel()
+      val modelB = newModel()
 
-      saver.addModel(model.parameters, key)
-      saver.done()
+      save(origFilenameA, modelA, keyA)
+      save(origFilenameB, modelB, keyB)
+      save(origFilenameAB, modelA, keyA, modelB, keyB)
+
+      zip(origFilenameA, zipFilenameA)
+      zip(origFilenameB, zipFilenameB)
+      zip(origFilenameAB, zipFilenameAB)
     }
 
-    // See https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
-    {
-      val zipUri = new File(zipFilename).toURI().toString
-      val jarUri = URI.create(s"jar:$zipUri")
-      val env = mapAsJavaMap(Map("create" -> "true"))
-      val zipFileSystem = FileSystems.newFileSystem(jarUri, env)
-      val origPath = Paths.get(origFilename)
-      val zipPath = zipFileSystem.getPath(origFilename)
+    val copyFromTextModelA1 = load(origFilenameA, keyA)
+    val copyFromTextModelB1 = load(origFilenameB, keyB)
+    val copyFromTextModelA2 = load(origFilenameAB, keyA)
+    val copyFromTextModelB2 = load(origFilenameAB, keyB)
 
-      Files.copy(origPath, zipPath, StandardCopyOption.REPLACE_EXISTING)
-      zipFileSystem.close()
-    }
+    val copyFromZipModelA1 = loadZip(origFilenameA, zipFilenameA, keyA)
+    val copyFromZipModelB1 = loadZip(origFilenameB, zipFilenameB, keyB)
+    val copyFromZipModelA2 = loadZip(origFilenameAB, zipFilenameAB, keyA)
+    val copyFromZipModelB2 = loadZip(origFilenameAB, zipFilenameAB, keyB)
 
-    val copyFromTextModel = {
-      // This will be different from the original because of random initialization.
-      val model = newModel()
-      val loader = new ModelLoader(origFilename)
+    save(copyFromTextFilenameA1, copyFromTextModelA1, keyA)
+    save(copyFromTextFilenameA2, copyFromTextModelA2, keyA)
+    save(copyFromTextFilenameB1, copyFromTextModelB1, keyB)
+    save(copyFromTextFilenameB2, copyFromTextModelB2, keyB)
 
-      loader.populateModel(model.parameters, key)
-      loader.done()
-      model
-    }
-    val copyFromZipModel = {
-      // This will be different from the original because of random initialization.
-      val model = newModel()
-      val loader = new ZipModelLoader(origFilename, zipFilename)
+    save(copyFromZipFilenameA1, copyFromZipModelA1, keyA)
+    save(copyFromZipFilenameA2, copyFromZipModelA2, keyA)
+    save(copyFromZipFilenameB1, copyFromZipModelB1, keyB)
+    save(copyFromZipFilenameB2, copyFromZipModelB1, keyB)
 
-      loader.populateModel(model.parameters, key)
-      loader.done()
-      model
-    }
+    val origTextA = textFromFile(origFilenameA)
+    val textTextA1 = textFromFile(copyFromTextFilenameA1)
+    val textTextA2 = textFromFile(copyFromTextFilenameA2)
+    val zipTextA1 = textFromFile(copyFromZipFilenameA1)
+    val zipTextA2 = textFromFile(copyFromZipFilenameA2)
 
-    {
-      val saver = new ModelSaver(copyFromTextFilename)
+    val origTextB = textFromFile(origFilenameB)
+    val textTextB1 = textFromFile(copyFromTextFilenameB1)
+    val textTextB2 = textFromFile(copyFromTextFilenameB2)
+    val zipTextB1 = textFromFile(copyFromZipFilenameB1)
+    val zipTextB2 = textFromFile(copyFromZipFilenameB2)
 
-      saver.addModel(copyFromTextModel.parameters, key)
-      saver.done()
-    }
-    {
-      val saver = new ModelSaver(copyFromZipFilename)
+    textTextA1 should be (origTextA)
+    textTextA2 should be (origTextA)
+    zipTextA1 should be (origTextA)
+    zipTextA2 should be (origTextA)
 
-      saver.addModel(copyFromZipModel.parameters, key)
-      saver.done()
-    }
+    textTextB1 should be (origTextB)
+    textTextB2 should be (origTextB)
+    zipTextB1 should be (origTextB)
+    zipTextB2 should be (origTextB)
 
-    def textFromFile(filename: String): String = {
-      val source = Source.fromFile(filename)
-      val text = source.mkString
+    origTextA should not be (origTextB)
 
-      source.close()
-      text
-    }
-
-    val origText = textFromFile(origFilename)
-    val textText = textFromFile(copyFromTextFilename)
-    val zipText = textFromFile(copyFromZipFilename)
-
-    textText should be (origText)
-    zipText should be (origText)
-
-    new File(origFilename).delete
-    new File(zipFilename).delete
-    new File(copyFromTextFilename).delete
-    new File(copyFromZipFilename).delete
+    new File(origFilenameA).delete
+    new File(origFilenameB).delete
+    new File(origFilenameAB).delete
+    new File(zipFilenameA).delete
+    new File(zipFilenameB).delete
+    new File(zipFilenameAB).delete
+    new File(copyFromTextFilenameA1).delete
+    new File(copyFromTextFilenameA2).delete
+    new File(copyFromTextFilenameB1).delete
+    new File(copyFromTextFilenameB2).delete
+    new File(copyFromZipFilenameA1).delete
+    new File(copyFromZipFilenameA2).delete
+    new File(copyFromZipFilenameB1).delete
+    new File(copyFromZipFilenameB2).delete
   }
 }
