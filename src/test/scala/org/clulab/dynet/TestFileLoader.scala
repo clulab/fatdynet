@@ -3,7 +3,7 @@ package org.clulab.dynet
 import java.io.File
 
 import edu.cmu.dynet.internal._
-import org.clulab.dynet.models.java.{ HotModel => Model}
+import org.clulab.dynet.models.hot.java.{ HotModel => Model}
 import org.clulab.fatdynet.utils.Zipper
 
 // This version tests the Java interfaces.
@@ -23,7 +23,7 @@ class TestFileLoader extends TestLoader {
   }
 
   def loadRaw(filename: String, key: String): Model = {
-    val model = newModel()
+    val model = Model()
     val loader = new TextFileLoader(filename)
 
     loader.populate(model.parameters, key)
@@ -31,30 +31,11 @@ class TestFileLoader extends TestLoader {
   }
 
   def loadZip(filename: String, zipname: String, key: String): Model = {
-    val model = newModel()
+    val model = Model()
     val loader = new ZipFileLoader(filename, zipname)
 
     loader.populate(model.parameters, key)
     model
-  }
-
-  def newModel(): Model = {
-    // This model is intended to closely resemble one in use at clulab.
-    val parameters = new ParameterCollection()
-    val lookupParameters = parameters.add_lookup_parameters(w2i.size, new Dim(embeddingDim))
-    val embeddingSize = embeddingDim + 2 * CHAR_RNN_STATE_SIZE
-    val fwBuilder = new VanillaLSTMBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
-    val bwBuilder = new VanillaLSTMBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
-    val H = parameters.add_parameters(new Dim(NONLINEAR_SIZE, 2 * RNN_STATE_SIZE))
-    val O = parameters.add_parameters(new Dim(t2i.size, NONLINEAR_SIZE))
-    val T = parameters.add_lookup_parameters(t2i.size, new Dim(t2i.size))
-
-    val charLookupParameters = parameters.add_lookup_parameters(c2i.size, new Dim(CHAR_EMBEDDING_SIZE))
-    val charFwBuilder = new VanillaLSTMBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
-    val charBwBuilder = new VanillaLSTMBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
-
-    Model(parameters, lookupParameters, fwBuilder, bwBuilder, H, O, T,
-      charLookupParameters, charFwBuilder, charBwBuilder)
   }
 
   def initialize(): Unit = {
@@ -90,8 +71,8 @@ class TestFileLoader extends TestLoader {
     val keyB = "/keyB"
 
     {
-      val modelA = newModel()
-      val modelB = newModel()
+      val modelA = Model()
+      val modelB = Model()
 
       save(origFilenameA, modelA, keyA)
       save(origFilenameB, modelB, keyB)
@@ -162,4 +143,3 @@ class TestFileLoader extends TestLoader {
     new File(copyFromZipFilenameB2).delete
   }
 }
-

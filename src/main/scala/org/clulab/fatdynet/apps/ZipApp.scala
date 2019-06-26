@@ -6,8 +6,8 @@ import edu.cmu.dynet.Dim
 import edu.cmu.dynet.Initialize
 import edu.cmu.dynet.ParameterCollection
 import org.clulab.fatdynet.Repo
-import org.clulab.fatdynet.utils.ClosableModelLoader
-import org.clulab.fatdynet.utils.ClosableZipModelLoader
+import org.clulab.fatdynet.utils.CloseableModelLoader
+import org.clulab.fatdynet.utils.CloseableZipModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Zipper
 import org.clulab.fatdynet.utils.Closer.AutoCloser
@@ -34,11 +34,11 @@ object ZipApp {
       modelSaver.addLookupParameter(lookupParameter, key)
     }
 
-    // Convert the raw file into a zip file.
+    // Convert the raw file into a jar/zip file.
     Zipper.zip(filename, zipname)
 
     // Read it back from the raw file in the dynet way.
-    val rawLookupParameter1 = new ClosableModelLoader(filename).autoClose { modelLoader =>
+    val rawLookupParameter1 = new CloseableModelLoader(filename).autoClose { modelLoader =>
      // This requires you to know the dimension details and key in advance.
       val parameterCollection = new ParameterCollection()
       val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))
@@ -48,7 +48,7 @@ object ZipApp {
     }
 
     // Read it back from the zip file in the dynet way.
-    val zipLookupParameter1 = new ClosableZipModelLoader(filename, zipname).autoClose { modelLoader =>
+    val zipLookupParameter1 = new CloseableZipModelLoader(filename, zipname).autoClose { modelLoader =>
       // This requires you to know the dimension details and key in advance.
       val parameterCollection = new ParameterCollection()
       val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))
@@ -76,7 +76,7 @@ object ZipApp {
       lookupParameter
     }
 
-    // Read it back from the raw file in the fatdynet way.
+    // Read it back from the zip file in the fatdynet way.
     val zipLookupParameter2 = {
       // Indicate the repository to be used and the zip file that contains it.
       val repo = Repo(filename, zipname)

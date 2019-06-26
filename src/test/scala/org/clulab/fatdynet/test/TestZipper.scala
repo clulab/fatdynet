@@ -5,8 +5,6 @@ import java.io.File
 import org.clulab.fatdynet.utils.Zipper
 import org.scalatest._
 
-import scala.io.Source
-
 class TestZipper extends FlatSpec with Matchers {
 
   behavior of "Zipper"
@@ -17,8 +15,8 @@ class TestZipper extends FlatSpec with Matchers {
     val zipname = "zipper.zip"
 
     0.until(10).foreach { i =>
-      Zipper.addToZip(filename1, zipname)
-      Zipper.addToZip(filename2, zipname)
+      Zipper.zip(filename1, zipname)
+      Zipper.zip(filename2, zipname)
       new File(zipname).delete should be (true)
     }
   }

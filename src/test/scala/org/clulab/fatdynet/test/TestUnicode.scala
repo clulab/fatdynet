@@ -5,11 +5,12 @@ import java.io.File
 import edu.cmu.dynet.Dim
 import edu.cmu.dynet.Initialize
 import edu.cmu.dynet.LookupParameter
-import edu.cmu.dynet.ModelLoader
-import edu.cmu.dynet.ModelSaver
 import edu.cmu.dynet.ParameterCollection
-import edu.cmu.dynet.ZipModelLoader
 import org.clulab.fatdynet.Repo
+import org.clulab.fatdynet.utils.CloseableModelLoader
+import org.clulab.fatdynet.utils.CloseableModelSaver
+import org.clulab.fatdynet.utils.CloseableZipModelLoader
+import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Zipper
 import org.scalatest._
 
@@ -23,30 +24,29 @@ class TestUnicode extends FlatSpec with Matchers {
   }
 
   def save(filename: String, lookupParameter: LookupParameter, key: String): Unit = {
-    val saver = new ModelSaver(filename)
-
-    saver.addLookupParameter(lookupParameter, key)
-    saver.done()
+    new CloseableModelSaver(filename).autoClose { saver =>
+      saver.addLookupParameter(lookupParameter, key)
+    }
   }
 
   def loadRaw(filename: String, key: String): LookupParameter = {
     val parameterCollection = new ParameterCollection()
     val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))
-    val loader = new ModelLoader(filename)
 
-    loader.populateLookupParameter(lookupParameter, key)
-    loader.done()
-    lookupParameter
+    new CloseableModelLoader(filename).autoClose { loader =>
+      loader.populateLookupParameter(lookupParameter, key)
+      lookupParameter
+    }
   }
 
   def loadZip(filename: String, zipname: String, key: String): LookupParameter = {
     val parameterCollection = new ParameterCollection()
     val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))
-    val loader = new ZipModelLoader(filename, zipname)
 
-    loader.populateLookupParameter(lookupParameter, key)
-    loader.done()
-    lookupParameter
+    new CloseableZipModelLoader(filename, zipname).autoClose { loader =>
+      loader.populateLookupParameter(lookupParameter, key)
+      lookupParameter
+    }
   }
 
   Initialize.initialize(Map("random-seed" -> 2522620396L))

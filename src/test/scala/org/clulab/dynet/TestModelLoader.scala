@@ -4,61 +4,44 @@ import java.io.File
 
 import edu.cmu.dynet._
 import org.clulab.fatdynet.utils.Zipper
-import org.clulab.dynet.models.scala.{HotModel => Model}
+import org.clulab.dynet.models.hot.scala.{HotModel => Model}
+import org.clulab.fatdynet.utils.CloseableModelLoader
+import org.clulab.fatdynet.utils.CloseableModelSaver
+import org.clulab.fatdynet.utils.CloseableZipModelLoader
+import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 // This version tests the Scala interfaces.
 class TestModelLoader extends TestLoader {
 
   def save(filename: String, model: Model, key: String): Unit = {
-    val saver = new ModelSaver(filename)
-
-    saver.addModel(model.parameters, key)
-    saver.done()
+    new CloseableModelSaver(filename).autoClose { saver =>
+      saver.addModel(model.parameters, key)
+    }
   }
 
   def save(filename: String, modelA: Model, keyA: String, modelB: Model, keyB: String): Unit = {
-    val saver = new ModelSaver(filename)
-
-    saver.addModel(modelA.parameters, keyA)
-    saver.addModel(modelB.parameters, keyB)
-    saver.done()
+    new CloseableModelSaver(filename).autoClose { saver =>
+      saver.addModel(modelA.parameters, keyA)
+      saver.addModel(modelB.parameters, keyB)
+    }
   }
 
   def loadRaw(filename: String, key: String): Model = {
-    val model = newModel()
-    val loader = new ModelLoader(filename)
+    new CloseableModelLoader(filename).autoClose { loader =>
+      val model = Model()
+      loader.populateModel(model.parameters, key)
 
-    loader.populateModel(model.parameters, key)
-    loader.done()
-    model
+      model
+    }
   }
 
   def loadZip(filename: String, zipname: String, key: String): Model = {
-    val model = newModel()
-    val loader = new ZipModelLoader(filename, zipname)
+    new CloseableZipModelLoader(filename, zipname).autoClose { loader =>
+      val model = Model()
 
-    loader.populateModel(model.parameters, key)
-    loader.done()
-    model
-  }
-
-  def newModel(): Model = {
-    // This model is intended to closely resemble one in use at clulab.
-    val parameters = new ParameterCollection()
-    val lookupParameters = parameters.addLookupParameters(w2i.size, Dim(embeddingDim))
-    val embeddingSize = embeddingDim + 2 * CHAR_RNN_STATE_SIZE
-    val fwBuilder = new LstmBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
-    val bwBuilder = new LstmBuilder(RNN_LAYERS, embeddingSize, RNN_STATE_SIZE, parameters)
-    val H = parameters.addParameters(Dim(NONLINEAR_SIZE, 2 * RNN_STATE_SIZE))
-    val O = parameters.addParameters(Dim(t2i.size, NONLINEAR_SIZE))
-    val T = parameters.addLookupParameters(t2i.size, Dim(t2i.size))
-
-    val charLookupParameters = parameters.addLookupParameters(c2i.size, Dim(CHAR_EMBEDDING_SIZE))
-    val charFwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
-    val charBwBuilder = new LstmBuilder(CHAR_RNN_LAYERS, CHAR_EMBEDDING_SIZE, CHAR_RNN_STATE_SIZE, parameters)
-
-    Model(parameters, lookupParameters, fwBuilder, bwBuilder, H, O, T,
-      charLookupParameters, charFwBuilder, charBwBuilder)
+      loader.populateModel(model.parameters, key)
+      model
+    }
   }
 
   def initialize(): Unit = {
@@ -90,8 +73,8 @@ class TestModelLoader extends TestLoader {
     val keyB = "/keyB"
 
     {
-      val modelA = newModel()
-      val modelB = newModel()
+      val modelA = Model()
+      val modelB = Model()
 
       save(origFilenameA, modelA, keyA)
       save(origFilenameB, modelB, keyB)

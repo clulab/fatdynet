@@ -15,11 +15,11 @@ import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 
-class ClosableModelLoader(filename: String) extends ModelLoader(filename) {
+class CloseableModelLoader(filename: String) extends ModelLoader(filename) {
   def close(): Unit = done()
 }
 
-class ClosableZipModelLoader(filename: String, zipname: String) extends ZipModelLoader(filename, zipname) {
+class CloseableZipModelLoader(filename: String, zipname: String) extends ZipModelLoader(filename, zipname) {
   def close(): Unit = done()
 }
 
