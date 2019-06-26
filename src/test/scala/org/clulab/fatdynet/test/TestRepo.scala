@@ -63,16 +63,15 @@ class TestRepo extends FlatSpec with Matchers {
           testDesigns(designs) should be(true)
         }
 
-//        {
-//          val zipname = filename + ".zip"
-//          Zipper.addToZip(filename, zipname)
-//          val repo = Repo(filename, zipname)
-//          val designs = getDesigns(repo)
-//
-//          testDesigns(designs) should be(true)
-//          if (!new File(zipname).delete)
-//            println("Not deleted")
-//        }
+        {
+          val zipname = filename + ".zip"
+          Zipper.addToZip(filename, zipname)
+          val repo = Repo(filename, zipname)
+          val designs = getDesigns(repo)
+
+          testDesigns(designs) should be(true)
+          new File(zipname).delete should be (true)
+        }
         new File(filename).delete
       }
     }
