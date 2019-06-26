@@ -65,7 +65,7 @@ class TestRepo extends FlatSpec with Matchers {
 
         {
           val zipname = filename + ".zip"
-          Zipper.addToZip(filename, zipname)
+          Zipper.zip(filename, zipname)
           val repo = Repo(filename, zipname)
           val designs = getDesigns(repo)
 

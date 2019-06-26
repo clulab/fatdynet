@@ -60,7 +60,7 @@ class TestUnicode extends FlatSpec with Matchers {
     val model = newModel()
 
     save(filename, model, key)
-    Zipper.addToZip(filename, zipname)
+    Zipper.zip(filename, zipname)
 
     val rawModel = loadRaw(filename, key)
     val zipModel = loadZip(filename, zipname, key)

@@ -34,7 +34,7 @@ class TestRepoDelete extends FlatSpec with Matchers {
       modelSaver.addLookupParameter(lookupParameter, key)
     }
 
-    Zipper.addToZip(filename, zipname)
+    Zipper.zip(filename, zipname)
 
     val repo = Repo(filename, zipname)
     val designs = repo.getDesigns()

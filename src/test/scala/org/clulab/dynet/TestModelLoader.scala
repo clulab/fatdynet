@@ -97,9 +97,9 @@ class TestModelLoader extends TestLoader {
       save(origFilenameB, modelB, keyB)
       save(origFilenameAB, modelA, keyA, modelB, keyB)
 
-      Zipper.addToZip(origFilenameA, zipFilenameA)
-      Zipper.addToZip(origFilenameB, zipFilenameB)
-      Zipper.addToZip(origFilenameAB, zipFilenameAB)
+      Zipper.zip(origFilenameA, zipFilenameA)
+      Zipper.zip(origFilenameB, zipFilenameB)
+      Zipper.zip(origFilenameAB, zipFilenameAB)
     }
 
     val copyFromTextModelA1 = loadRaw(origFilenameA, keyA)

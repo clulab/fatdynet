@@ -11,11 +11,11 @@ import collection.JavaConverters._
 
 object Zipper {
 
-  def addToZip(filename: String, zipname: String): Unit = {
+  def zip(filename: String, zipname: String): Unit = {
     // See https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
     val zipUri = new File(zipname).toURI().toString
     val jarUri = URI.create(s"jar:$zipUri")
-    val env = mapAsJavaMap(Map("create" -> "true"))
+    val env = Map("create" -> "true").asJava
     val zipFileSystem = FileSystems.newFileSystem(jarUri, env)
     val origPath = Paths.get(filename)
     val zipPath = zipFileSystem.getPath(filename)

@@ -35,7 +35,7 @@ object ZipApp {
     }
 
     // Convert the raw file into a zip file.
-    Zipper.addToZip(filename, zipname)
+    Zipper.zip(filename, zipname)
 
     // Read it back from the raw file in the dynet way.
     val rawLookupParameter1 = new ClosableModelLoader(filename).autoClose { modelLoader =>
