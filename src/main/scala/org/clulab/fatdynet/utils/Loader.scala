@@ -6,6 +6,8 @@ import edu.cmu.dynet.Parameter
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet.ZipModelLoader
 
+import org.clulab.fatdynet.utils.Closer.AutoCloser
+
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -66,7 +68,7 @@ class ZipTextModelLoader(filename: String, zipname: String) extends BaseModelLoa
 // by the model loaders and by the Repo Parsers which read their text.
 abstract class BaseTextLoader {
   def newModelLoader(): BaseModelLoader
-  def newBufferedReader(): BufferedReader
+  def withBufferedReader(f: BufferedReader => Unit): Unit
 }
 
 object BaseTextLoader {
@@ -77,13 +79,15 @@ class RawTextLoader(filename: String) extends BaseTextLoader {
 
   def newModelLoader(): BaseModelLoader = new RawTextModelLoader(filename)
 
-  def newBufferedReader(): BufferedReader = {
+  def withBufferedReader(f: BufferedReader => Unit): Unit = {
     val file = new File(filename)
     val fileInputStream = new FileInputStream(file)
     val inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8.toString)
     val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
-    bufferedReader
+    bufferedReader.autoClose { bufferedReader =>
+      f(bufferedReader)
+    }
   }
 }
 
@@ -91,13 +95,20 @@ class ZipTextLoader(filename: String, zipname: String) extends BaseTextLoader {
 
   def newModelLoader(): BaseModelLoader = new ZipTextModelLoader(filename, zipname)
 
-  def newBufferedReader(): BufferedReader = {
+  def withBufferedReader(f: BufferedReader => Unit): Unit = {
     val zipFile = new ZipFile(zipname)
-    val zipEntry = zipFile.getEntry(filename)
-    val inputStream = zipFile.getInputStream(zipEntry)
-    val inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8.toString)
-    val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
-    bufferedReader
+    // The zipFile needs to be closed as well or else the file won't delete.
+    // Closing the bufferedReader alone is insufficient.
+    zipFile.autoClose { zipFile =>
+      val zipEntry = zipFile.getEntry(filename)
+      val inputStream = zipFile.getInputStream(zipEntry)
+      val inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8.toString)
+      val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
+
+      bufferedReader.autoClose { bufferedReader =>
+        f(bufferedReader)
+      }
+    }
   }
 }

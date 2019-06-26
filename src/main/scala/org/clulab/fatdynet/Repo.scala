@@ -67,7 +67,7 @@ class Repo(val textLoader: BaseTextLoader) {
       var currentParser: Option[Parser] = None
 //      Source.fromFile(filename).autoClose { source =>
 //        getHeadersSlowly(source)
-      textLoader.newBufferedReader().autoClose { bufferedReader =>
+      textLoader.withBufferedReader { bufferedReader =>
         getHeadersQuickly(bufferedReader)
             .foreach { header =>
 //              println(header)
