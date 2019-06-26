@@ -73,6 +73,11 @@ abstract class BaseTextLoader {
 
 object BaseTextLoader {
   val BUFFER_SIZE = 2048
+  // If there are performance problems related to converting large files from
+  // UTF8, then switch to ASCII, but then also turn off TestUnicode.
+  // There will probably never be a UTF8 key in any file.
+  val CHAR_SET = StandardCharsets.UTF_8.toString
+  // val CHAR_SET = StandardCharsets.US_ASCII.toString
 }
 
 class RawTextLoader(filename: String) extends BaseTextLoader {
@@ -82,7 +87,7 @@ class RawTextLoader(filename: String) extends BaseTextLoader {
   def withBufferedReader(f: BufferedReader => Unit): Unit = {
     val file = new File(filename)
     val fileInputStream = new FileInputStream(file)
-    val inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8.toString)
+    val inputStreamReader = new InputStreamReader(fileInputStream, BaseTextLoader.CHAR_SET)
     val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
     bufferedReader.autoClose { bufferedReader =>
@@ -103,7 +108,7 @@ class ZipTextLoader(filename: String, zipname: String) extends BaseTextLoader {
     zipFile.autoClose { zipFile =>
       val zipEntry = zipFile.getEntry(filename)
       val inputStream = zipFile.getInputStream(zipEntry)
-      val inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8.toString)
+      val inputStreamReader = new InputStreamReader(inputStream, BaseTextLoader.CHAR_SET)
       val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
       bufferedReader.autoClose { bufferedReader =>
