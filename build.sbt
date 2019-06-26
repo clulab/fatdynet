@@ -1,4 +1,4 @@
-import ReleaseTransformations._
+//import ReleaseTransformations._
 
 name := "fatdynet"
 
@@ -63,17 +63,17 @@ pomExtra :=
 //
 
 // release steps
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  releaseStepCommandAndRemaining("+publishSigned"),
-  setNextVersion,
-  commitNextVersion,
-  releaseStepCommandAndRemaining("sonatypeReleaseAll"),
-  pushChanges
-)
+//releaseProcess := Seq[ReleaseStep](
+//  checkSnapshotDependencies,
+//  inquireVersions,
+//  runClean,
+//  runTest,
+//  setReleaseVersion,
+//  commitReleaseVersion,
+//  tagRelease,
+//  releaseStepCommandAndRemaining("+publishSigned"),
+//  setNextVersion,
+//  commitNextVersion,
+//  releaseStepCommandAndRemaining("sonatypeReleaseAll"),
+//  pushChanges
+//)
