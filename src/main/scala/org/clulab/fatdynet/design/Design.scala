@@ -2,8 +2,7 @@ package org.clulab.fatdynet.design
 
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet._
-
-import scala.collection.mutable.ListBuffer
+import org.clulab.fatdynet.utils.BaseModelLoader
 
 class Artifact(val name: String, val parameter: Option[Parameter],
     val lookupParameter: Option[LookupParameter], val rnnBuilder: Option[RnnBuilder]) {
@@ -20,7 +19,7 @@ class Artifact(val name: String, val parameter: Option[Parameter],
 
   def isRnnBuilder: Boolean = rnnBuilder.isDefined
 
-  def populate(modelLoader: ModelLoader, parameterCollection: ParameterCollection): Unit = {
+  def populate(modelLoader: BaseModelLoader, parameterCollection: ParameterCollection): Unit = {
     if (isParameter)
       modelLoader.populateParameter(parameter.get, name)
     else if (isLookupParameter)
@@ -36,7 +35,7 @@ abstract class Design(val name: String, val index: Option[Int]) {
 
   def isPotentiallyReorderable = false
 
-  def isActuallyReorderable = isPotentiallyReorderable && index.nonEmpty
+  def isActuallyReorderable: Boolean = isPotentiallyReorderable && index.nonEmpty
 }
 
 class ParameterDesign(name: String, index: Option[Int], val dims: Dim)

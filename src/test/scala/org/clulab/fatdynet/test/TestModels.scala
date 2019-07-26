@@ -98,7 +98,7 @@ class TestModels extends FlatSpec with Matchers {
         modelSaver.addParameter(oldParameter, name)
       }
 
-      val repo = new Repo(filename)
+      val repo = Repo(filename)
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
@@ -126,7 +126,7 @@ class TestModels extends FlatSpec with Matchers {
         modelSaver.addLookupParameter(oldLookupParameter, name)
       }
 
-      val repo = new Repo(filename)
+      val repo = Repo(filename)
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
@@ -154,7 +154,7 @@ class TestModels extends FlatSpec with Matchers {
         modelSaver.addModel(oldParameterCollection, name)
       }
 
-      val repo = new Repo(filename)
+      val repo = Repo(filename)
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
@@ -202,7 +202,7 @@ class TestModels extends FlatSpec with Matchers {
         modelSaver.addModel(oldParameterCollection, name)
       }
 
-      val repo = new Repo(filename)
+      val repo = Repo(filename)
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 
@@ -252,7 +252,7 @@ class TestModels extends FlatSpec with Matchers {
         modelSaver.addModel(oldParameterCollection, name)
       }
 
-      val repo = new Repo(filename)
+      val repo = Repo(filename)
       val designs = repo.getDesigns()
       val model = repo.getModel(designs, name)
 

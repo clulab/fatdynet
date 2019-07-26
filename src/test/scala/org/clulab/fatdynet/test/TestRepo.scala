@@ -3,13 +3,12 @@ package org.clulab.fatdynet.test
 import java.io.File
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.CloseableModelSaver
-
+import org.clulab.fatdynet.utils.Zipper
 import org.scalatest._
 
 /**
@@ -56,11 +55,23 @@ class TestRepo extends FlatSpec with Matchers {
           saver.addModel(oldModel, modelName)
         }
 
-        val repo = new Repo(filename)
-        val designs = getDesigns(repo)
+        {
+          // Run the raw version
+          val repo = Repo(filename)
+          val designs = getDesigns(repo)
 
-        testDesigns(designs) should be (true)
+          testDesigns(designs) should be(true)
+        }
 
+        {
+          val zipname = filename + ".zip"
+          Zipper.zip(filename, zipname)
+          val repo = Repo(filename, zipname)
+          val designs = getDesigns(repo)
+
+          testDesigns(designs) should be(true)
+          new File(zipname).delete should be (true)
+        }
         new File(filename).delete
       }
     }
