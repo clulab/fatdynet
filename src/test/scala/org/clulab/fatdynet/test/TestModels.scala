@@ -273,9 +273,9 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-//  testNamedParameter
-//  testNamedLookupParameter
-//  testNamedRnnBuilder
+  testNamedParameter
+  testNamedLookupParameter
+  testNamedRnnBuilder
   testMihaiModel
-//  testEnriqueModel
+  testEnriqueModel
 }
