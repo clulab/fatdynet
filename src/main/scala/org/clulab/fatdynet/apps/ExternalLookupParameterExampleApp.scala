@@ -122,7 +122,7 @@ object ExternalLookupParameterExampleApp {
   }
 
   def load(filename: String): XorModel = {
-    val repo = new Repo(filename)
+    val repo = Repo(filename)
     val designs = repo.getDesigns()
     val model = repo.getModel(designs, "/model")
 

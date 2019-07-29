@@ -10,7 +10,7 @@ package edu.cmu.dynet.internal;
 
 public class ParameterStorageBase {
   private transient long swigCPtr;
-  protected transient boolean swigCMemOwn;
+  private transient boolean swigCMemOwn;
 
   protected ParameterStorageBase(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
