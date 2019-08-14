@@ -92,7 +92,7 @@ iter = 29, loss = 7.1054274E-15
 
 ## Depending on This Project
 
-To use fatdynet with `sbt` in your own project, make a `build.sbt` file like
+To use fatdynet with `sbt` in your own project, first check the [releases page](https://github.com/clulab/fatdynet/releases) for the most recent version number and then make a `build.sbt` file like
 
 ```
 name := "fatdynetClient"
@@ -102,7 +102,7 @@ organization := "org.clulab"
 scalaVersion := "2.12.4"
 
 libraryDependencies ++= Seq(
-  "org.clulab" %% "fatdynet" % "0.2.0"
+  "org.clulab" %% "fatdynet" % "0.2.3"
 )
 ```
 
