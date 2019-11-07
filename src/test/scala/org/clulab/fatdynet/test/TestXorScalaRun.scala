@@ -10,7 +10,6 @@ class TestXorScalaRun extends FlatSpec with Matchers {
   val isWindows: Boolean = osName.startsWith("Windows ")
   val isMac: Boolean = osName.startsWith("Mac ")
   val isLinux: Boolean = !(isWindows || isMac)
-  println(osName)
 
   behavior of "XorScala"
 
@@ -29,6 +28,8 @@ class TestXorScalaRun extends FlatSpec with Matchers {
       mostRecentLoss.toString should be ("")
       totalLoss.toString should be ("")
     }
+    else {
+      throw new Exception(s"Operating system wasn't identified: $osName")
+    }
   }
 }
-
