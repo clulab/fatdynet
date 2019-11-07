@@ -8,13 +8,14 @@ object XorScala {
   val ITERATIONS = 30
   val RANDOM_SEED = 2522620396L
 
-  def run(): Float = {
+  def run(): (Float, Float) = {
     println("Running XOR example")
     Initialize.initialize(Map("random-seed" -> RANDOM_SEED))
     println("Dynet initialized!")
     val m = new ParameterCollection
     val sgd = new SimpleSGDTrainer(m)
     ComputationGraph.renew()
+    var mostRecentLoss = 0F
     var totalLoss = 0F
 
     val p_W = m.addParameters(Dim(HIDDEN_SIZE, 2))
@@ -60,10 +61,11 @@ object XorScala {
       sgd.learningRate *= 0.998f
       loss /= 4
       println("iter = " + iter + ", loss = " + loss)
+      mostRecentLoss = loss
       totalLoss += loss
     }
     println("--total--, loss = " + totalLoss)
-    totalLoss
+    (mostRecentLoss, totalLoss)
   }
 
   def main(args: Array[String]): Unit = {

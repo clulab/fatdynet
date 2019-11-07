@@ -8,15 +8,27 @@ class TestXorScalaRun extends FlatSpec with Matchers {
 
   val osName = System.getProperty("os.name")
   val isWindows: Boolean = osName.startsWith("Windows ")
-  val isMac: Boolean = osName.startsWith("Macintosh ")
+  val isMac: Boolean = osName.startsWith("Mac ")
   val isLinux: Boolean = !(isWindows || isMac)
+  println(osName)
 
   behavior of "XorScala"
 
   it should "get the right result" in {
-    val result = XorScala.run()
+    val (mostRecentLoss, totalLoss) = XorScala.run()
 
-    if (isWindows)
-      result.toString should be ("13.83572")
+    if (isWindows) {
+      mostRecentLoss.toString should be ("6.168399E-12")
+      totalLoss.toString should be ("13.83572")
+    }
+    else if (isMac) {
+      mostRecentLoss.toString should be ("9.2370556E-14")
+      totalLoss.toString should be ("13.835723")
+    }
+    else if (isLinux) {
+      mostRecentLoss.toString should be ("")
+      totalLoss.toString should be ("")
+    }
   }
 }
+
