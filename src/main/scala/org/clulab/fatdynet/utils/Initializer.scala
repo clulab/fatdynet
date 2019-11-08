@@ -21,9 +21,11 @@ object Initializer {
   def initialize(args: Map[String, Any] = Map.empty): Boolean = this.synchronized {
     val oldInitialized = initialized
 
-    cleanup()
-    Initialize.initialize(args)
-    initialized = true
+    if (!oldInitialized) {
+//      cleanup()
+      Initialize.initialize(args)
+      initialized = true
+    }
     oldInitialized
   }
 }
