@@ -15,7 +15,7 @@ import org.clulab.fatdynet.utils.Closer.AutoCloser
 object ZipApp {
 
   def main(args: Array[String]) {
-    Initialize.initialize(Map("random-seed" -> 2522620396L))
+    Initializer.initialize(Map("random-seed" -> 2522620396L))
 
     val filename = "model.rnn"
     val zipname = "model.jar"

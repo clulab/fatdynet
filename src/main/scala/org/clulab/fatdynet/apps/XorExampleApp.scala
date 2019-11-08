@@ -1,10 +1,10 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.Initializer
 
 import scala.util.Random
 
@@ -153,7 +153,7 @@ object XorExampleApp {
   def main(args: Array[String]) {
     val filename = "XorModel.dat"
 
-    Initialize.initialize(Map("random-seed" -> 2522620396L))
+    Initializer.initialize(Map("random-seed" -> 2522620396L))
 
     val (xorModel1, initialResults) = train
     val expectedResults = predict(xorModel1)

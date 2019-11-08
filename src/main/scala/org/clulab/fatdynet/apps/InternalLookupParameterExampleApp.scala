@@ -145,7 +145,7 @@ object InternalLookupParameterExampleApp {
   def main(args: Array[String]) {
     val filename = "XorModel.dat"
 
-    Initialize.initialize(Map("random-seed" -> 2522620396L))
+    Initializer.initialize(Map("random-seed" -> 2522620396L))
 
     val (xorModel1, initialResults) = train
     val expectedResults = predict(xorModel1)

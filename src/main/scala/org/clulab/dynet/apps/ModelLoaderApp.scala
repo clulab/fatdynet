@@ -10,7 +10,7 @@ import org.clulab.fatdynet.utils.Zipper
 
 object ModelLoaderApp extends App {
 
-  Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+  Initializer.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
 
   val origFilename = "model.rnn"
   val zipFilename = "model.jar"
