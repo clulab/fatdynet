@@ -1,6 +1,5 @@
 package org.clulab.fatdynet.examples
 
-import edu.cmu.dynet.Initialize
 import edu.cmu.dynet._
 
 object XorScala {
@@ -10,6 +9,7 @@ object XorScala {
 
   def run(): (Float, Float) = {
     println("Running XOR example")
+    println("Doing the run and about to initialize.")
     Initialize.initialize(Map("random-seed" -> RANDOM_SEED))
     println("Dynet initialized!")
     val m = new ParameterCollection
