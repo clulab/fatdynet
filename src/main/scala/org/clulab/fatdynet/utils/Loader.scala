@@ -76,7 +76,7 @@ object BaseTextLoader {
   // If there are performance problems related to converting large files from
   // UTF8, then switch to ASCII, but then also turn off TestUnicode.
   // There will probably never be a UTF8 key in any file.
-  val CHAR_SET = StandardCharsets.UTF_8.toString
+  val CHAR_SET: String = StandardCharsets.UTF_8.toString
   // val CHAR_SET = StandardCharsets.US_ASCII.toString
 }
 

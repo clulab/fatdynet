@@ -26,7 +26,7 @@ class TestModels extends FlatSpec with Matchers {
 
   def equalsPS(lefts: Seq[ParameterStorage], rights: Seq[ParameterStorage]): Boolean = {
     lefts.size == rights.size &&
-        lefts.zip(rights).forall { case (left, right) => equals(left.values.toSeq, right.values.toSeq) }
+        lefts.zip(rights).forall { case (left, right) => equals(left.values.toSeq(), right.values.toSeq()) }
   }
 
   def equalsLPS(lefts: Seq[LookupParameterStorage], rights: Seq[LookupParameterStorage]): Boolean = {
@@ -43,7 +43,9 @@ class TestModels extends FlatSpec with Matchers {
       new CloseableModelSaver(filename).autoClose { modelSaver =>
         operation(modelSaver)
       }
-      val string = Source.fromFile(filename).mkString
+      val source = Source.fromFile(filename)
+      val string = source.mkString
+      source.close()
       string
     }
   }
@@ -68,7 +70,7 @@ class TestModels extends FlatSpec with Matchers {
 
   def equals(left: Parameter, right: Parameter, name: String): Boolean = {
     left.dim == right.dim &&
-        equals(left.values.toSeq, right.values.toSeq) &&
+        equals(left.values().toSeq(), right.values().toSeq()) &&
         asString(left, name) == asString(right, name)
   }
 
@@ -80,11 +82,11 @@ class TestModels extends FlatSpec with Matchers {
   def equals(left: ParameterCollection, right: ParameterCollection, name: String = ""): Boolean = {
     // Because of type erasure on Seq, equals cannot be overloaded here
     asString(left, name) == asString(right, name) &&
-        equalsPS(left.parametersList, right.parametersList) &&
-        equalsLPS(left.lookupParametersList, right.lookupParametersList)
+        equalsPS(left.parametersList(), right.parametersList()) &&
+        equalsLPS(left.lookupParametersList(), right.lookupParametersList())
   }
 
-  def testNamedParameter = {
+  def testNamedParameter(): Unit = {
     behavior of "loaded parameters"
 
     it should "serialize" in {
@@ -103,7 +105,7 @@ class TestModels extends FlatSpec with Matchers {
       val model = repo.getModel(designs, name)
 
       val newParameterCollection = model.getParameterCollection
-      val newParameter = model.getParameter(0)
+      val newParameter = model.getParameter()
 
       equals(newParameter, oldParameter, name) should be (true)
       equals(newParameterCollection, oldParameterCollection) should be (true)
@@ -112,7 +114,7 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  def testNamedLookupParameter = {
+  def testNamedLookupParameter(): Unit = {
     behavior of "loaded lookup parameters"
 
     it should "serialize" in {
@@ -131,7 +133,7 @@ class TestModels extends FlatSpec with Matchers {
       val model = repo.getModel(designs, name)
 
       val newParameterCollection = model.getParameterCollection
-      val newLookupParameter = model.getLookupParameter(0)
+      val newLookupParameter = model.getLookupParameter()
 
       equals(newLookupParameter, oldLookupParameter, name) should be (true)
       equals(newParameterCollection, oldParameterCollection) should be (true)
@@ -140,7 +142,7 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  def testNamedRnnBuilder = {
+  def testNamedRnnBuilder(): Unit = {
     behavior of "loaded RNN builder"
 
     it should "serialize" in {
@@ -159,7 +161,7 @@ class TestModels extends FlatSpec with Matchers {
       val model = repo.getModel(designs, name)
 
       val newParameterCollection = model.getParameterCollection
-      val newRnnBuilder = model.getRnnBuilder(0)
+      val newRnnBuilder = model.getRnnBuilder()
 
       equals(newParameterCollection, oldParameterCollection) should be (true)
       // There isn't a way to compare the builders.
@@ -168,7 +170,7 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  def testMihaiModel = {
+  def testMihaiModel(): Unit = {
     behavior of "loaded composite model from Mihai"
 
     it should "serialize" in {
@@ -207,13 +209,13 @@ class TestModels extends FlatSpec with Matchers {
       val model = repo.getModel(designs, name)
 
       val newParameterCollection = model.getParameterCollection
-      val newFwBuilder = model.getRnnBuilder(0)
+      val newFwBuilder = model.getRnnBuilder()
       val newBwBuilder = model.getRnnBuilder(1)
-      val newH = model.getParameter(0)
+      val newH = model.getParameter()
       val newO = model.getParameter(1)
       val newCharFwBuilder = model.getRnnBuilder(2)
       val newCharBwBuilder = model.getRnnBuilder(3)
-      val newLookupParameters = model.getLookupParameter(0)
+      val newLookupParameters = model.getLookupParameter()
       val newCharLookupParameters = model.getLookupParameter(1)
 
       equals(newLookupParameters, oldLookupParameters, name) should be (true) // Sometimes causes crash
@@ -226,7 +228,7 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  def testEnriqueModel = {
+  def testEnriqueModel(): Unit = {
     behavior of "loaded composite model from Enrique"
 
     it should "serialize" in {
@@ -257,11 +259,11 @@ class TestModels extends FlatSpec with Matchers {
       val model = repo.getModel(designs, name)
 
       val newParameterCollection = model.getParameterCollection
-      val new_w2v_wemb = model.getLookupParameter(0)
-      val newW = model.getParameter(0)
+      val new_w2v_wemb = model.getLookupParameter()
+      val newW = model.getParameter()
       val newb = model.getParameter(1)
       val newV = model.getParameter(2)
-      val newBuilder = model.getRnnBuilder(0)
+      val newBuilder = model.getRnnBuilder()
 
       equals(new_w2v_wemb, old_w2v_wemb, name) should be(true) // Sometimes causes crash
       equals(newW, oldW, name) should be(true)
@@ -273,9 +275,9 @@ class TestModels extends FlatSpec with Matchers {
     }
   }
 
-  testNamedParameter
-  testNamedLookupParameter
-  testNamedRnnBuilder
-  testMihaiModel
-  testEnriqueModel
+  testNamedParameter()
+  testNamedLookupParameter()
+  testNamedRnnBuilder()
+  testMihaiModel()
+  testEnriqueModel()
 }

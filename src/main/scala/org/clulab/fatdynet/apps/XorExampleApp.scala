@@ -12,7 +12,7 @@ case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, mode
 
 case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
-  override def toString(): String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
+  override def toString: String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
 
   // Testing
   def transform(inputValues: FloatVector): Unit = {
@@ -110,7 +110,7 @@ object XorExampleApp {
       transformation.transform(xValues)
       // This is necessary in this version of the program, possibly because the values
       // of the input are changed without creating another ComputationGraph.
-      val yValue = ComputationGraph.forward(yPrediction).toFloat
+      val yValue = ComputationGraph.forward(yPrediction).toFloat()
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -142,7 +142,7 @@ object XorExampleApp {
     val designs = repo.getDesigns()
     val model = repo.getModel(designs, "/model")
 
-    val WParameter = model.getParameter(0)
+    val WParameter = model.getParameter()
     val bParameter = model.getParameter(1)
     val VParameter = model.getParameter(2)
     val aParameter = model.getParameter(3)

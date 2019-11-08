@@ -13,7 +13,7 @@ object ExternalLookupParameterExampleApp {
 
   case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int) {
 
-    override def toString(): String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
+    override def toString: String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
 
     // Testing
     def transform: Expression = {
@@ -79,7 +79,7 @@ object ExternalLookupParameterExampleApp {
         val yPrediction = mkPredictionGraph(xorModel, transformation)
         val y = Expression.input(yValue)
         val loss = Expression.squaredDistance(yPrediction, y)
-        val lossValue = loss.value.toFloat // ComputationGraph.forward(loss).toFloat
+        val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
 
         ComputationGraph.backward(loss)
         trainer.update()
@@ -101,7 +101,7 @@ object ExternalLookupParameterExampleApp {
     println
     val result = transformations.map { transformation =>
       val yPrediction = mkPredictionGraph(xorModel, transformation)
-      val yValue = yPrediction.value.toFloat
+      val yValue = yPrediction.value().toFloat()
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -126,7 +126,7 @@ object ExternalLookupParameterExampleApp {
     val designs = repo.getDesigns()
     val model = repo.getModel(designs, "/model")
 
-    val WParameter = model.getParameter(0)
+    val WParameter = model.getParameter()
     val bParameter = model.getParameter(1)
     val VParameter = model.getParameter(2)
     val aParameter = model.getParameter(3)

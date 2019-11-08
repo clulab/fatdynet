@@ -2,13 +2,13 @@ package org.clulab.dynet
 
 import java.io.File
 
-import edu.cmu.dynet._
 import org.clulab.fatdynet.utils.Zipper
 import org.clulab.dynet.models.hot.scala.{HotModel => Model}
 import org.clulab.fatdynet.utils.CloseableModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.CloseableZipModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.Initializer
 
 // This version tests the Scala interfaces.
 class TestModelLoader extends TestLoader {
@@ -45,7 +45,7 @@ class TestModelLoader extends TestLoader {
   }
 
   def initialize(): Unit = {
-    Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+    Initializer.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
   }
 
   initialize()

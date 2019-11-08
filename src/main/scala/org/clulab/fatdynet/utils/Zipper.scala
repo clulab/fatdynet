@@ -13,7 +13,7 @@ object Zipper {
 
   def zip(filename: String, zipname: String): Unit = {
     // See https://stackoverflow.com/questions/1091788/how-to-create-a-zip-file-in-java
-    val zipUri = new File(zipname).toURI().toString
+    val zipUri = new File(zipname).toURI.toString
     val jarUri = URI.create(s"jar:$zipUri")
     val env = Map("create" -> "true").asJava
     val zipFileSystem = FileSystems.newFileSystem(jarUri, env)

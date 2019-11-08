@@ -13,7 +13,9 @@ class TestXorScalaMain extends FlatSpec with Matchers {
         XorScalaApp.main(Array.empty[String])
       }
       catch {
-        case exception: Throwable => exception.printStackTrace; throw exception
+        case exception: Throwable =>
+          exception.printStackTrace()
+          throw exception
       }
    }
   }

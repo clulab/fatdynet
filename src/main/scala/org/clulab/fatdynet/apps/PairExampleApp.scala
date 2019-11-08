@@ -13,7 +13,7 @@ case class PairModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, rnn
 
 case class PairTransformation(inputs: Array[Int], output: Int) {
 
-  override def toString(): String = getClass.getSimpleName + "(" + inputs.mkString("(", ", ", ")") + " -> " + output.toString() + ")"
+  override def toString: String = getClass.getSimpleName + "(" + inputs.mkString("(", ", ", ")") + " -> " + output.toString + ")"
 
   // Testing
   def transform(inputValues: Array[Float]): Unit = {

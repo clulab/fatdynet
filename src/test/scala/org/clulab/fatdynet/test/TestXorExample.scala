@@ -16,7 +16,9 @@ class TestXorExample extends FlatSpec with Matchers {
         new File("XorModel.dat").delete
       }
       catch {
-        case exception: Throwable => exception.printStackTrace; throw exception
+        case exception: Throwable =>
+          exception.printStackTrace()
+          throw exception
       }
    }
   }

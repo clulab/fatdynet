@@ -1,6 +1,7 @@
 package org.clulab.fatdynet.examples
 
 import edu.cmu.dynet._
+import org.clulab.fatdynet.utils.Initializer
 
 object XorScala {
   val HIDDEN_SIZE = 8
@@ -10,7 +11,7 @@ object XorScala {
   def run(): (Float, Float) = {
     println("Running XOR example")
     println("Doing the run and about to initialize.")
-    Initialize.initialize(Map("random-seed" -> RANDOM_SEED))
+    Initializer.initialize(Map("random-seed" -> RANDOM_SEED))
     println("Dynet initialized!")
     val m = new ParameterCollection
     val sgd = new SimpleSGDTrainer(m)
@@ -46,7 +47,7 @@ object XorScala {
     println()
     println("Training...")
 
-    for (iter <- 0 to ITERATIONS - 1) {
+    for (iter <- 0 until ITERATIONS) {
       var loss: Float = 0
       for (mi <- 0 to 3) {
         val x1: Boolean = mi % 2 > 0

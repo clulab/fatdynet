@@ -6,7 +6,7 @@ import org.scalatest._
 
 class TestXorScalaRun extends FlatSpec with Matchers {
 
-  val osName = System.getProperty("os.name")
+  val osName: String = System.getProperty("os.name")
   val isWindows: Boolean = osName.startsWith("Windows ")
   val isMac: Boolean = osName.startsWith("Mac ")
   val isLinux: Boolean = !(isWindows || isMac)

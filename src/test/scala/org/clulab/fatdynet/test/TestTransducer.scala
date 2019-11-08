@@ -8,6 +8,7 @@ import org.clulab.fatdynet.design.Design
 import org.clulab.fatdynet.parser.VanillaLstmParser
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
 import org.scalatest._
 
@@ -40,7 +41,7 @@ class TestTransducer extends FlatSpec with Matchers {
     val input: Expression = Expression.randomNormal(Dim(inputDim))
     val inputs = Array(input, input, input)
 
-    def test: Unit = {
+    def test(): Unit = {
       behavior of testname
 
       it should "serialize the builder properly" in {
@@ -62,7 +63,7 @@ class TestTransducer extends FlatSpec with Matchers {
         val model = repo.getModel(designs, modelName)
 
         val newParameterCollection = model.getParameterCollection
-        val newRnnBuilder = model.getRnnBuilder(0)
+        val newRnnBuilder = model.getRnnBuilder()
 
         if (canTransduce) {
           val rounds = 10
@@ -73,12 +74,12 @@ class TestTransducer extends FlatSpec with Matchers {
           0.until(rounds).foreach { i =>
             val oldTransduced = Transducer.transduce(oldRnnBuilder, inputs).last
             val oldSum = Expression.sumElems(oldTransduced)
-            val oldFloat = oldSum.value.toFloat
+            val oldFloat = oldSum.value().toFloat()
             oldFloats(i) = oldFloat
 
             val newTransduced = Transducer.transduce(newRnnBuilder, inputs).last
             val newSum = Expression.sumElems(newTransduced)
-            val newFloat = newSum.value.toFloat
+            val newFloat = newSum.value().toFloat()
             newFloats(i) = newFloat
 
             oldFloat should be(newFloat)
@@ -157,20 +158,20 @@ class TestTransducer extends FlatSpec with Matchers {
     def build(model: ParameterCollection): RnnBuilder = new GruBuilder(layers, inputDim, hiddenDim, model)
   }
 
-  Initialize.initialize(Map("random-seed" -> 2522620396L))
+  Initializer.initialize(Map("random-seed" -> 2522620396L))
 
   for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6) {
-    new FastLstmTransducerTester(layers, inputDim, hiddenDim).test
-    new CompactVanillaLstmTransducerTester(layers, inputDim, hiddenDim).test
-    new CoupledLstmTransducerTester(layers, inputDim, hiddenDim).test
-    new BidirectionalTreeLstmTransducerTester(layers, inputDim, hiddenDim).test
-    new UnidirectionalTreeLstmTransducerTester(layers, inputDim, hiddenDim).test
-    new GruTransducerTester(layers, inputDim, hiddenDim).test
-    new LstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = false).test
-    new LstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = true).test
-    new SimpleRnnTransducerTester(layers, inputDim, hiddenDim, supportLags = false).test
-    new SimpleRnnTransducerTester(layers, inputDim, hiddenDim, supportLags = true).test
-    new VanillaLstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = false).test
-    new VanillaLstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = true).test
+    new FastLstmTransducerTester(layers, inputDim, hiddenDim).test()
+    new CompactVanillaLstmTransducerTester(layers, inputDim, hiddenDim).test()
+    new CoupledLstmTransducerTester(layers, inputDim, hiddenDim).test()
+    new BidirectionalTreeLstmTransducerTester(layers, inputDim, hiddenDim).test()
+    new UnidirectionalTreeLstmTransducerTester(layers, inputDim, hiddenDim).test()
+    new GruTransducerTester(layers, inputDim, hiddenDim).test()
+    new LstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = false).test()
+    new LstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = true).test()
+    new SimpleRnnTransducerTester(layers, inputDim, hiddenDim, supportLags = false).test()
+    new SimpleRnnTransducerTester(layers, inputDim, hiddenDim, supportLags = true).test()
+    new VanillaLstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = false).test()
+    new VanillaLstmTransducerTester(layers, inputDim, hiddenDim, lnLSTM = true).test()
   }
 }

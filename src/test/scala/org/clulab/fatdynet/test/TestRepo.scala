@@ -8,6 +8,7 @@ import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.CloseableModelSaver
+import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
 import org.scalatest._
 
@@ -27,7 +28,7 @@ import org.scalatest._
   */
 
 class TestRepo extends FlatSpec with Matchers {
-  Initialize.initialize(Map("random-seed" -> 2522620396L))
+  Initializer.initialize(Map("random-seed" -> 2522620396L))
 
   abstract class ParserTester(val name: String) {
     val testname: String
@@ -40,7 +41,7 @@ class TestRepo extends FlatSpec with Matchers {
 
     def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns()
 
-    def test: Unit = {
+    def test(): Unit = {
       val filename: String = "Test" + testname + ".txt"
 
       behavior of testname
@@ -243,22 +244,22 @@ class TestRepo extends FlatSpec with Matchers {
   }
 
   for (dim1 <- 1 to 4; dim2 <- 9 to 99 by 45) {
-    new ParameterParserTester(dim1, dim2).test
-    new LookupParameterParserTester(dim1, dim2).test
+    new ParameterParserTester(dim1, dim2).test()
+    new LookupParameterParserTester(dim1, dim2).test()
   }
 
   for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6) {
-    new FastLstmParserTester(layers, inputDim, hiddenDim).test
-    new CompactVanillaLstmParserTester(layers, inputDim, hiddenDim).test
-    new CoupledLstmParserTester(layers, inputDim, hiddenDim).test
-    new BidirectionalTreeLstmParserTester(layers, inputDim, hiddenDim).test
-    new UnidirectionalTreeLstmParserTester(layers, inputDim, hiddenDim).test
-    new GruParserTester(layers, inputDim, hiddenDim).test
-    new LstmParserTester(layers, inputDim, hiddenDim, lnLSTM = false).test
-    new LstmParserTester(layers, inputDim, hiddenDim, lnLSTM = true).test
-    new SimpleRnnParserTester(layers, inputDim, hiddenDim, supportLags = false).test
-    new SimpleRnnParserTester(layers, inputDim, hiddenDim, supportLags = true).test
-    new VanillaLstmParserTester(layers, inputDim, hiddenDim, lnLSTM = false).test
-    new VanillaLstmParserTester(layers, inputDim, hiddenDim, lnLSTM = true).test
+    new FastLstmParserTester(layers, inputDim, hiddenDim).test()
+    new CompactVanillaLstmParserTester(layers, inputDim, hiddenDim).test()
+    new CoupledLstmParserTester(layers, inputDim, hiddenDim).test()
+    new BidirectionalTreeLstmParserTester(layers, inputDim, hiddenDim).test()
+    new UnidirectionalTreeLstmParserTester(layers, inputDim, hiddenDim).test()
+    new GruParserTester(layers, inputDim, hiddenDim).test()
+    new LstmParserTester(layers, inputDim, hiddenDim, lnLSTM = false).test()
+    new LstmParserTester(layers, inputDim, hiddenDim, lnLSTM = true).test()
+    new SimpleRnnParserTester(layers, inputDim, hiddenDim, supportLags = false).test()
+    new SimpleRnnParserTester(layers, inputDim, hiddenDim, supportLags = true).test()
+    new VanillaLstmParserTester(layers, inputDim, hiddenDim, lnLSTM = false).test()
+    new VanillaLstmParserTester(layers, inputDim, hiddenDim, lnLSTM = true).test()
   }
 }

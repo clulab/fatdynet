@@ -19,7 +19,7 @@ abstract class ParamParser(name: String, val dims: Array[Int], index: Option[Int
 object ParamParser {
   val nameRegex = "^(.*)"
   val indexRegex = "_(0|[1-9][0-9]*)$"
-  val pattern = (nameRegex + "/" + indexRegex).r.pattern
+  val pattern: Pattern = (nameRegex + "/" + indexRegex).r.pattern
 
   def getNameAndIndex(objectName: String): (String, Option[Int]) = {
     val matcher = pattern.matcher(objectName)
@@ -175,7 +175,7 @@ abstract class SimpleDoubleParser(name: String, outerIndex: Int) extends SimpleP
 abstract class ComplexParser(name: String, outerIndex: Int) extends RnnParser(name, outerIndex) {
   protected val lnLstmPattern: Pattern = ComplexParser.lnLstmPattern
   protected var lnLstmCount = 0
-  protected var lnLstmSize = -1
+  protected var lnLstmSize: Int = -1
 
   override def parse(header: Header): Boolean = {
     val matcher = pattern.matcher(header.objectName)

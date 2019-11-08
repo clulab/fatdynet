@@ -6,8 +6,8 @@ import java.io.IOException
 class Header(val line: String, val lineNo: Int) {
   val Array(objectType, objectName, dimension, len, _) = line.split(' ')
   // Skip leading { and trailing }
-  val dims = dimension.substring(1, dimension.length - 1).split(',').map(_.toInt)
-  val length = {
+  val dims: Array[Int] = dimension.substring(1, dimension.length - 1).split(',').map(_.toInt)
+  val length: Long = {
     val size = len.toLong
     val length = dims.foldLeft(16L){ (product, next) => product * next } + 1
 
@@ -25,9 +25,9 @@ object HeaderIterator {
   // Some of this is just in case the line endings were somehow mangled.
   val crChar = '\r'
   val lfChar = '\n'
-  val crString = crChar.toString
-  val lfString = lfChar.toString
-  val crlf = crString + lfString
+  val crString: String = crChar.toString
+  val lfString: String = lfChar.toString
+  val crlf: String = crString + lfString
 }
 
 class HeaderIterator(bufferedReader: BufferedReader) extends Iterator[Header] {
