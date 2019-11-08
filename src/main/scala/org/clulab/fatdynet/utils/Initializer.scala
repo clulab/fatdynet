@@ -9,8 +9,10 @@ object Initializer {
     internal.dynet_swig.cleanup()
   }
 
+  def isInitialized: Boolean = this.synchronized { initialized }
+
   // Returns whether had previously been initialized or not.
-  def initialize(args: Map[String, Any] = Map.empty): Boolean = synchronized {
+  def initialize(args: Map[String, Any] = Map.empty): Boolean = this.synchronized {
     val oldInitialized = initialized
 
     if (initialized)

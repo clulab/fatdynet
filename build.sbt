@@ -12,7 +12,6 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 )
 
-Test / fork := true
 Test / parallelExecution := false
 
 lazy val root = (project in file("."))
