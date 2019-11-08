@@ -25,8 +25,8 @@ class TestXorScalaRun extends FlatSpec with Matchers {
       totalLoss.toString should be ("13.835723")
     }
     else if (isLinux) {
-      mostRecentLoss.toString should be ("")
-      totalLoss.toString should be ("")
+      mostRecentLoss.toString should be ("5.954348E-12")
+      totalLoss.toString should be ("13.83572")
     }
     else {
       throw new Exception(s"Operating system wasn't identified: $osName")
