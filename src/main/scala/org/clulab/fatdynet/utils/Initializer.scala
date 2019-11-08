@@ -5,8 +5,14 @@ import edu.cmu.dynet._
 object Initializer {
   protected var initialized: Boolean = false
 
-  protected def cleanup() {
-    internal.dynet_swig.cleanup()
+  def cleanup(): Boolean = this.synchronized {
+    val oldInitialized = initialized
+
+    if (oldInitialized) {
+      internal.dynet_swig.cleanup()
+      initialized = false
+    }
+    oldInitialized
   }
 
   def isInitialized: Boolean = this.synchronized { initialized }
@@ -15,10 +21,9 @@ object Initializer {
   def initialize(args: Map[String, Any] = Map.empty): Boolean = this.synchronized {
     val oldInitialized = initialized
 
-    if (initialized)
-      cleanup()
-    initialized = true
+    cleanup()
     Initialize.initialize(args)
+    initialized = true
     oldInitialized
   }
 }

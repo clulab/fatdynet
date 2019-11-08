@@ -9,6 +9,7 @@ class TestInitializer extends FlatSpec with Matchers {
   behavior of "Initializer"
 
   it should "start out uninitialized" in {
+    Initializer.cleanup()
     Initializer.isInitialized should be (false)
   }
 
