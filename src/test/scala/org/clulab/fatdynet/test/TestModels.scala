@@ -42,10 +42,10 @@ class TestModels extends FlatSpec with Matchers {
       new CloseableModelSaver(filename).autoClose { modelSaver =>
         operation(modelSaver)
       }
-      val source = Source.fromFile(filename)
-      val string = source.mkString
-      source.close()
-      string
+
+      Source.fromFile(filename).autoClose { source =>
+        source.mkString
+      }
     }
   }
 
