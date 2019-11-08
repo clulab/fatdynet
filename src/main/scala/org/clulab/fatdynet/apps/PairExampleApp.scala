@@ -1,10 +1,10 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
 
 import scala.util.Random
@@ -205,11 +205,11 @@ object PairExampleApp {
     val designs = repo.getDesigns()
     val model = repo.getModel(designs, "/model")
 
-    val WParameter = model.getParameter(0)
+    val WParameter = model.getParameter()
     val bParameter = model.getParameter(1)
     val VParameter = model.getParameter(2)
     val aParameter = model.getParameter(3)
-    val rnnBuilder = model.getRnnBuilder(0)
+    val rnnBuilder = model.getRnnBuilder()
 
     PairModel(WParameter, bParameter, VParameter, aParameter, rnnBuilder, model.getParameterCollection)
   }

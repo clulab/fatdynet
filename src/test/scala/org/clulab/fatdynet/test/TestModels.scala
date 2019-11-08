@@ -3,18 +3,17 @@ package org.clulab.fatdynet.test
 import java.io.File
 
 import edu.cmu.dynet._
-
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Deleter.AutoDeleter
-
+import org.clulab.fatdynet.utils.Initializer
 import org.scalatest._
 
 import scala.io.Source
 
 class TestModels extends FlatSpec with Matchers {
-  Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+  Initializer.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {
     lefts.size == rights.size && {
@@ -265,11 +264,11 @@ class TestModels extends FlatSpec with Matchers {
       val newV = model.getParameter(2)
       val newBuilder = model.getRnnBuilder()
 
-      equals(new_w2v_wemb, old_w2v_wemb, name) should be(true) // Sometimes causes crash
-      equals(newW, oldW, name) should be(true)
-      equals(newb, oldb, name) should be(true)
-      equals(newV, oldV, name) should be(true)
-      equals(newParameterCollection, oldParameterCollection, name) should be(true)
+      equals(new_w2v_wemb, old_w2v_wemb, name) should be (true) // Sometimes causes crash
+      equals(newW, oldW, name) should be (true)
+      equals(newb, oldb, name) should be (true)
+      equals(newV, oldV, name) should be (true)
+      equals(newParameterCollection, oldParameterCollection, name) should be (true)
 
       new File(filename).delete
     }

@@ -4,6 +4,7 @@ import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.Initializer
 
 import scala.util.Random
 

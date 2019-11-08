@@ -82,7 +82,7 @@ class TestTransducer extends FlatSpec with Matchers {
             val newFloat = newSum.value().toFloat()
             newFloats(i) = newFloat
 
-            oldFloat should be(newFloat)
+            oldFloat should be (newFloat)
           }
 //          oldFloats.foreach { each => print(each); print(" ") }
 //          println

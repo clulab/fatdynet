@@ -127,7 +127,7 @@ class TestModelLoader extends TestLoader {
     zipTextB1 should be (origTextB)
     zipTextB2 should be (origTextB)
 
-    origTextA should not be (origTextB)
+    origTextA shouldNot be (origTextB)
 
     new File(origFilenameA).delete
     new File(origFilenameB).delete

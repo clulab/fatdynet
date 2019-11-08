@@ -1,11 +1,11 @@
 package org.clulab.dynet.apps
 
-import edu.cmu.dynet._
 import org.clulab.dynet.models.hot.scala.HotModel
 import org.clulab.fatdynet.utils.CloseableModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.CloseableZipModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
 
 object ModelLoaderApp extends App {

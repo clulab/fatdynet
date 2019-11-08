@@ -61,7 +61,7 @@ class TestRepo extends FlatSpec with Matchers {
           val repo = Repo(filename)
           val designs = getDesigns(repo)
 
-          testDesigns(designs) should be(true)
+          testDesigns(designs) should be (true)
         }
 
         {
@@ -70,7 +70,7 @@ class TestRepo extends FlatSpec with Matchers {
           val repo = Repo(filename, zipname)
           val designs = getDesigns(repo)
 
-          testDesigns(designs) should be(true)
+          testDesigns(designs) should be (true)
           new File(zipname).delete should be (true)
         }
         new File(filename).delete
