@@ -1,4 +1,5 @@
 import ReleaseTransformations._
+import Tests._
 
 name := "fatdynet"
 
@@ -13,6 +14,24 @@ libraryDependencies ++= Seq(
 )
 
 Test / parallelExecution := false
+
+{
+  def namedFirst(tests: Seq[TestDefinition], name: String) = {
+    def newRunPolicy = InProcess
+
+    val namedTests = tests.filter(_.name == name)
+    val unnamedTests = tests.filter(_.name != name)
+
+    val namedGroup = new Group("named", namedTests, newRunPolicy)
+    val unnamedGroup = new Group("unnamed", unnamedTests, newRunPolicy)
+
+    Seq(namedGroup, unnamedGroup)
+  }
+
+  // This test must come first so that the random number generator is newly initialized.
+  val name = "org.clulab.fatdynet.test.TestXorScalaRun"
+  testGrouping in Test := namedFirst((definedTests in Test).value, name)
+}
 
 lazy val root = (project in file("."))
 

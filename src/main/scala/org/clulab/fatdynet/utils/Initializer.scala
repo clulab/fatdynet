@@ -2,6 +2,9 @@ package org.clulab.fatdynet.utils
 
 import edu.cmu.dynet._
 
+// According to devices.cc, "Devices cannot be deleted at the moment because
+// the destructor is protected."  Cleanup is therefore disallowed.
+// At the very least, it causes which crashes the test suite.
 object Initializer {
   protected var initialized: Boolean = false
 
@@ -9,8 +12,8 @@ object Initializer {
     val oldInitialized = initialized
 
     if (oldInitialized) {
-      internal.dynet_swig.cleanup()
-      initialized = false
+//      internal.dynet_swig.cleanup()
+//      initialized = false
     }
     oldInitialized
   }
@@ -21,11 +24,9 @@ object Initializer {
   def initialize(args: Map[String, Any] = Map.empty): Boolean = this.synchronized {
     val oldInitialized = initialized
 
-    if (!oldInitialized) {
-//      cleanup()
-      Initialize.initialize(args)
-      initialized = true
-    }
+    cleanup()
+    Initialize.initialize(args)
+    initialized = true
     oldInitialized
   }
 }
