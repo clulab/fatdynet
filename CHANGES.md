@@ -1,5 +1,5 @@
 # Changes
-+ **v0.2.4** - Update to kwalcock/dynet/releases/tag/FatDynet_0.2.4
++ **v0.2.4** - Update to kwalcock/dynet/releases/tag/FatDynet_0.2.4, which has Mac eigen same as others
 + **v0.2.3** - Add zip functionality and update to kwalcock/dynet/releases/tag/FatDynet_0.2.3 
 + **v0.2.2** - Transition from clab/dynet to kwalcock/dynet/releases/tag/FatDynet_0.2.2
 + **v0.2.1** - Fix overflow bug in serialized models
