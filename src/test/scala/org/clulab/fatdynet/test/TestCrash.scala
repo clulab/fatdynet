@@ -3,13 +3,13 @@ package org.clulab.fatdynet.test
 import java.io.File
 
 import edu.cmu.dynet._
-
+import org.clulab.fatdynet.utils.Initializer
 import org.scalatest.TestSuite
 
 import scala.io.Source
 
 class TestCrash extends TestSuite {
-  Initialize.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+  Initializer.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
 
   def asString(lookupParameter: LookupParameter, name: String): Unit = {
     val tmpFile = File.createTempFile("model-", ".fatdynet")
@@ -23,13 +23,13 @@ class TestCrash extends TestSuite {
     tmpFile.delete()
   }
 
-  def testParameter = {
+  def makeParameter = {
     val oldParameterCollection = new ParameterCollection()
     val oldParameter = oldParameterCollection.addParameters(Dim(51))
     val oldParametersList = oldParameterCollection.parametersList
   }
 
-  def testLookupParameter = {
+  def makeLookupParameter = {
     val oldParameterCollection = new ParameterCollection()
     val oldLookupParameters = oldParameterCollection.addLookupParameters(1234, Dim(300))
     // Must do this twice
@@ -38,7 +38,7 @@ class TestCrash extends TestSuite {
   }
 
   // Must be in this order
-  testParameter
+  makeParameter
   // Only works if these are lookup parameters
-  testLookupParameter
+  makeLookupParameter
 }

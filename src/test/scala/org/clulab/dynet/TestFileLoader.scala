@@ -3,7 +3,8 @@ package org.clulab.dynet
 import java.io.File
 
 import edu.cmu.dynet.internal._
-import org.clulab.dynet.models.hot.java.{ HotModel => Model}
+import org.clulab.dynet.models.hot.java.{HotModel => Model}
+import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
 
 // This version tests the Java interfaces.
@@ -38,15 +39,12 @@ class TestFileLoader extends TestLoader {
     model
   }
 
-  def initialize(): Unit = {
-    val params = new DynetParams()
-
-    params.setRandom_seed(2522620396L)
-    params.setMem_descriptor("2048")
-    dynet_swig.initialize(params)
-  }
-
-  initialize()
+  Initializer.initialize(
+    Map {
+    "random-seed" -> 2522620396L
+    "dynet-mem" -> "2048"
+    }
+  )
 
   behavior of "serialized Java models"
 
@@ -115,17 +113,17 @@ class TestFileLoader extends TestLoader {
     val zipTextB1 = textFromFile(copyFromZipFilenameB1)
     val zipTextB2 = textFromFile(copyFromZipFilenameB2)
 
-    textTextA1 should be(origTextA)
-    textTextA2 should be(origTextA)
-    zipTextA1 should be(origTextA)
-    zipTextA2 should be(origTextA)
+    textTextA1 should be (origTextA)
+    textTextA2 should be (origTextA)
+    zipTextA1 should be (origTextA)
+    zipTextA2 should be (origTextA)
 
-    textTextB1 should be(origTextB)
-    textTextB2 should be(origTextB)
-    zipTextB1 should be(origTextB)
-    zipTextB2 should be(origTextB)
+    textTextB1 should be (origTextB)
+    textTextB2 should be (origTextB)
+    zipTextB1 should be (origTextB)
+    zipTextB2 should be (origTextB)
 
-    origTextA should not be (origTextB)
+    origTextA shouldNot be (origTextB)
 
     new File(origFilenameA).delete
     new File(origFilenameB).delete

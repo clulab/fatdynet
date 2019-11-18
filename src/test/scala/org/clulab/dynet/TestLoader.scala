@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import org.clulab.fatdynet.utils.Closer.AutoCloser
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
@@ -21,10 +23,8 @@ class TestLoader extends FlatSpec with Matchers {
   val embeddingDim = 300
 
   def textFromFile(filename: String): String = {
-    val source = Source.fromFile(filename)
-    val text = source.mkString
-
-    source.close()
-    text
+    Source.fromFile(filename).autoClose { source =>
+      source.mkString
+    }
   }
 }

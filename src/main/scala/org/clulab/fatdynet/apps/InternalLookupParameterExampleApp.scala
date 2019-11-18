@@ -4,6 +4,7 @@ import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.Initializer
 
 import scala.util.Random
 
@@ -13,7 +14,7 @@ object InternalLookupParameterExampleApp {
 
   case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int) {
 
-    override def toString(): String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
+    override def toString: String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
 
     def initialize(lookupParameter: LookupParameter): Unit = {
       lookupParameter.initialize(index, Seq(input1.toFloat, input2.toFloat))
@@ -86,7 +87,7 @@ object InternalLookupParameterExampleApp {
         val yPrediction = mkPredictionGraph(xorModel, transformation)
         val y = Expression.input(yValue)
         val loss = Expression.squaredDistance(yPrediction, y)
-        val lossValue = loss.value.toFloat // ComputationGraph.forward(loss).toFloat
+        val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
 
         ComputationGraph.backward(loss)
         trainer.update()
@@ -108,7 +109,7 @@ object InternalLookupParameterExampleApp {
     println
     val result = transformations.map { transformation =>
       val yPrediction = mkPredictionGraph(xorModel, transformation)
-      val yValue = yPrediction.value.toFloat
+      val yValue = yPrediction.value().toFloat()
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -133,8 +134,8 @@ object InternalLookupParameterExampleApp {
     val designs = repo.getDesigns()
     val model = repo.getModel(designs, "/model")
 
-    val lookupParameter = model.getLookupParameter(0)
-    val WParameter = model.getParameter(0)
+    val lookupParameter = model.getLookupParameter()
+    val WParameter = model.getParameter()
     val bParameter = model.getParameter(1)
     val VParameter = model.getParameter(2)
     val aParameter = model.getParameter(3)
@@ -145,7 +146,7 @@ object InternalLookupParameterExampleApp {
   def main(args: Array[String]) {
     val filename = "XorModel.dat"
 
-    Initialize.initialize(Map("random-seed" -> 2522620396L))
+    Initializer.initialize(Map("random-seed" -> 2522620396L))
 
     val (xorModel1, initialResults) = train
     val expectedResults = predict(xorModel1)

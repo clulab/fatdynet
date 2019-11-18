@@ -16,7 +16,9 @@ class TestPairExample extends FlatSpec with Matchers {
         new File("PairModel.dat").delete
       }
       catch {
-        case exception: Throwable => exception.printStackTrace; throw exception
+        case exception: Throwable =>
+          exception.printStackTrace()
+          throw exception
       }
    }
   }
