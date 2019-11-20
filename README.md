@@ -144,12 +144,12 @@ The build environment included
 
 The files in lib-2.12 were built with
 - scala 2.12.4
-- cmake .. -DSCALA_VERSION=2.12.4 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
-- make
+- `cmake .. -DSCALA_VERSION=2.12.4 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON`
+- `make`
 
 and those in lib-2.11 were built with
 - scala 2.11.11
-- cmake .. -DSCALA_VERSION=2.11.11 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
-- make
+- `cmake .. -DSCALA_VERSION=2.11.11 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON`
+- `make`
 
 For more details see [Compiling DyNet for Scala](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-for-Scala).
