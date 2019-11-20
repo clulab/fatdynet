@@ -152,4 +152,4 @@ and those in lib-2.11 were built with
 - cmake .. -DSCALA_VERSION=2.11.11 -DEIGEN3_INCLUDE_DIR=../../eigen -DENABLE_CPP_EXAMPLES=ON -DENABLE_SWIG=ON
 - make
 
-For more details see [Compiling DyNet with SWIG Support](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-with-SWIG-Support).
+For more details see [Compiling DyNet for Scala](https://github.com/clulab/fatdynet/wiki/Compiling-DyNet-for-Scala).
