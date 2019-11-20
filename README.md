@@ -2,6 +2,19 @@
 
 # fatdynet
 
+## Understanding by Example
+
+*fatdynet* is being used by at least two other [clulab](https://github.com/clulab) projects, and sometimes the best
+way to understand something is to see an example.  Here are some links for those who want to cut to the chase:
+
+### processors
+* https://github.com/clulab/processors/blob/master/main/build.sbt#L21
+* https://github.com/clulab/processors/blob/master/main/src/main/scala/org/clulab/sequences/LstmCrfMtl.scala
+
+### factuality
+* https://github.com/clulab/factuality/blob/master/build.sbt#L16
+* https://github.com/clulab/factuality/blob/master/src/main/scala/org/clulab/factuality/Factuality.scala
+
 
 ## Cloning This Project
 
