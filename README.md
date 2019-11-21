@@ -16,6 +16,34 @@ way to understand something is to see an example.  Here are some links for those
 * https://github.com/clulab/factuality/blob/master/src/main/scala/org/clulab/factuality/Factuality.scala
 
 
+## Depending on This Project
+
+To use fatdynet with `sbt` in your own project, first check the [releases page](https://github.com/clulab/fatdynet/releases) for the most recent version number and then make a `build.sbt` file like
+
+```
+name := "fatdynetClient"
+
+organization := "org.clulab"
+
+scalaVersion := "2.12.4"
+
+libraryDependencies ++= Seq(
+  "org.clulab" %% "fatdynet" % "0.2.4"
+)
+```
+
+It can be tested with a program like
+```
+package org.clulab.fatdynetClient.apps
+
+import edu.cmu.dynet.examples.XorScala
+
+object XorScalaClientApp extends App {
+  XorScala.main(args)
+}
+```
+
+
 ## Cloning This Project
 
 A clone of this project should work out of the box with `sbt`.  You can perform a quick check with `sbt test`
@@ -102,33 +130,6 @@ iter = 29, loss = 7.1054274E-15
 [success] Total time: 1 s, completed Sep 17, 2018 5:20:44 PM
 ```
 
-
-## Depending on This Project
-
-To use fatdynet with `sbt` in your own project, first check the [releases page](https://github.com/clulab/fatdynet/releases) for the most recent version number and then make a `build.sbt` file like
-
-```
-name := "fatdynetClient"
-
-organization := "org.clulab"
-
-scalaVersion := "2.12.4"
-
-libraryDependencies ++= Seq(
-  "org.clulab" %% "fatdynet" % "0.2.4"
-)
-```
-
-It can be tested with a program like
-```
-package org.clulab.fatdynetClient.apps
-
-import edu.cmu.dynet.examples.XorScala
-
-object XorScalaClientApp extends App {
-  XorScala.main(args)
-}
-```
 
 ## Building the Files for This Project
 
