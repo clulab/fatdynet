@@ -10,6 +10,9 @@ class TestXorScalaRun extends FlatSpec with Matchers {
   val isWindows: Boolean = osName.startsWith("Windows ")
   val isMac: Boolean = osName.startsWith("Mac ")
   val isLinux: Boolean = !(isWindows || isMac)
+  // Recent versions of fatdynet should produce the same results, independently of operating system.
+  val expectedMostRecentLoss = "6.168399E-12"
+  val expectedTotalLoss = "13.83572"
 
   behavior of "XorScala"
 
@@ -17,16 +20,16 @@ class TestXorScalaRun extends FlatSpec with Matchers {
     val (mostRecentLoss, totalLoss) = XorScala.run()
 
     if (isWindows) {
-      mostRecentLoss.toString should be ("6.168399E-12")
-      totalLoss.toString should be ("13.83572")
+      mostRecentLoss.toString should be (expectedMostRecentLoss)
+      totalLoss.toString should be (expectedTotalLoss)
     }
     else if (isMac) {
-      mostRecentLoss.toString should be ("7.2066797E-12")
-      totalLoss.toString should be ("13.835721")
+      mostRecentLoss.toString should be (expectedMostRecentLoss)
+      totalLoss.toString should be (expectedTotalLoss)
     }
     else if (isLinux) {
-      mostRecentLoss.toString should be ("5.954348E-12")
-      totalLoss.toString should be ("13.83572")
+      mostRecentLoss.toString should be (expectedMostRecentLoss)
+      totalLoss.toString should be (expectedTotalLoss)
     }
     else {
       throw new Exception(s"Operating system wasn't identified: $osName")
