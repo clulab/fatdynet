@@ -39,5 +39,5 @@ class TestXorScalaRerun extends FlatSpec with Matchers {
 
     run(1)
     // reset the random number generator
-    //run(2)
+    //run(2) // Don't use this just now.
 }
