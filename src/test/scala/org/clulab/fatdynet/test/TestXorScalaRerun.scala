@@ -28,8 +28,8 @@ class TestXorScalaRerun extends FlatSpec with Matchers {
         totalLoss.toString should be("13.835721")
       }
       else if (isLinux) {
-        mostRecentLoss.toString should be("5.954348E-12")
-        totalLoss.toString should be("13.83572")
+        mostRecentLoss.toString should be(expectedMostRecentLoss)
+        totalLoss.toString should be(expectedTotalLoss)
       }
       else {
         throw new Exception(s"Operating system wasn't identified: $osName")
