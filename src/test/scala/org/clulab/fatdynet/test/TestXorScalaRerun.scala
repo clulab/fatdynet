@@ -24,8 +24,8 @@ class TestXorScalaRerun extends FlatSpec with Matchers {
         totalLoss.toString should be(expectedTotalLoss)
       }
       else if (isMac) {
-        mostRecentLoss.toString should be("7.2066797E-12")
-        totalLoss.toString should be("13.835721")
+        mostRecentLoss.toString should be(expectedMostRecentLoss)
+        totalLoss.toString should be(expectedTotalLoss)
       }
       else if (isLinux) {
         mostRecentLoss.toString should be(expectedMostRecentLoss)
