@@ -16,7 +16,7 @@ class TestRepoDelete extends FlatSpec with Matchers {
   behavior of "Repo"
 
   it should "be deleted successfull" in {
-    Initializer.initialize(Map("random-seed" -> 2522620396L))
+    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val filename = "model.rnn"
     val zipname = "model.jar"

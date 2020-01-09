@@ -13,7 +13,7 @@ import org.scalatest._
 import scala.io.Source
 
 class TestModels extends FlatSpec with Matchers {
-  Initializer.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {
     lefts.size == rights.size && {

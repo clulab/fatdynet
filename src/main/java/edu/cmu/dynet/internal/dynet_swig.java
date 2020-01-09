@@ -800,4 +800,8 @@ public class dynet_swig {
     dynet_swigJNI.cleanup();
   }
 
+  public static void reset_rng(long seed) {
+    dynet_swigJNI.reset_rng(seed);
+  }
+
 }

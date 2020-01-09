@@ -939,6 +939,7 @@ public class dynet_swigJNI {
   public final static native void initialize__SWIG_1(long jarg1, long jarg2, boolean jarg3);
   public final static native void initialize__SWIG_2(long jarg1, long jarg2);
   public final static native void cleanup();
+  public final static native void reset_rng(long jarg1);
   public final static native void delete_Saver(long jarg1);
   public final static native void Saver_save__SWIG_0(long jarg1, Saver jarg1_, long jarg2, ParameterCollection jarg2_, String jarg3);
   public final static native void Saver_save__SWIG_1(long jarg1, Saver jarg1_, long jarg2, ParameterCollection jarg2_);
