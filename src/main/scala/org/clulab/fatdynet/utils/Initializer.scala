@@ -1,11 +1,13 @@
 package org.clulab.fatdynet.utils
 
 import edu.cmu.dynet._
+import edu.cmu.dynet.internal.dynet_swig.reset_rng
 
 // According to devices.cc, "Devices cannot be deleted at the moment because
 // the destructor is protected."  Cleanup is therefore disallowed.
 // At the very least, it causes which crashes the test suite.
 object Initializer {
+  val RANDOM_SEED = "random-seed"
   protected var initialized: Boolean = false
 
   def cleanup(): Boolean = this.synchronized {
@@ -25,6 +27,15 @@ object Initializer {
     val oldInitialized = initialized
 
     cleanup()
+    if (oldInitialized && args.contains(RANDOM_SEED)) {
+      // The initialization would have been ignored,
+      // so the random seed will be set explicitly.
+      val seed = args(RANDOM_SEED).asInstanceOf[Long]
+
+      reset_rng(seed)
+      // Imitate normal initialization output.
+      System.err.println(s"[dynet] random seed: $seed")
+    }
     Initialize.initialize(args)
     initialized = true
     oldInitialized
