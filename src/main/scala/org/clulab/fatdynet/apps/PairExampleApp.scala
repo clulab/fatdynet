@@ -217,7 +217,7 @@ object PairExampleApp {
   def main(args: Array[String]) {
     val filename = "PairModel.dat"
 
-    Initializer.initialize(Map("random-seed" -> 2522620396L))
+    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val (pairModel1, initialResults) = train
     val expectedResults = predict(pairModel1, pairModel1.rnnBuilder)

@@ -158,7 +158,7 @@ class TestTransducer extends FlatSpec with Matchers {
     def build(model: ParameterCollection): RnnBuilder = new GruBuilder(layers, inputDim, hiddenDim, model)
   }
 
-  Initializer.initialize(Map("random-seed" -> 2522620396L))
+  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6) {
     new FastLstmTransducerTester(layers, inputDim, hiddenDim).test()

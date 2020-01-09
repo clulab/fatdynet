@@ -40,10 +40,10 @@ class TestFileLoader extends TestLoader {
   }
 
   Initializer.initialize(
-    Map {
-    "random-seed" -> 2522620396L
-    "dynet-mem" -> "2048"
-    }
+    Map(
+      Initializer.RANDOM_SEED -> 2522620396L,
+      Initializer.DYNET_MEM -> "2048"
+    )
   )
 
   behavior of "serialized Java models"

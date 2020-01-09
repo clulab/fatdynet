@@ -153,7 +153,7 @@ object XorExampleApp {
   def main(args: Array[String]) {
     val filename = "XorModel.dat"
 
-    Initializer.initialize(Map("random-seed" -> 2522620396L))
+    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val (xorModel1, initialResults) = train
     val expectedResults = predict(xorModel1)

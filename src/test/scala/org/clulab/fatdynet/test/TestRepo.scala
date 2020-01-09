@@ -28,7 +28,7 @@ import org.scalatest._
   */
 
 class TestRepo extends FlatSpec with Matchers {
-  Initializer.initialize(Map("random-seed" -> 2522620396L))
+  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   abstract class ParserTester(val name: String) {
     val testname: String

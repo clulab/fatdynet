@@ -10,7 +10,7 @@ object XorScala {
 
   def run(): (Float, Float) = {
     println("Running XOR example")
-    Initializer.initialize(Map("random-seed" -> RANDOM_SEED))
+    Initializer.initialize(Map(Initializer.RANDOM_SEED -> RANDOM_SEED))
     println("Dynet initialized!")
     val m = new ParameterCollection
     val sgd = new SimpleSGDTrainer(m)

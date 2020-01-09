@@ -7,7 +7,14 @@ import edu.cmu.dynet.internal.dynet_swig.reset_rng
 // the destructor is protected."  Cleanup is therefore disallowed.
 // At the very least, it causes which crashes the test suite.
 object Initializer {
+  // See Initializer.scala for keys.
+  val DYNET_MEM = "dynet-mem"
   val RANDOM_SEED = "random-seed"
+  val WEIGHT_DECAY = "weight-decay"
+  val SHARED_PARAMETERS = "shared-parameters"
+  val AUTOBATCH = "autobatch"
+  val PROFILING = "profiling"
+
   protected var initialized: Boolean = false
 
   def cleanup(): Boolean = this.synchronized {

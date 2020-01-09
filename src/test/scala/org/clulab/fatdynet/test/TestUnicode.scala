@@ -49,7 +49,7 @@ class TestUnicode extends FlatSpec with Matchers {
     }
   }
 
-  Initializer.initialize(Map("random-seed" -> 2522620396L))
+  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   behavior of "model with Unicode name"
 

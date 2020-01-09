@@ -9,7 +9,7 @@ import org.scalatest.TestSuite
 import scala.io.Source
 
 class TestCrash extends TestSuite {
-  Initializer.initialize(Map("random-seed" -> 2522620396L, "dynet-mem" -> "2048"))
+  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
 
   def asString(lookupParameter: LookupParameter, name: String): Unit = {
     val tmpFile = File.createTempFile("model-", ".fatdynet")
