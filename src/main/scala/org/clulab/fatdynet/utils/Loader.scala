@@ -12,6 +12,8 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStreamReader
+import java.net.JarURLConnection
+import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 
@@ -62,6 +64,40 @@ class ZipTextModelLoader(filename: String, zipname: String) extends BaseModelLoa
     modelLoader.populateLookupParameter(p, key)
 
   def close(): Unit = modelLoader.done()
+}
+
+object ZipTextModelLoader {
+
+  def getResourceFileName(filename: String, any: Any): (String, Boolean) = {
+    val classLoader = any.getClass.getClassLoader
+    val url = classLoader.getResource(filename)
+    if (Option(url).isEmpty)
+      throw new RuntimeException(s"ERROR: cannot locate the model file $filename!")
+    val protocol = url.getProtocol
+    if (protocol == "jar") {
+      // The resource has been jarred, and must be extracted with a ZipModelLoader.
+      val jarUrl = url.openConnection().asInstanceOf[JarURLConnection].getJarFileURL
+      val protocol2 = jarUrl.getProtocol
+      assert(protocol2 == "file")
+      val uri = new URI(jarUrl.toString)
+      // This converts both percent encoded characters and file separators.
+      val nativeJarFileName = new File(uri).getPath
+
+      (nativeJarFileName, true)
+    }
+    else if (protocol == "file") {
+      // The resource has not been jarred, but lives in a classpath directory.
+      val uri = new URI(url.toString)
+      // This converts both percent encoded characters and file separators.
+      val nativeFileName = new File(uri).getPath
+
+      (nativeFileName, false)
+    }
+    else
+      throw new RuntimeException(s"ERROR: cannot locate the model file $filename with protocol $protocol!")
+  }
+
+  def getResourceFileName(filename: String): (String, Boolean) = getResourceFileName(filename, this)
 }
 
 // These three classes account for the need to access the model files both
