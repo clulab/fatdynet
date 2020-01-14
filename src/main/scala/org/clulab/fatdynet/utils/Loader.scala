@@ -68,7 +68,7 @@ class ZipTextModelLoader(filename: String, zipname: String) extends BaseModelLoa
 
 object ZipTextModelLoader {
 
-  def getResourceFileName(filename: String, any: Any): (String, Boolean) = {
+  def getResourceFileNameAndZipped(filename: String, any: Any): (String, Boolean) = {
     val classLoader = any.getClass.getClassLoader
     val url = classLoader.getResource(filename)
     if (Option(url).isEmpty)
@@ -97,7 +97,7 @@ object ZipTextModelLoader {
       throw new RuntimeException(s"ERROR: cannot locate the model file $filename with protocol $protocol!")
   }
 
-  def getResourceFileName(filename: String): (String, Boolean) = getResourceFileName(filename, this)
+  def getResourceFileNameAndZipped(filename: String): (String, Boolean) = getResourceFileNameAndZipped(filename, this)
 }
 
 // These three classes account for the need to access the model files both

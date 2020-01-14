@@ -4,6 +4,7 @@ import org.clulab.fatdynet.utils.ZipTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.scalatest._
 
+import java.util.zip.ZipFile
 import scala.io.Source
 
 class TestResource extends FlatSpec with Matchers {
@@ -12,14 +13,26 @@ class TestResource extends FlatSpec with Matchers {
 
   it should "be extractable from a jar file" in {
     // sbt does not create a jar file for testing.  The resource is never zipped.
-    val (jarFileName, zipped) = ZipTextModelLoader.getResourceFileName("resource.txt", this)
+    // For manual testing, use a file that is part of a dependency like scalatest.
+
+    // This file is part of scalatest
+//    val resourceName = "org/scalatest/ScalaTestBundle.properties"
+    val resourceName = "resource.txt"
+    val (jarFileName, zipped) = ZipTextModelLoader.getResourceFileNameAndZipped(resourceName, this)
+    println(jarFileName)
     val source =
-        if (zipped)
-          Source.fromResource(jarFileName) // How to read the zip file?
+        if (zipped) {
+          val zipFile = new ZipFile(jarFileName)
+          val entry = zipFile.getEntry(resourceName)
+          val inputStream = zipFile.getInputStream(entry)
+
+          Source.fromInputStream(inputStream)
+        }
         else
           Source.fromFile(jarFileName)
-    val text = source.autoClose(_.mkString)
+    val contents = source.autoClose(_.mkString)
 
-    text.trim should be ("This is a test resource.")
+//    println(contents)
+    contents should not be empty
   }
 }
