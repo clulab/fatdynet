@@ -117,7 +117,7 @@ class Repo(val textLoader: BaseTextLoader) {
     val parameterCollection = new ParameterCollection
     val artifact = design.build(parameterCollection)
 
-    textLoader.newModelLoader().autoClose { modelLoader =>
+    textLoader.newTextModelLoader().autoClose { modelLoader =>
       artifact.populate(modelLoader, parameterCollection)
     }
     new Model(design.name, parameterCollection, Seq(artifact), Seq(design))
@@ -131,7 +131,7 @@ class Repo(val textLoader: BaseTextLoader) {
         design.build(parameterCollection)
     }
 
-    textLoader.newModelLoader().autoClose { modelLoader =>
+    textLoader.newTextModelLoader().autoClose { modelLoader =>
         if (artifacts.size > 1)
           // They must have been thrown together into a parameter collection
           modelLoader.populateModel(parameterCollection, name)

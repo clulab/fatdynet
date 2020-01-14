@@ -1,10 +1,11 @@
 package org.clulab.fatdynet.test
 
-import org.clulab.fatdynet.utils.ZipTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.scalatest._
-
 import java.util.zip.ZipFile
+
+import org.clulab.fatdynet.utils.BaseTextModelLoader
+
 import scala.io.Source
 
 class TestResource extends FlatSpec with Matchers {
@@ -18,18 +19,18 @@ class TestResource extends FlatSpec with Matchers {
     // This file is part of scalatest
 //    val resourceName = "org/scalatest/ScalaTestBundle.properties"
     val resourceName = "resource.txt"
-    val (jarFileName, zipped) = ZipTextModelLoader.getResourceFileNameAndZipped(resourceName, this)
-    println(jarFileName)
+    val resourceInfo = BaseTextModelLoader.getResourceInfo(resourceName, this)
+    println(resourceInfo.resourceFilename)
     val source =
-        if (zipped) {
-          val zipFile = new ZipFile(jarFileName)
+        if (resourceInfo.isZipped) {
+          val zipFile = new ZipFile(resourceInfo.resourceFilename)
           val entry = zipFile.getEntry(resourceName)
           val inputStream = zipFile.getInputStream(entry)
 
           Source.fromInputStream(inputStream)
         }
         else
-          Source.fromFile(jarFileName)
+          Source.fromFile(resourceInfo.resourceFilename)
     val contents = source.autoClose(_.mkString)
 
 //    println(contents)
