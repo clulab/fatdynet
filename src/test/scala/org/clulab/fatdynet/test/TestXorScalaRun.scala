@@ -25,10 +25,10 @@ class TestXorScalaRun extends FlatSpec with Matchers {
     val deviceType = dynet_swig.getDefault_device().getType.toString
     val (expectedMostRecentLoss, expectedTotalLoss) = deviceType match {
       case "CPU" =>
-        println("Running on CPU...")
+        println("Ran on CPU...")
         (expectedCpuMostRecentLoss, expectedCpuTotalLoss)
       case "GPU" =>
-        println("Running on GPU...")
+        println("Ran on GPU...")
         (expectedGpuMostRecentLoss, expectedGpuTotalLoss)
       case _ =>
         throw new RuntimeException(s"Could not recognize device $deviceType!")
