@@ -14,24 +14,25 @@ class TestXorScalaRun extends FlatSpec with Matchers {
   val expectedCpuMostRecentLoss = "6.168399E-12"
   val expectedGpuMostRecentLoss = "5.9952043E-13"
   val expectedCpuTotalLoss = "13.83572"
-  val expectedGpuTotalLoss = "13.83572"
+  val expectedGpuTotalLoss = "11.2634"
 
   behavior of "XorScala"
 
-  val deviceType = dynet_swig.getDefault_device().getType.toString
-  val (expectedMostRecentLoss, expectedTotalLoss) = deviceType match {
-    case "CPU" =>
-      println("Running on CPU...")
-      (expectedCpuMostRecentLoss, expectedCpuTotalLoss)
-    case "GPU" =>
-      println("Running on GPU...")
-      (expectedGpuMostRecentLoss, expectedGpuTotalLoss)
-    case _ =>
-      throw new RuntimeException(s"Could not recognize device $deviceType!")
-  }
-
   it should "get the right result" in {
     val (mostRecentLoss, totalLoss) = XorScala.run()
+
+    // This must be performed after initialization.
+    val deviceType = dynet_swig.getDefault_device().getType.toString
+    val (expectedMostRecentLoss, expectedTotalLoss) = deviceType match {
+      case "CPU" =>
+        println("Running on CPU...")
+        (expectedCpuMostRecentLoss, expectedCpuTotalLoss)
+      case "GPU" =>
+        println("Running on GPU...")
+        (expectedGpuMostRecentLoss, expectedGpuTotalLoss)
+      case _ =>
+        throw new RuntimeException(s"Could not recognize device $deviceType!")
+    }
 
     if (isWindows) {
       mostRecentLoss.toString should be (expectedMostRecentLoss)
