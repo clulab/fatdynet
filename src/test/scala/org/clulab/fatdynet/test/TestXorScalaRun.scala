@@ -22,7 +22,7 @@ class TestXorScalaRun extends FlatSpec with Matchers {
     val (mostRecentLoss, totalLoss) = XorScala.run()
 
     // This must be performed after initialization.
-    val deviceType = dynet_swig.getDefault_device().getType.toString
+    val deviceType = dynet_swig.getDefault_device.getType.toString
     val (expectedMostRecentLoss, expectedTotalLoss) = deviceType match {
       case "CPU" =>
         println("Ran on CPU...")

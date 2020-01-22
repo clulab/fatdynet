@@ -2,6 +2,14 @@ package org.clulab.fatdynet.examples
 
 import edu.cmu.dynet._
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.SafeTrainer
+import org.clulab.fatdynet.utils.TrainerListener
+
+
+class PrintlnListener extends TrainerListener {
+
+  def listen(message: String): Unit = println(message)
+}
 
 object XorScala {
   val HIDDEN_SIZE = 8
@@ -13,7 +21,7 @@ object XorScala {
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> RANDOM_SEED))
     println("Dynet initialized!")
     val m = new ParameterCollection
-    val sgd = new SimpleSGDTrainer(m)
+    val sgd = new SafeTrainer(new SimpleSGDTrainer(m), m, new PrintlnListener)
     ComputationGraph.renew()
     var mostRecentLoss = 0F
     var totalLoss = 0F
@@ -58,7 +66,7 @@ object XorScala {
         ComputationGraph.backward(loss_expr)
         sgd.update()
       }
-      sgd.learningRate *= 0.998f
+      sgd.trainer.learningRate *= 0.998f
       loss /= 4
       println("iter = " + iter + ", loss = " + loss)
       mostRecentLoss = loss
