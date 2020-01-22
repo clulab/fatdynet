@@ -28,3 +28,9 @@ class SafeTrainer(val trainer: Trainer, parameters: ParameterCollection, listene
     }
   }
 }
+
+object SafeTrainer {
+
+  def apply(trainer: Trainer, parameters: ParameterCollection, listener: TrainerListener = new ObliviousListener): SafeTrainer =
+      new SafeTrainer(trainer, parameters, listener)
+}

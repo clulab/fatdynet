@@ -5,23 +5,21 @@ import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.SafeTrainer
 import org.clulab.fatdynet.utils.TrainerListener
 
-
-class PrintlnListener extends TrainerListener {
-
-  def listen(message: String): Unit = println(message)
-}
-
 object XorScala {
   val HIDDEN_SIZE = 8
   val ITERATIONS = 30
   val RANDOM_SEED = 2522620396L
+
+  class PrintlnListener extends TrainerListener {
+    def listen(message: String): Unit = println(message)
+  }
 
   def run(): (Float, Float) = {
     println("Running XOR example")
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> RANDOM_SEED))
     println("Dynet initialized!")
     val m = new ParameterCollection
-    val sgd = new SafeTrainer(new SimpleSGDTrainer(m), m, new PrintlnListener)
+    val sgd = SafeTrainer(new SimpleSGDTrainer(m), m, new PrintlnListener)
     ComputationGraph.renew()
     var mostRecentLoss = 0F
     var totalLoss = 0F
