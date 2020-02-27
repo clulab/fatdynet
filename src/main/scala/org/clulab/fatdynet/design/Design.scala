@@ -2,7 +2,7 @@ package org.clulab.fatdynet.design
 
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet._
-import org.clulab.fatdynet.utils.BaseModelLoader
+import org.clulab.fatdynet.utils.BaseTextModelLoader
 
 class Artifact(val name: String, val parameter: Option[Parameter],
     val lookupParameter: Option[LookupParameter], val rnnBuilder: Option[RnnBuilder]) {
@@ -19,7 +19,7 @@ class Artifact(val name: String, val parameter: Option[Parameter],
 
   def isRnnBuilder: Boolean = rnnBuilder.isDefined
 
-  def populate(modelLoader: BaseModelLoader, parameterCollection: ParameterCollection): Unit = {
+  def populate(modelLoader: BaseTextModelLoader, parameterCollection: ParameterCollection): Unit = {
     if (isParameter)
       modelLoader.populateParameter(parameter.get, name)
     else if (isLookupParameter)
