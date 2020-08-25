@@ -33,7 +33,7 @@ object UnsignedVector {
 }
 
 /** SWIG converts C++ `unsigned` to Scala `Long` */
-class UnsignedVector private[dynet] (private[dynet] val vector: internal.UnsignedVector)
+class UnsignedVector private[dynet] (val vector: internal.UnsignedVector)
     extends scala.collection.mutable.IndexedSeq[Long] {
   def this(size: Long) { this(new internal.UnsignedVector(size)) }
   def this(values: Seq[Long] = Seq.empty) {
@@ -51,7 +51,7 @@ object FloatVector {
     new FloatVector(x)
 }
 
-class FloatVector private[dynet] (private[dynet] val vector: internal.FloatVector)
+class FloatVector private[dynet] (val vector: internal.FloatVector)
     extends scala.collection.mutable.IndexedSeq[Float] {
   def this(size: Long) { this(new internal.FloatVector(size)) }
   def this(values: Seq[Float] = Seq.empty) {
