@@ -3,7 +3,7 @@ package edu.cmu.dynet
 /** Represents an expression on the computation graph. Can only be constructed using the
   * functions contained in the companion object.
   */
-class Expression private[dynet](
+class Expression(
   val expr: internal.Expression,
   // Expressions sometimes rely on things (e.g. wrapped C++ vectors) that get deleted when the JVM
   // garbage collector runs. By explicitly grabbing references to them, we can prevent this

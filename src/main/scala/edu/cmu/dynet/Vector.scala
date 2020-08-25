@@ -13,7 +13,7 @@ object IntVector {
     new IntVector(x)
 }
 
-class IntVector private[dynet] (private[dynet] val vector: internal.IntVector)
+class IntVector private[dynet] (val vector: internal.IntVector)
     extends scala.collection.mutable.IndexedSeq[Int] {
   def this(size: Long) { this(new internal.IntVector(size)) }
   def this(values: Seq[Int] = Seq.empty) {
@@ -70,7 +70,7 @@ object ExpressionVector {
 }
 
 class ExpressionVector private[dynet] (
-  private[dynet] val version: Long, private[dynet] val vector: internal.ExpressionVector)
+  private[dynet] val version: Long, val vector: internal.ExpressionVector)
     extends scala.collection.mutable.IndexedSeq[Expression] {
   private[dynet] def this(vector: internal.ExpressionVector) = {
     this(ComputationGraph.version, vector)
@@ -106,7 +106,7 @@ object UnsignedVectorVector {
     new UnsignedVectorVector(x)
 }
 
-class UnsignedVectorVector private[dynet] (private[dynet] val vector: internal.UnsignedVectorVector)
+class UnsignedVectorVector private[dynet] (val vector: internal.UnsignedVectorVector)
   extends scala.collection.mutable.IndexedSeq[UnsignedVector] {
   def this(size: Long) { this(new internal.UnsignedVectorVector(size)) }
   def this(values: Seq[UnsignedVector] = Seq.empty) {

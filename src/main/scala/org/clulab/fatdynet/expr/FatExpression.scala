@@ -5,9 +5,11 @@ import edu.cmu.dynet.{Expression => ScalaExpression }
 import edu.cmu.dynet.Tensor
 import edu.cmu.dynet.internal.{Expression => JavaExpression}
 
-class FatExpression(protected val expressionFactory: ExpressionFactory[FatExpression], val scalaExpression: ScalaExpression)
+class FatExpression(val expressionFactory: ExpressionFactory[FatExpression], val scalaExpression: ScalaExpression)
     extends Expressionable[FatExpression] {
   val javaExpression: JavaExpression = scalaExpression.expr
+
+  // TODO Add the version back in. It seems useful.
 
   def value(): Tensor = new Tensor(javaExpression.value)
 
