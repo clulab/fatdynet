@@ -16,7 +16,7 @@ import org.clulab.fatdynet.expr.ExpressionFactory
 trait ComputationGraphable {
   // These are CLU Lab additions.
   def close(): Unit
-  def getExpressionFactory(): ExpressionFactory[FatExpression]
+  def getExpressionFactory: ExpressionFactory[FatExpression]
 
   def addInput(s: Float): VariableIndex
   def addInput(d: Dim, data: FloatVector): VariableIndex
