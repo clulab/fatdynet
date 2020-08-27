@@ -19,6 +19,9 @@ class TestComputationGraph extends FlatSpec with Matchers {
     cg2.clear()
 
     cg1.eq(cg2) should be (false)
+    // This must be deleted if the new ScalaComputationGraph is used
+    // which doesn't rely on the JavaComputationGraph singleton.
+    cg2.delete()
 
     // This should no longer work.  It will completely crash Java.
     // cg1.clear()

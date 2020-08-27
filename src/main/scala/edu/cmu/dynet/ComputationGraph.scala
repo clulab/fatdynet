@@ -2,39 +2,23 @@ package edu.cmu.dynet
 
 import edu.cmu.dynet.internal.dynet_swigJNI
 
-class ComputationGraph(val version: Long) extends internal.ComputationGraph(dynet_swigJNI.new_ComputationGraph(), true) {
-
-  def this(oldCg: ComputationGraph) = {
-    this(oldCg.version + 1)
-
-    oldCg.delete
-  }
-}
+class ComputationGraph(val version: Long) extends internal.ComputationGraph(dynet_swigJNI.new_ComputationGraph(), true)
 
 /** The ComputationGraph object contains the singleton DyNet computation graph instance. Any C++
   * instance method is instead implemented as a static function here.*
   */
 object ComputationGraph {
   private var defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
+  private[dynet] var cg: ComputationGraph = new ComputationGraph(0L)
 
-  // This replaces internal.ComputationGraph.getNew because more than one instance is now allowed.
-  def getNew(): ComputationGraph =
-      new ComputationGraph(0)
+  def renew(): Unit = cg = {
+    val version = cg.version
 
-  def getNewer(): ComputationGraph = {
-    val oldCg = cg
-    val newCg = new ComputationGraph(cg.version + 1)
-
-    oldCg.delete()
-    newCg
+    cg.delete()
+    new ComputationGraph(version + 1)
   }
 
-  private[dynet] var cg: ComputationGraph = getNew()
-
-  /** Gets rid of the singleton Computation Graph and replaces it with a fresh one. Increments
-    * `version` to make sure we don't use any stale expressions.
-    */
-  def renew(): Unit = cg = getNewer()
+  def version: Long = cg.version
 
   def addInput(s: Float): VariableIndex = new VariableIndex(cg.add_input(s, defaultDevice))
   def addInput(d: Dim, data: FloatVector): VariableIndex =
