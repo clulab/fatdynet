@@ -8,7 +8,7 @@ class ComputationGraph(val version: Long) extends internal.ComputationGraph(dyne
   * instance method is instead implemented as a static function here.*
   */
 object ComputationGraph {
-  private var defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
+  private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
   private[dynet] var cg: ComputationGraph = new ComputationGraph(0L)
 
   def renew(): Unit = cg = {
