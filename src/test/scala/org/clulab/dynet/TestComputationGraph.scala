@@ -2,13 +2,12 @@ package org.clulab.dynet
 
 import edu.cmu.dynet.internal.{ComputationGraph => JavaComputationGraph}
 import edu.cmu.dynet.{ComputationGraph => ScalaComputationGraph}
+import org.clulab.fatdynet.utils.Initializer
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
 
 class TestComputationGraph extends FlatSpec with Matchers {
-  Xor.initialize()
-
-  val xorParameters = new Xor.XorParameters()
+  Initializer.initialize()
 
   behavior of "Java ComputationGraph"
 
@@ -33,13 +32,5 @@ class TestComputationGraph extends FlatSpec with Matchers {
     ScalaComputationGraph.version should be (1)
     ScalaComputationGraph.renew()
     ScalaComputationGraph.version should be (2)
-  }
-
-  behavior of "defaultXor"
-
-  it should "run" in {
-    val loss = Xor.defaultXor(xorParameters)
-
-    loss should be (Xor.expectedLoss)
   }
 }

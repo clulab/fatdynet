@@ -1,4 +1,4 @@
-package org.clulab.dynet
+package org.clulab.dynet.xor
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
@@ -11,14 +11,14 @@ class TestStaticComputationGraph extends FlatSpec with Matchers {
   behavior of "staticXor"
 
   it should "run" in {
-    val loss = Xor.staticXor(xorParameters)
+    val loss = Xor.runStatic(xorParameters)
 
     loss should be (Xor.expectedLoss)
   }
 
   it should "run repeatedly" in {
     1.to(8).foreach { _ =>
-      val loss = Xor.staticXor(xorParameters)
+      val loss = Xor.runStatic(xorParameters)
 
       loss should be (Xor.expectedLoss)
     }

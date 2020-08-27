@@ -1,4 +1,4 @@
-package org.clulab.dynet
+package org.clulab.dynet.xor
 
 import edu.cmu.dynet.ComputationGraph
 import edu.cmu.dynet.Dim
@@ -26,17 +26,19 @@ object Xor {
 
   val expectedLoss: Float = 0.09710293f
 
-  def initialize(dynamic: Boolean = false): Unit = {
-    Initializer.initialize(
-      Map(
-        Initializer.RANDOM_SEED -> 2522620396L,
-        Initializer.DYNET_MEM -> "2048"
-      )
+  def initialize(train: Boolean = true): Unit = {
+    val map = Map(
+      Initializer.RANDOM_SEED -> 2522620396L,
+      Initializer.DYNET_MEM -> "2048",
+      Initializer.FORWARD_ONLY -> { if (train) 0 else 1 },
+      Initializer.DYNAMIC_MEM -> !train
     )
+
+    Initializer.initialize(map)
   }
 
   // This is the original code to emulate.
-  def defaultXor(xorParameters: XorParameters): Float = {
+  def runDefault(xorParameters: XorParameters): Float = {
     ComputationGraph.renew()
 
     val W = Expression.parameter(xorParameters.p_W)
@@ -57,11 +59,11 @@ object Xor {
     val loss_expr = Expression.squaredDistance(y_pred, y)
     val loss = ComputationGraph.forward(loss_expr).toFloat()
 
-    println("loss = " + loss)
+//    println("loss = " + loss)
     loss
   }
 
-  def generalXor(xorParameters: XorParameters, computationGraph: ComputationGraphable): Float = {
+  def runGeneral(xorParameters: XorParameters, computationGraph: ComputationGraphable): Float = {
     val expression = computationGraph.getExpressionFactory
 
     val W = expression.parameter(xorParameters.p_W)
@@ -82,19 +84,19 @@ object Xor {
     val loss_expr = expression.squaredDistance(y_pred, y)
     val loss = computationGraph.forward(loss_expr).toFloat()
 
-    println("loss = " + loss)
+//    println("loss = " + loss)
     loss
   }
 
-  def staticXor(xorParameters: XorParameters): Float = {
+  def runStatic(xorParameters: XorParameters): Float = {
     new StaticComputationGraph().autoClose { computationGraph =>
-      Xor.generalXor(xorParameters, computationGraph)
+      runGeneral(xorParameters, computationGraph)
     }
   }
 
-  def dynamicXor(xorParameters: XorParameters): Float = {
+  def runDynamic(xorParameters: XorParameters): Float = {
     new DynamicComputationGraph().autoClose { computationGraph =>
-      Xor.generalXor(xorParameters, computationGraph)
+      runGeneral(xorParameters, computationGraph)
     }
   }
 }
