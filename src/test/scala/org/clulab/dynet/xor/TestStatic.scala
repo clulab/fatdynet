@@ -8,7 +8,7 @@ class TestStaticComputationGraph extends FlatSpec with Matchers {
 
   val xorParameters = new Xor.XorParameters()
 
-  behavior of "staticXor"
+  behavior of "static Xor"
 
   it should "run" in {
     val loss = Xor.runStatic(xorParameters)

@@ -8,7 +8,7 @@ class TestDynamic extends FlatSpec with Matchers {
 
   val xorParameters = new Xor.XorParameters()
 
-  behavior of "dynamicXor"
+  behavior of "dynamic Xor"
 
   it should "run" in {
     val loss = Xor.runDynamic(xorParameters)
@@ -17,7 +17,7 @@ class TestDynamic extends FlatSpec with Matchers {
   }
 
   it should "run in serial" in {
-    1.to(8).foreach { i =>
+    1.to(8).foreach { _ =>
       val loss = Xor.runDynamic(xorParameters)
 
       loss should be (Xor.expectedLoss)

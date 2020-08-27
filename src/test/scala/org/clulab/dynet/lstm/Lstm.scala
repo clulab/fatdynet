@@ -6,6 +6,7 @@ import edu.cmu.dynet.Expression
 import edu.cmu.dynet.LookupParameter
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet.VanillaLstmBuilder
+import edu.cmu.dynet.internal.dynet_swig.reset_rng
 import org.clulab.fatdynet.cg.ComputationGraphable
 import org.clulab.fatdynet.cg.DynamicComputationGraph
 import org.clulab.fatdynet.cg.StaticComputationGraph
@@ -17,19 +18,27 @@ object Lstm {
   val layers = 2
   val hiddenDim = 10
 
+  val seed = 42L
+
   class LstmParameters {
     val model = new ParameterCollection
     val lookup: LookupParameter = model.addLookupParameters(hiddenDim, Dim(inputDim))
+    for (i <- 0.until(hiddenDim)) {
+      lookup.initialize(i, Vector(14.5f - i))
+    }
+    reset_rng(seed)
     val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
   }
 
   // This one matches C++ output when the builder is reused.
   // When the builder is created anew each time, the result varies.
-  val expectedLoss: Float = 0.00018254126f
+  // val expectedLoss: Float = 0.00018254126f
+  // val expectedLoss: Float = 0.0113544082f
+  val expectedLoss: Float = 0.031386387f // when reseeded
 
   def initialize(train: Boolean = true): Unit = {
     val map = Map(
-      Initializer.RANDOM_SEED -> 10L, // Match ser-par.cc
+      Initializer.RANDOM_SEED -> seed, // Match ser-par.cc
       Initializer.DYNET_MEM -> "2048",
       Initializer.FORWARD_ONLY -> { if (train) 0 else 1 },
       Initializer.DYNAMIC_MEM -> !train
@@ -42,7 +51,8 @@ object Lstm {
     val model = lstmParameters.model
     val lookup = lstmParameters.lookup
     // This builder has state, so it needs to be new if there is any multi-threading.
-    val _ = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+    // reset_rng(seed)
+    // val _ = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
     val builder = lstmParameters.builder
 
     builder.newGraph()
@@ -67,8 +77,9 @@ object Lstm {
     val model = lstmParameters.model
     val lookup = lstmParameters.lookup
     // This builder has state, so it needs to be new if there is any multi-threading.
-    val _ = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
-    val builder = lstmParameters.builder
+    reset_rng(seed)
+    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+    // val builder = lstmParameters.builder
 
     builder.newGraph()
     0.until(inputDim).foreach { j =>
@@ -86,15 +97,15 @@ object Lstm {
     loss
   }
 
-  def runStatic(xorParameters: LstmParameters): Float = {
+  def runStatic(lstmParameters: LstmParameters): Float = {
     new StaticComputationGraph().autoClose { computationGraph =>
-      runGeneral(xorParameters, computationGraph)
+      runGeneral(lstmParameters, computationGraph)
     }
   }
 
-  def runDynamic(xorParameters: LstmParameters): Float = {
+  def runDynamic(lstmParameters: LstmParameters): Float = {
     new DynamicComputationGraph().autoClose { computationGraph =>
-      runGeneral(xorParameters, computationGraph)
+      runGeneral(lstmParameters, computationGraph)
     }
   }
 }

@@ -8,7 +8,7 @@ class TestDefault extends FlatSpec with Matchers {
 
   val xorParameters = new Xor.XorParameters()
 
-  behavior of "defaultXor"
+  behavior of "default Xor"
 
   it should "run" in {
     val loss = Xor.runDefault(xorParameters)

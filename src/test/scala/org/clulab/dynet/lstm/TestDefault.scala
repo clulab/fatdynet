@@ -9,7 +9,7 @@ class TestDefault extends FlatSpec with Matchers {
   // These parameters now include a builder, which has state itself.
   val lstmParameters = new Lstm.LstmParameters()
 
-  behavior of "defaultLstm"
+  behavior of "default Lstm"
 
   it should "run" in {
     val loss = Lstm.runDefault(lstmParameters)
@@ -20,8 +20,8 @@ class TestDefault extends FlatSpec with Matchers {
   it should "run repeatedly" in {
     1.to(8).foreach { _ =>
       val loss = Lstm.runDefault(lstmParameters)
-println(loss)
-//      loss should be (Lstm.expectedLoss)
+
+      loss should be (Lstm.expectedLoss)
     }
   }
 }
