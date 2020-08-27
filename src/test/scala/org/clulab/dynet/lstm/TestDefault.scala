@@ -16,4 +16,12 @@ class TestDefault extends FlatSpec with Matchers {
 
     loss should be (Lstm.expectedLoss)
   }
+
+  it should "run repeatedly" in {
+    1.to(8).foreach { _ =>
+      val loss = Lstm.runDefault(lstmParameters)
+println(loss)
+//      loss should be (Lstm.expectedLoss)
+    }
+  }
 }

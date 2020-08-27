@@ -4,11 +4,12 @@ import edu.cmu.dynet.Dim
 import edu.cmu.dynet.{Expression => ScalaExpression}
 import edu.cmu.dynet.FloatPointer
 import edu.cmu.dynet.FloatVector
+import edu.cmu.dynet.LookupParameter
 import edu.cmu.dynet.Parameter
 
 class StaticExpressionFactory extends ExpressionFactory[FatExpression] {
 
-  protected def newFatExpression(scalaExpression: ScalaExpression): FatExpression =
+  def newFatExpression(scalaExpression: ScalaExpression): FatExpression =
       new FatExpression(this, scalaExpression)
 
   def exprTimes(e1: FatExpression, e2: FatExpression): FatExpression =
@@ -61,4 +62,10 @@ class StaticExpressionFactory extends ExpressionFactory[FatExpression] {
 
   def exprDivide(e1: FatExpression, x: Float): FatExpression =
       newFatExpression(ScalaExpression.exprDivide(e1.scalaExpression, x))
+
+  def lookup(p: LookupParameter, index: Long): FatExpression =
+      newFatExpression(ScalaExpression.lookup(p, index))
+
+  def squaredNorm(e: FatExpression): FatExpression =
+      newFatExpression(ScalaExpression.squaredNorm(e.scalaExpression))
 }

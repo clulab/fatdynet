@@ -20,7 +20,7 @@ import org.clulab.fatdynet.cg.DynamicComputationGraph
 
 class DynamicExpressionFactory(computationGraph: DynamicComputationGraph) extends ExpressionFactory[FatExpression] {
 
-  protected def newFatExpression(scalaExpression: ScalaExpression): FatExpression = {
+  def newFatExpression(scalaExpression: ScalaExpression): FatExpression = {
     new FatExpression(this, scalaExpression)
   }
 

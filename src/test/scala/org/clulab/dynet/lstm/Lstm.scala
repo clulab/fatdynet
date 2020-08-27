@@ -15,16 +15,17 @@ import org.clulab.fatdynet.utils.Initializer
 object Lstm {
   val inputDim = 1
   val layers = 2
+  val hiddenDim = 10
 
   class LstmParameters {
-    val hiddenDim = 10
-
     val model = new ParameterCollection
-    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
     val lookup: LookupParameter = model.addLookupParameters(hiddenDim, Dim(inputDim))
+    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
   }
 
-  val expectedLoss: Float = 0.000341659179f
+  // This one matches C++ output when the builder is reused.
+  // When the builder is created anew each time, the result varies.
+  val expectedLoss: Float = 0.00018254126f
 
   def initialize(train: Boolean = true): Unit = {
     val map = Map(
@@ -38,8 +39,11 @@ object Lstm {
   }
 
   def runDefault(lstmParameters: LstmParameters): Float = {
-    val builder = lstmParameters.builder
+    val model = lstmParameters.model
     val lookup = lstmParameters.lookup
+    // This builder has state, so it needs to be new if there is any multi-threading.
+    val _ = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+    val builder = lstmParameters.builder
 
     builder.newGraph()
     0.until(inputDim).foreach { j =>
@@ -57,29 +61,29 @@ object Lstm {
     loss
   }
 
-  def runGeneral(xorParameters: LstmParameters, computationGraph: ComputationGraphable): Float = {
-/*    val expression = computationGraph.getExpressionFactory
+  def runGeneral(lstmParameters: LstmParameters, computationGraph: ComputationGraphable): Float = {
+    val expression = computationGraph.getExpressionFactory
 
-    val W = expression.parameter(xorParameters.p_W)
-    val b = expression.parameter(xorParameters.p_b)
-    val V = expression.parameter(xorParameters.p_V)
-    val a = expression.parameter(xorParameters.p_a)
+    val model = lstmParameters.model
+    val lookup = lstmParameters.lookup
+    // This builder has state, so it needs to be new if there is any multi-threading.
+    val _ = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+    val builder = lstmParameters.builder
 
-    val x_values = new FloatVector(2)
-    val x = expression.input(Dim(2), x_values)
+    builder.newGraph()
+    0.until(inputDim).foreach { j =>
+      builder.startNewSequence()
+      0.until(inputDim).foreach { k =>
+        val lookedup = expression.lookup(lookup, j * inputDim + k)
 
-    // Need a pointer representation of scalars so updates are tracked
-    val y_value = new FloatPointer
-    y_value.set(0)
-    val y = expression.input(y_value)
+        builder.addInput(lookedup.scalaExpression)
+      }
+    }
+    val finalHLayers = expression.newFatExpression(builder.finalH()(layers - 1))
+    val losses = expression.squaredNorm(finalHLayers)
+    val loss = losses.value().toFloat()
 
-    val h = expression.tanh(W * x + b)
-    val y_pred = V * h + a
-    val loss_expr = expression.squaredDistance(y_pred, y)
-    val loss = computationGraph.forward(loss_expr).toFloat()
-
-//    println("loss = " + loss)
-    loss*/ 0f
+    loss
   }
 
   def runStatic(xorParameters: LstmParameters): Float = {
