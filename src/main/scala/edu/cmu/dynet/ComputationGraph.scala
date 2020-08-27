@@ -1,20 +1,40 @@
 package edu.cmu.dynet
 
+import edu.cmu.dynet.internal.dynet_swigJNI
+
+class ComputationGraph(val version: Long) extends internal.ComputationGraph(dynet_swigJNI.new_ComputationGraph(), true) {
+
+  def this(oldCg: ComputationGraph) = {
+    this(oldCg.version + 1)
+
+    oldCg.delete
+  }
+}
+
 /** The ComputationGraph object contains the singleton DyNet computation graph instance. Any C++
   * instance method is instead implemented as a static function here.*
   */
 object ComputationGraph {
-  private[dynet] var cg: internal.ComputationGraph = internal.ComputationGraph.getNew
-  var version: Long = 0L
   private var defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
+
+  // This replaces internal.ComputationGraph.getNew because more than one instance is now allowed.
+  def getNew(): ComputationGraph =
+      new ComputationGraph(0)
+
+  def getNewer(): ComputationGraph = {
+    val oldCg = cg
+    val newCg = new ComputationGraph(cg.version + 1)
+
+    oldCg.delete()
+    newCg
+  }
+
+  private[dynet] var cg: ComputationGraph = getNew()
 
   /** Gets rid of the singleton Computation Graph and replaces it with a fresh one. Increments
     * `version` to make sure we don't use any stale expressions.
     */
-  def renew(): Unit = {
-    cg = internal.ComputationGraph.getNew
-    version += 1
-  }
+  def renew(): Unit = cg = getNewer()
 
   def addInput(s: Float): VariableIndex = new VariableIndex(cg.add_input(s, defaultDevice))
   def addInput(d: Dim, data: FloatVector): VariableIndex =
