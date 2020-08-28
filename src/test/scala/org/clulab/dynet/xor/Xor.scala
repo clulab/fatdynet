@@ -89,14 +89,16 @@ object Xor {
   }
 
   def runStatic(xorParameters: XorParameters): Float = {
-    new StaticComputationGraph().autoClose { computationGraph =>
-      runGeneral(xorParameters, computationGraph)
-    }
+    runDefault(xorParameters)
+//    new StaticComputationGraph().autoClose { computationGraph =>
+//      runGeneral(xorParameters)
+//    }
   }
 
   def runDynamic(xorParameters: XorParameters): Float = {
-    new DynamicComputationGraph().autoClose { computationGraph =>
-      runGeneral(xorParameters, computationGraph)
-    }
+    runDefault(xorParameters)
+//    new DynamicComputationGraph().autoClose { computationGraph =>
+//      runGeneral(xorParameters, computationGraph)
+//    }
   }
 }

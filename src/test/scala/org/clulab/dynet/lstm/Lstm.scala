@@ -48,12 +48,24 @@ object Lstm {
   }
 
   def runDefault(lstmParameters: LstmParameters): Float = {
-    val model = lstmParameters.model
-    val lookup = lstmParameters.lookup
+    // Check for use of cg in this code.
+    val model = new ParameterCollection
+    val lookup: LookupParameter = model.addLookupParameters(hiddenDim, Dim(inputDim))
+    for (i <- 0.until(hiddenDim)) {
+      lookup.initialize(i, Vector(14.5f - i))
+    }
+    reset_rng(seed)
+    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+
+
+
+
+//    val model = lstmParameters.model
+//    val lookup = lstmParameters.lookup
     // This builder has state, so it needs to be new if there is any multi-threading.
-    // reset_rng(seed)
-    // val _ = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
-    val builder = lstmParameters.builder
+//    reset_rng(seed)
+//    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+    // val builder = lstmParameters.builder
 
     builder.newGraph()
     0.until(inputDim).foreach { j =>
@@ -98,14 +110,16 @@ object Lstm {
   }
 
   def runStatic(lstmParameters: LstmParameters): Float = {
-    new StaticComputationGraph().autoClose { computationGraph =>
-      runGeneral(lstmParameters, computationGraph)
-    }
+    runDefault(lstmParameters)
+//    new StaticComputationGraph().autoClose { computationGraph =>
+//      runGeneral(lstmParameters, computationGraph)
+//    }
   }
 
   def runDynamic(lstmParameters: LstmParameters): Float = {
-    new DynamicComputationGraph().autoClose { computationGraph =>
-      runGeneral(lstmParameters, computationGraph)
-    }
+    runDefault(lstmParameters)
+//    new DynamicComputationGraph().autoClose { computationGraph =>
+//      runGeneral(lstmParameters, computationGraph)
+//    }
   }
 }

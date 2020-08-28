@@ -20,6 +20,6 @@ class TestXorExample extends FlatSpec with Matchers {
           exception.printStackTrace()
           throw exception
       }
-   }
+    }
   }
 }

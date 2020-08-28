@@ -16,7 +16,7 @@ class TestDynamic extends FlatSpec with Matchers {
     loss should be (Lstm.expectedLoss)
   }
 
-  ignore should "run in serial" in {
+  it should "run in serial" in {
     1.to(8).foreach { _ =>
       val loss = Lstm.runDynamic(lstmParameters)
 
@@ -24,7 +24,7 @@ class TestDynamic extends FlatSpec with Matchers {
     }
   }
 
-  ignore should "run in parallel" in {
+  it should "run in parallel" in {
     1.to(100).foreach { _ =>
       1.to(8).par.foreach { i =>
         val loss = Lstm.runDynamic(lstmParameters)
