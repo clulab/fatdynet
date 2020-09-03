@@ -8,8 +8,7 @@ import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet.VanillaLstmBuilder
 import edu.cmu.dynet.internal.dynet_swig.reset_rng
 import org.clulab.fatdynet.cg.ComputationGraphable
-import org.clulab.fatdynet.cg.DynamicComputationGraph
-import org.clulab.fatdynet.cg.StaticComputationGraph
+import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 
@@ -23,18 +22,15 @@ object Lstm {
   class LstmParameters {
     val model = new ParameterCollection
     val lookup: LookupParameter = model.addLookupParameters(hiddenDim, Dim(inputDim))
-    for (i <- 0.until(hiddenDim)) {
-      lookup.initialize(i, Vector(14.5f - i))
-    }
-    reset_rng(seed)
     val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+
+    // Rather than allowing any random initialization to be used, load parameters from a file.
+    val textModelLoader = BaseTextModelLoader.newTextModelLoader("./src/test/resources/lstm.rnn")
+    textModelLoader.populateModel(model)
+    textModelLoader.close()
   }
 
-  // This one matches C++ output when the builder is reused.
-  // When the builder is created anew each time, the result varies.
-  // val expectedLoss: Float = 0.00018254126f
-  // val expectedLoss: Float = 0.0113544082f
-  val expectedLoss: Float = 0.031386387f // when reseeded
+  val expectedLoss: Float = 0.031386387f // This should match the C++ value, regardless of seed.
 
   def initialize(train: Boolean = true): Unit = {
     val map = Map(
@@ -48,24 +44,8 @@ object Lstm {
   }
 
   def runDefault(lstmParameters: LstmParameters): Float = {
-    // Check for use of cg in this code.
-    val model = new ParameterCollection
-    val lookup: LookupParameter = model.addLookupParameters(hiddenDim, Dim(inputDim))
-    for (i <- 0.until(hiddenDim)) {
-      lookup.initialize(i, Vector(14.5f - i))
-    }
-    reset_rng(seed)
-    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
-
-
-
-
-//    val model = lstmParameters.model
-//    val lookup = lstmParameters.lookup
-    // This builder has state, so it needs to be new if there is any multi-threading.
-//    reset_rng(seed)
-//    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
-    // val builder = lstmParameters.builder
+    val builder = lstmParameters.builder // new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+    val lookup = lstmParameters.lookup
 
     builder.newGraph()
     0.until(inputDim).foreach { j =>

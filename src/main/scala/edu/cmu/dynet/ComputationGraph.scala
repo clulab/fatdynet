@@ -20,17 +20,15 @@ class ComputationGraph(val version: Long = 0L) extends internal.ComputationGraph
   */
 object ComputationGraph {
   private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
-  protected[dynet] var threadedCg = new ThreadLocal[ComputationGraph] {
-    override protected def initialValue(): ComputationGraph = {
-      new ComputationGraph()
-    }
+  protected[dynet] val threadedCg = new ThreadLocal[ComputationGraph] {
+    override protected def initialValue() = new ComputationGraph()
   }
 
   private[dynet] def cg: ComputationGraph = threadedCg.get
 
-  def renew(): Unit = threadedCg.set(new ComputationGraph(cg))
-
   def version: Long = cg.version
+
+  def renew(): Unit = threadedCg.set(new ComputationGraph(cg))
 
   def addInput(s: Float): VariableIndex = new VariableIndex(cg.add_input(s, defaultDevice))
   def addInput(d: Dim, data: FloatVector): VariableIndex =

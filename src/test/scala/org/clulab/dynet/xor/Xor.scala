@@ -7,9 +7,6 @@ import edu.cmu.dynet.FloatPointer
 import edu.cmu.dynet.FloatVector
 import edu.cmu.dynet.ParameterCollection
 import org.clulab.fatdynet.cg.ComputationGraphable
-import org.clulab.fatdynet.cg.DynamicComputationGraph
-import org.clulab.fatdynet.cg.StaticComputationGraph
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 
 object Xor {
@@ -90,15 +87,9 @@ object Xor {
 
   def runStatic(xorParameters: XorParameters): Float = {
     runDefault(xorParameters)
-//    new StaticComputationGraph().autoClose { computationGraph =>
-//      runGeneral(xorParameters)
-//    }
   }
 
   def runDynamic(xorParameters: XorParameters): Float = {
     runDefault(xorParameters)
-//    new DynamicComputationGraph().autoClose { computationGraph =>
-//      runGeneral(xorParameters, computationGraph)
-//    }
   }
 }
