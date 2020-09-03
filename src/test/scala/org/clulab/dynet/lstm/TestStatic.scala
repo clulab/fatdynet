@@ -6,10 +6,11 @@ import org.scalatest.Matchers
 class TestStaticComputationGraph extends FlatSpec with Matchers {
   Lstm.initialize()
 
+  val lstmParameters = new Lstm.LstmParameters()
+
   behavior of "static Lstm"
 
   it should "run" in {
-    val lstmParameters = new Lstm.LstmParameters()
     val loss = Lstm.runStatic(lstmParameters)
 
     loss should be (Lstm.expectedLoss)
@@ -17,7 +18,6 @@ class TestStaticComputationGraph extends FlatSpec with Matchers {
 
   it should "run repeatedly" in {
     1.to(8).foreach { _ =>
-      val lstmParameters = new Lstm.LstmParameters()
       val loss = Lstm.runStatic(lstmParameters)
 
       loss should be (Lstm.expectedLoss)

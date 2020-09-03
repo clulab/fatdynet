@@ -17,7 +17,7 @@ class TestStaticComputationGraph extends FlatSpec with Matchers {
   }
 
   it should "run repeatedly" in {
-    1.to(8).foreach { _ =>
+    Range.inclusive(1, 8).foreach { _ =>
       val loss = Xor.runStatic(xorParameters)
 
       loss should be (Xor.expectedLoss)

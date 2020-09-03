@@ -6,7 +6,6 @@ import org.scalatest.Matchers
 class TestDefault extends FlatSpec with Matchers {
   Lstm.initialize()
 
-  // These parameters now include a builder, which has state itself.
   val lstmParameters = new Lstm.LstmParameters()
 
   behavior of "default Lstm"
