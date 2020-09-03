@@ -25,9 +25,9 @@ object Lstm {
     val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
 
     // Rather than allowing any random initialization to be used, load parameters from a file.
-    val textModelLoader = BaseTextModelLoader.newTextModelLoader("./src/test/resources/lstm.rnn")
-    textModelLoader.populateModel(model)
-    textModelLoader.close()
+    BaseTextModelLoader.newTextModelLoader("./src/test/resources/lstm.rnn").autoClose { textModelLoader =>
+      textModelLoader.populateModel(model)
+    }
   }
 
   val expectedLoss: Float = 0.031386387f // This should match the C++ value, regardless of seed.
@@ -44,13 +44,18 @@ object Lstm {
   }
 
   def runDefault(lstmParameters: LstmParameters): Float = {
+    // lstmParameters.clone
+    val model = lstmParameters.model
+    // Would like to clone these somehow.  Making a new one doesn't work.
+//    println(model.parameterCount)
     val builder = lstmParameters.builder // new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+//    println(model.parameterCount)
     val lookup = lstmParameters.lookup
 
     builder.newGraph()
-    0.until(inputDim).foreach { j =>
+    Range(0, inputDim).foreach { j =>
       builder.startNewSequence()
-      0.until(inputDim).foreach { k =>
+      Range(0, inputDim).foreach { k =>
         val lookedup = Expression.lookup(lookup, j * inputDim + k)
 
         builder.addInput(lookedup)
@@ -66,11 +71,11 @@ object Lstm {
   def runGeneral(lstmParameters: LstmParameters, computationGraph: ComputationGraphable): Float = {
     val expression = computationGraph.getExpressionFactory
 
-    val model = lstmParameters.model
+//    val model = lstmParameters.model
     val lookup = lstmParameters.lookup
     // This builder has state, so it needs to be new if there is any multi-threading.
-    reset_rng(seed)
-    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+//    reset_rng(seed)
+    val builder = lstmParameters.builder // new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
     // val builder = lstmParameters.builder
 
     builder.newGraph()
@@ -91,15 +96,9 @@ object Lstm {
 
   def runStatic(lstmParameters: LstmParameters): Float = {
     runDefault(lstmParameters)
-//    new StaticComputationGraph().autoClose { computationGraph =>
-//      runGeneral(lstmParameters, computationGraph)
-//    }
   }
 
   def runDynamic(lstmParameters: LstmParameters): Float = {
     runDefault(lstmParameters)
-//    new DynamicComputationGraph().autoClose { computationGraph =>
-//      runGeneral(lstmParameters, computationGraph)
-//    }
   }
 }
