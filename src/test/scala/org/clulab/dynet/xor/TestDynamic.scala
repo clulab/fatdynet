@@ -25,13 +25,10 @@ class TestDynamic extends FlatSpec with Matchers {
   }
 
   it should "run in parallel" in {
-    Range.inclusive(1, 100).foreach { _ =>
-      Range.inclusive(1, 8).par.foreach { i =>
-        val loss = Xor.runDynamic(xorParameters)
+    Range.inclusive(1, 1000).par.foreach { _ =>
+      val loss = Xor.runDynamic(xorParameters)
 
-        println(s"Thread $i loss is $loss.")
-        loss should be(Xor.expectedLoss)
-      }
+      loss should be(Xor.expectedLoss)
     }
   }
 }
