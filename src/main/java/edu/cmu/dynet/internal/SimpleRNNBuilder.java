@@ -83,4 +83,8 @@ public class SimpleRNNBuilder extends RNNBuilder {
     return new ParameterCollection(dynet_swigJNI.SimpleRNNBuilder_get_parameter_collection(swigCPtr, this), false);
   }
 
+  public SimpleRNNBuilder(SimpleRNNBuilder other) {
+    this(dynet_swigJNI.new_SimpleRNNBuilder__SWIG_3(SimpleRNNBuilder.getCPtr(other), other), true);
+  }
+
 }

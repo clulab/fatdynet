@@ -5,6 +5,11 @@ class VanillaLstmBuilder private[dynet](private[dynet] val builder: internal.Van
 
   def this() { this(new internal.VanillaLSTMBuilder()) }
 
+  // Call this clone instead.
+  def this(other: VanillaLstmBuilder) {
+    this(new internal.VanillaLSTMBuilder(other.builder))
+  }
+
   def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) {
     this(new internal.VanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model, lnLSTM))
   }

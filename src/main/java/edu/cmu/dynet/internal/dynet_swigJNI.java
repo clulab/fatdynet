@@ -682,6 +682,7 @@ public class dynet_swigJNI {
   public final static native void SimpleRNNBuilder_copy(long jarg1, SimpleRNNBuilder jarg1_, long jarg2, RNNBuilder jarg2_);
   public final static native long SimpleRNNBuilder_num_h0_components(long jarg1, SimpleRNNBuilder jarg1_);
   public final static native long SimpleRNNBuilder_get_parameter_collection(long jarg1, SimpleRNNBuilder jarg1_);
+  public final static native long new_SimpleRNNBuilder__SWIG_3(long jarg1, SimpleRNNBuilder jarg1_);
   public final static native void delete_SimpleRNNBuilder(long jarg1);
   public final static native long new_CoupledLSTMBuilder__SWIG_0();
   public final static native long new_CoupledLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);
@@ -728,6 +729,7 @@ public class dynet_swigJNI {
   public final static native float CoupledLSTMBuilder_dropout_rate_h_get(long jarg1, CoupledLSTMBuilder jarg1_);
   public final static native void CoupledLSTMBuilder_dropout_rate_c_set(long jarg1, CoupledLSTMBuilder jarg1_, float jarg2);
   public final static native float CoupledLSTMBuilder_dropout_rate_c_get(long jarg1, CoupledLSTMBuilder jarg1_);
+  public final static native long new_CoupledLSTMBuilder__SWIG_2(long jarg1, CoupledLSTMBuilder jarg1_);
   public final static native void delete_CoupledLSTMBuilder(long jarg1);
   public final static native long new_VanillaLSTMBuilder__SWIG_0();
   public final static native long new_VanillaLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_, boolean jarg5, float jarg6);
@@ -782,6 +784,7 @@ public class dynet_swigJNI {
   public final static native float VanillaLSTMBuilder_forget_bias_get(long jarg1, VanillaLSTMBuilder jarg1_);
   public final static native void VanillaLSTMBuilder_dropout_masks_valid_set(long jarg1, VanillaLSTMBuilder jarg1_, boolean jarg2);
   public final static native boolean VanillaLSTMBuilder_dropout_masks_valid_get(long jarg1, VanillaLSTMBuilder jarg1_);
+  public final static native long new_VanillaLSTMBuilder__SWIG_4(long jarg1, VanillaLSTMBuilder jarg1_);
   public final static native void delete_VanillaLSTMBuilder(long jarg1);
   public final static native long new_CompactVanillaLSTMBuilder__SWIG_0();
   public final static native long new_CompactVanillaLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);

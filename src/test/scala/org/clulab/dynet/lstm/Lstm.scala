@@ -47,9 +47,9 @@ object Lstm {
     // lstmParameters.clone
     val model = lstmParameters.model
     // Would like to clone these somehow.  Making a new one doesn't work.
-//    println(model.parameterCount)
-    val builder = lstmParameters.builder // new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
-//    println(model.parameterCount)
+    println(model.parameterCount)
+    val builder = new VanillaLstmBuilder(lstmParameters.builder)
+    println(model.parameterCount)
     val lookup = lstmParameters.lookup
 
     builder.newGraph()
@@ -68,37 +68,12 @@ object Lstm {
     loss
   }
 
-  def runGeneral(lstmParameters: LstmParameters, computationGraph: ComputationGraphable): Float = {
-    val expression = computationGraph.getExpressionFactory
-
-//    val model = lstmParameters.model
-    val lookup = lstmParameters.lookup
-    // This builder has state, so it needs to be new if there is any multi-threading.
-//    reset_rng(seed)
-    val builder = lstmParameters.builder // new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
-    // val builder = lstmParameters.builder
-
-    builder.newGraph()
-    0.until(inputDim).foreach { j =>
-      builder.startNewSequence()
-      0.until(inputDim).foreach { k =>
-        val lookedup = expression.lookup(lookup, j * inputDim + k)
-
-        builder.addInput(lookedup.scalaExpression)
-      }
-    }
-    val finalHLayers = expression.newFatExpression(builder.finalH()(layers - 1))
-    val losses = expression.squaredNorm(finalHLayers)
-    val loss = losses.value().toFloat()
-
-    loss
-  }
-
   def runStatic(lstmParameters: LstmParameters): Float = {
     runDefault(lstmParameters)
   }
 
   def runDynamic(lstmParameters: LstmParameters): Float = {
+    // Make a copy of the lstmParameters here?
     runDefault(lstmParameters)
   }
 }

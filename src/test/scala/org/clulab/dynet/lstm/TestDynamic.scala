@@ -26,7 +26,7 @@ class TestDynamic extends FlatSpec with Matchers {
 
   it should "run in parallel" in {
     Range.inclusive(1, 100).foreach { _ =>
-      Range.inclusive(1, 8).foreach { i =>
+      Range.inclusive(1, 8).par.foreach { i =>
         val loss = Lstm.runDynamic(lstmParameters)
 
         println(s"Thread $i loss is $loss.")
