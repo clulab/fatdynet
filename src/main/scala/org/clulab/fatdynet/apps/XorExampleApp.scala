@@ -27,10 +27,10 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
   }
 }
 
-object XorExampleApp {
+class XorExample {
   protected val random: Random = new Random(1234L)
 
-  val  INPUT_SIZE = 2
+  val INPUT_SIZE = 2
   val HIDDEN_SIZE = 2
   val OUTPUT_SIZE = 1
 
@@ -78,9 +78,9 @@ object XorExampleApp {
     val y = Expression.input(yValue)
     val loss = Expression.squaredDistance(yPrediction, y)
 
-//    println()
-//    println("Computation graphviz structure:")
-//    ComputationGraph.printGraphViz()
+    //    println()
+    //    println("Computation graphviz structure:")
+    //    ComputationGraph.printGraphViz()
 
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
@@ -149,18 +149,22 @@ object XorExampleApp {
 
     XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
   }
+}
+
+object XorExampleApp {
 
   def main(args: Array[String]) {
     val filename = "XorModel.dat"
 
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
-    val (xorModel1, initialResults) = train
-    val expectedResults = predict(xorModel1)
-    save(filename, xorModel1)
+    val xorExample = new XorExample()
+    val (xorModel1, initialResults) = xorExample.train
+    val expectedResults = xorExample.predict(xorModel1)
+    xorExample.save(filename, xorModel1)
 
-    val xorModel2 = load(filename)
-    val actualResults = predict(xorModel2)
+    val xorModel2 = xorExample.load(filename)
+    val actualResults = xorExample.predict(xorModel2)
 
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)

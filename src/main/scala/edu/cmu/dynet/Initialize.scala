@@ -31,6 +31,12 @@ object Initialize {
     args.get("profiling")
         .foreach(arg => params.setProfiling(arg.asInstanceOf[Int]))
 
+    args.get("dynamic-mem")
+        .foreach(arg => params.setDynamic(arg.asInstanceOf[Boolean]))
+
+    args.get("forward-only")
+        .foreach(arg => params.setForward_only(arg.asInstanceOf[Int]))
+
     initialize(params)
   }
 }
