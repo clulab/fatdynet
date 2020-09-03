@@ -35,8 +35,7 @@ object Lstm {
     }
 
     override def clone: LstmParameters = {
-//      val newBuilder = new VanillaLstmBuilder(builder) // The builder must be cloned.
-      val newParameterPack = parameterPack.copy(builder = builder.clone)
+      val newParameterPack = parameterPack.copy(builder = builder.clone) // The builder must be cloned.
 
       new LstmParameters(newParameterPack)
     }
@@ -59,13 +58,10 @@ object Lstm {
     Initializer.initialize(map)
   }
 
-  def runDefault(lstmParameters: LstmParameters): Float = {
-    // lstmParameters.clone
+  def runDefault(referenceLstmParameters: LstmParameters): Float = {
+    val lstmParameters = referenceLstmParameters.clone
     val model = lstmParameters.model
-    // Would like to clone these somehow.  Making a new one doesn't work.
-    println(model.parameterCount)
-    val builder = new VanillaLstmBuilder(lstmParameters.builder)
-    println(model.parameterCount)
+    val builder = lstmParameters.builder
     val lookup = lstmParameters.lookup
 
     builder.newGraph()
@@ -89,6 +85,6 @@ object Lstm {
   }
 
   def runDynamic(lstmParameters: LstmParameters): Float = {
-    runDefault(lstmParameters.clone)
+    runDefault(lstmParameters)
   }
 }

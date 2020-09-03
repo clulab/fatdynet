@@ -2,6 +2,7 @@ package org.clulab.dynet.lstm
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers
+import org.clulab.fatdynet.test.Timer
 
 class TestDynamic extends FlatSpec with Matchers {
   Lstm.initialize(false)
@@ -25,13 +26,15 @@ class TestDynamic extends FlatSpec with Matchers {
   }
 
   it should "run in parallel" in {
-    Range.inclusive(1, 100).foreach { _ =>
-      Range.inclusive(1, 8).par.foreach { i =>
+    val timer = new Timer("running")
+
+    timer.time {
+      Range.inclusive(1, 10000).par.foreach { _ =>
         val loss = Lstm.runDynamic(lstmParameters)
 
-        println(s"Thread $i loss is $loss.")
         loss should be(Lstm.expectedLoss)
       }
     }
+    println(timer.toString)
   }
 }
