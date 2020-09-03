@@ -1,13 +1,10 @@
 package org.clulab.dynet.lstm
 
-import edu.cmu.dynet.ComputationGraph
 import edu.cmu.dynet.Dim
 import edu.cmu.dynet.Expression
 import edu.cmu.dynet.LookupParameter
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet.VanillaLstmBuilder
-import edu.cmu.dynet.internal.dynet_swig.reset_rng
-import org.clulab.fatdynet.cg.ComputationGraphable
 import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
@@ -19,15 +16,34 @@ object Lstm {
 
   val seed = 42L
 
-  class LstmParameters {
-    val model = new ParameterCollection
-    val lookup: LookupParameter = model.addLookupParameters(hiddenDim, Dim(inputDim))
-    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+  class LstmParameters(parameterPack: LstmParameters.LstmParameterPack) extends Cloneable {
+    // This provides access to the variables for backward compatibility.
+    val (model, lookup, builder) = (parameterPack.model, parameterPack.lookup, parameterPack.builder)
 
-    // Rather than allowing any random initialization to be used, load parameters from a file.
-    BaseTextModelLoader.newTextModelLoader("./src/test/resources/lstm.rnn").autoClose { textModelLoader =>
-      textModelLoader.populateModel(model)
+    def this() = this {
+      // This is the otherwise normal constructor.
+      val model = new ParameterCollection
+      val lookup: LookupParameter = model.addLookupParameters(hiddenDim, Dim(inputDim))
+      val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+
+      // Rather than allowing any random initialization to be used, load parameters from a file.
+      BaseTextModelLoader.newTextModelLoader("./src/test/resources/lstm.rnn").autoClose { textModelLoader =>
+        textModelLoader.populateModel(model)
+      }
+
+      LstmParameters.LstmParameterPack(model, lookup, builder)
     }
+
+    override def clone: LstmParameters = {
+//      val newBuilder = new VanillaLstmBuilder(builder) // The builder must be cloned.
+      val newParameterPack = parameterPack.copy(builder = builder.clone)
+
+      new LstmParameters(newParameterPack)
+    }
+  }
+
+  object LstmParameters {
+    case class LstmParameterPack(model: ParameterCollection, lookup: LookupParameter, builder: VanillaLstmBuilder)
   }
 
   val expectedLoss: Float = 0.031386387f // This should match the C++ value, regardless of seed.
@@ -73,7 +89,6 @@ object Lstm {
   }
 
   def runDynamic(lstmParameters: LstmParameters): Float = {
-    // Make a copy of the lstmParameters here?
-    runDefault(lstmParameters)
+    runDefault(lstmParameters.clone)
   }
 }
