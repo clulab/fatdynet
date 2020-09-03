@@ -46,12 +46,14 @@ abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
 }
 
 class SimpleRnnBuilder private[dynet](private[dynet] val builder: internal.SimpleRNNBuilder)
-    extends RnnBuilder(builder) {
+    extends RnnBuilder(builder) with Cloneable {
   def this() { this(new internal.SimpleRNNBuilder()) }
 
   def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, supportLags: Boolean = false) {
     this(new internal.SimpleRNNBuilder(layers, inputDim, hiddenDim, model.model, supportLags))
   }
+
+  override def clone: SimpleRnnBuilder = new SimpleRnnBuilder(new internal.SimpleRNNBuilder(builder))
 
   def addAuxiliaryInput(x: Expression, aux: Expression): Expression = {
     x.ensureFresh()
