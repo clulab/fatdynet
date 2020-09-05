@@ -43,7 +43,7 @@ object Xor {
 
   // This is the original code to emulate.
   def runDefault(xorParameters: XorParameters): Float = {
-    //ComputationGraph.renew() // not necessary here
+    ComputationGraph.renew() // not necessary here
 
     val W = Expression.parameter(xorParameters.p_W)
     val b = Expression.parameter(xorParameters.p_b)

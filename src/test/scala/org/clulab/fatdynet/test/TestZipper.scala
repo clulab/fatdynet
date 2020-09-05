@@ -2,10 +2,10 @@ package org.clulab.fatdynet.test
 
 import java.io.File
 
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.utils.Zipper
-import org.scalatest._
 
-class TestZipper extends FlatSpec with Matchers {
+class TestZipper extends Test {
 
   behavior of "Zipper"
 

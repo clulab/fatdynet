@@ -2,10 +2,10 @@ package org.clulab.fatdynet.test
 
 import java.io.File
 
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.apps.PairExampleApp
-import org.scalatest._
 
-class TestPairExample extends FlatSpec with Matchers {
+class TestPairExample extends Test {
 
   behavior of "PairExample"
 

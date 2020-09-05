@@ -1,14 +1,12 @@
 package org.clulab.dynet.lstm
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.clulab.dynet.DynamicTest
 import org.clulab.fatdynet.test.Timer
 
-class TestDynamic extends FlatSpec with Matchers {
+class TestDynamic extends DynamicTest {
   Lstm.initialize(false)
 
   val lstmParameters = new Lstm.LstmParameters()
-  val threaded = it // Change between it and ignore based on test suite.
 
   behavior of "dynamic Lstm"
 

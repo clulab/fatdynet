@@ -1,9 +1,8 @@
 package org.clulab.dynet.xor
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.clulab.dynet.Test
 
-class TestDefault extends FlatSpec with Matchers {
+class TestDefault extends Test {
   Xor.initialize()
 
   val xorParameters = new Xor.XorParameters()

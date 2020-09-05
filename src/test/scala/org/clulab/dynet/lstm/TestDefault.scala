@@ -1,9 +1,8 @@
 package org.clulab.dynet.lstm
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.clulab.dynet.Test
 
-class TestDefault extends FlatSpec with Matchers {
+class TestDefault extends Test {
   Lstm.initialize()
 
   val lstmParameters = new Lstm.LstmParameters()

@@ -4,11 +4,14 @@ class ComputationGraph(val version: Long = 0L) extends internal.ComputationGraph
 
   def this(cg: ComputationGraph) {
     this {
-      val gcVersion = cg.version
+      if (cg == null) 0
+      else {
+        val gcVersion = cg.version
 
-      // The old should be deleted before the new one is created in order to work when memory is not dynamic.
-      cg.delete()
-      gcVersion + 1
+        // The old should be deleted before the new one is created in order to work when memory is not dynamic.
+        cg.delete()
+        gcVersion + 1
+      }
     }
   }
 }
@@ -27,6 +30,13 @@ object ComputationGraph {
   def version: Long = cg.version
 
   def renew(): Unit = threadedCg.set(new ComputationGraph(cg))
+
+  // Warning.  Call this only to clear out the C++ computation graph so that the
+  // JavaComputationGraph can be resynchronized under test conditions.
+  def delete(): Unit = {
+    cg.delete()
+    threadedCg.set(null)
+  }
 
   def addInput(s: Float): VariableIndex = new VariableIndex(cg.add_input(s, defaultDevice))
   def addInput(d: Dim, data: FloatVector): VariableIndex =

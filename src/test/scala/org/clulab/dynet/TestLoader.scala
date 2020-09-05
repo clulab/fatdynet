@@ -2,12 +2,9 @@ package org.clulab.dynet
 
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
-
 import scala.io.Source
 
-class TestLoader extends FlatSpec with Matchers {
+class TestLoader extends Test {
   val RNN_STATE_SIZE = 50
   val NONLINEAR_SIZE = 32
   val RNN_LAYERS = 1

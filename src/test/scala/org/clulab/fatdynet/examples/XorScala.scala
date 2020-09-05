@@ -14,7 +14,7 @@ object XorScala {
     println("Dynet initialized!")
     val m = new ParameterCollection
     val sgd = new SimpleSGDTrainer(m)
-    // ComputationGraph.renew() // not necessary here
+    ComputationGraph.renew() // not necessary here unless call run more than once
     var mostRecentLoss = 0F
     var totalLoss = 0F
 
@@ -39,11 +39,11 @@ object XorScala {
     val y_pred = V * h + a
     val loss_expr = Expression.squaredDistance(y_pred, y)
 
-    println()
-    println("Computation graphviz structure:")
-    ComputationGraph.printGraphViz()
-    println()
-    println("Training...")
+//    println()
+//    println("Computation graphviz structure:")
+//    ComputationGraph.printGraphViz()
+//    println()
+//    println("Training...")
 
     for (iter <- 0 until ITERATIONS) {
       var loss: Float = 0

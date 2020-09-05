@@ -3,16 +3,16 @@ package org.clulab.fatdynet.test
 import java.io.File
 
 import edu.cmu.dynet._
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Deleter.AutoDeleter
 import org.clulab.fatdynet.utils.Initializer
-import org.scalatest._
 
 import scala.io.Source
 
-class TestModels extends FlatSpec with Matchers {
+class TestModels extends Test {
   Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {

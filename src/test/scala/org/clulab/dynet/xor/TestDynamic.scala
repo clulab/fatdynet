@@ -1,13 +1,11 @@
 package org.clulab.dynet.xor
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.clulab.dynet.DynamicTest
 
-class TestDynamic extends FlatSpec with Matchers {
+class TestDynamic extends DynamicTest {
   Xor.initialize(false) // We're not training now.
 
   val xorParameters = new Xor.XorParameters()
-  val threaded = ignore // Change between it and ignore based on test suite.
 
   behavior of "dynamic Xor"
 

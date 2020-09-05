@@ -2,6 +2,7 @@ package org.clulab.fatdynet.test
 
 import edu.cmu.dynet.Dim
 import edu.cmu.dynet.ParameterCollection
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.BaseTextLoader
 import org.clulab.fatdynet.utils.BaseTextModelLoader
@@ -10,9 +11,8 @@ import org.clulab.fatdynet.utils.RawTextLoader
 import org.clulab.fatdynet.utils.RawTextModelLoader
 import org.clulab.fatdynet.utils.ZipTextLoader
 import org.clulab.fatdynet.utils.ZipTextModelLoader
-import org.scalatest._
 
-class TestLoader extends FlatSpec with Matchers {
+class TestLoader extends Test {
   val dim: Dim = Dim(51)
   val name = "/name"
   val expectedValue = "-0.14423102"

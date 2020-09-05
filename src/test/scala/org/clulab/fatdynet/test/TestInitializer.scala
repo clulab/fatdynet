@@ -1,11 +1,10 @@
 package org.clulab.fatdynet.test
 
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.utils.Initializer
 
-import org.scalatest._
-
 // Some of these tests are disabled because cleanup is disabled.
-class TestInitializer extends FlatSpec with Matchers {
+class TestInitializer extends Test {
 
   behavior of "Initializer"
 

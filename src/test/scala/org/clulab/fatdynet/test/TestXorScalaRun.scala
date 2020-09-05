@@ -1,10 +1,9 @@
 package org.clulab.fatdynet.test
 
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.examples.XorScala
 
-import org.scalatest._
-
-class TestXorScalaRun extends FlatSpec with Matchers {
+class TestXorScalaRun extends Test {
 
   val osName: String = System.getProperty("os.name")
   val isWindows: Boolean = osName.startsWith("Windows ")
