@@ -33,8 +33,8 @@ object ComputationGraph {
 
   // Warning.  Call this only to clear out the C++ computation graph so that the
   // JavaComputationGraph can be resynchronized under test conditions.
-  def delete(): Unit = {
-    cg.delete()
+  def reset(): Unit = {
+    cg.reset()
     threadedCg.set(null)
   }
 

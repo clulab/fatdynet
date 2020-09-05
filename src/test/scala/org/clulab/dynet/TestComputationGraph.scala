@@ -18,7 +18,7 @@ class TestComputationGraph extends Test {
       JavaComputationGraph.getNew
     }
     catch {
-      case throwable: Throwable => ScalaComputationGraph.delete()
+      case throwable: Throwable => ScalaComputationGraph.reset()
     }
 
   behavior of "Java ComputationGraph"
@@ -31,9 +31,9 @@ class TestComputationGraph extends Test {
     cg2.clear()
 
     cg1.eq(cg2) should be (false)
-    // This must be deleted if the new ScalaComputationGraph is used
+    // This must be reset if the new ScalaComputationGraph is used
     // which doesn't rely on the JavaComputationGraph singleton.
-    cg2.delete()
+    cg2.reset()
 
     // This should no longer work.  It will completely crash Java.
     // cg1.clear()
