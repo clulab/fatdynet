@@ -1,8 +1,8 @@
 package edu.cmu.dynet
 
-class ComputationGraph(val version: Long = 0L) extends internal.ComputationGraph(internal.dynet_swigJNI.new_ComputationGraph(), true) {
+class ComputationGraph private[dynet] (val version: Long = 0L) extends internal.ComputationGraph(internal.dynet_swigJNI.new_ComputationGraph(), true) {
 
-  def this(cg: ComputationGraph) {
+  private[dynet] def this(cg: ComputationGraph) {
     this {
       if (cg == null) 0
       else {
