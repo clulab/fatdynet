@@ -1,6 +1,6 @@
 package edu.cmu.dynet
 
-abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
+abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) extends Cloneable {
 
   var version: Long = ComputationGraph.version
 
