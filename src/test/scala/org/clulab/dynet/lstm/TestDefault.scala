@@ -4,7 +4,7 @@ import org.clulab.dynet.Test
 
 class TestDefault extends Test {
   val lstm = new Lstm()
-  val lstmParameters = new LstmParameters()
+  val lstmParameters = LstmParameters()
 
   behavior of "default Lstm"
 

@@ -12,31 +12,16 @@ import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 
-class LstmParameters(parameterPack: LstmParameters.LstmParameterPack) extends Supplier[LstmParameters] {
-  // This provides access to the variables for backward compatibility.
-  val (model, lookup, builder) = (parameterPack.model, parameterPack.lookup, parameterPack.builder)
-  builder.newGraph() // I may be in a new thread and have a new thread-specific ComputationGraph.
+case class LstmParameters(model: ParameterCollection, lookup: LookupParameter, builder: VanillaLstmBuilder) extends Supplier[LstmParameters] {
+  // It is assumed that the builder has not been informed of the graph; otherwise this is redundant.
+  // If this is multithreaded and the builder is cloned in get() below, it certainly doesn't know about
+  // the graph in the new thread and learns about it here.  Using this strategy, single and multithreaded
+  // applications can otherwise use the parameters in the same way.
+  builder.newGraph()
 
-  def this() = this {
-    // This is the otherwise normal constructor.
-    val model = new ParameterCollection
-    val lookup: LookupParameter = model.addLookupParameters(LstmParameters.hiddenDim, Dim(LstmParameters.inputDim))
-    val builder = new VanillaLstmBuilder(LstmParameters.layers, LstmParameters.inputDim, LstmParameters.hiddenDim, model)
-
-    // Rather than allowing any random initialization to be used, load parameters from a file.
-    BaseTextModelLoader.newTextModelLoader("./src/test/resources/lstm.rnn").autoClose { textModelLoader =>
-      textModelLoader.populateModel(model)
-    }
-    LstmParameters.LstmParameterPack(model, lookup, builder)
+  override def get(): LstmParameters = {
+    copy(builder = builder.clone)
   }
-
-  override def clone: LstmParameters = {
-    val newParameterPack = parameterPack.copy(builder = builder.clone) // The builder must be cloned.
-
-    new LstmParameters(newParameterPack)
-  }
-
-  override def get(): LstmParameters = this.clone
 }
 
 object LstmParameters {
@@ -44,7 +29,19 @@ object LstmParameters {
   val layers = 2
   val hiddenDim = 10
 
-  case class LstmParameterPack(model: ParameterCollection, lookup: LookupParameter, builder: VanillaLstmBuilder)
+  def apply(filename: String = "./src/test/resources/lstm.rnn"): LstmParameters = {
+    // This is the otherwise normal constructor.
+    val model = new ParameterCollection
+    val lookup: LookupParameter = model.addLookupParameters(LstmParameters.hiddenDim, Dim(LstmParameters.inputDim))
+    val builder = new VanillaLstmBuilder(LstmParameters.layers, LstmParameters.inputDim, LstmParameters.hiddenDim, model)
+
+    // Rather than allowing any random initialization to be used, load parameters from a file.
+    BaseTextModelLoader.newTextModelLoader(filename).autoClose { textModelLoader =>
+      textModelLoader.populateModel(model)
+    }
+
+    new LstmParameters(model, lookup, builder)
+  }
 }
 
 class Lstm(train: Boolean = true) {

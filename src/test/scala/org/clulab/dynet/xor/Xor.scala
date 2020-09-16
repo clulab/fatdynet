@@ -11,28 +11,30 @@ import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 
-object Xor {
+// This never needs to be copied since there isn't a builder anywhere.
+class XorParameters(filename: String = "./src/test/resources/xor.rnn") {
+  val model = new ParameterCollection
+  val p_W: Parameter = model.addParameters(Dim(XorParameters.HIDDEN_SIZE, 2))
+  val p_b: Parameter = model.addParameters(Dim(XorParameters.HIDDEN_SIZE))
+  val p_V: Parameter = model.addParameters(Dim(1, XorParameters.HIDDEN_SIZE))
+  val p_a: Parameter = model.addParameters(Dim(1))
 
-  class XorParameters {
-    val HIDDEN_SIZE = 8
-
-    val model = new ParameterCollection
-    val p_W: Parameter = model.addParameters(Dim(HIDDEN_SIZE, 2))
-    val p_b: Parameter = model.addParameters(Dim(HIDDEN_SIZE))
-    val p_V: Parameter = model.addParameters(Dim(1, HIDDEN_SIZE))
-    val p_a: Parameter = model.addParameters(Dim(1))
-
-    // Rather than allowing any random initialization to be used, load parameters from a file.
-    BaseTextModelLoader.newTextModelLoader("./src/test/resources/xor.rnn").autoClose { textModelLoader =>
-      textModelLoader.populateModel(model)
-    }
+  // Rather than allowing any random initialization to be used, load parameters from a file.
+  BaseTextModelLoader.newTextModelLoader(filename).autoClose { textModelLoader =>
+    textModelLoader.populateModel(model)
   }
+}
 
-  val expectedLoss: Float = 6.372183E-10f
+object XorParameters {
+  val HIDDEN_SIZE = 8
+}
+
+class Xor(train: Boolean = true) {
+  initialize(train)
 
   def initialize(train: Boolean = true): Unit = {
     val map = Map(
-      Initializer.RANDOM_SEED -> 411865951L,
+      Initializer.RANDOM_SEED -> Xor.seed,
       Initializer.DYNET_MEM -> "2048",
       Initializer.FORWARD_ONLY -> { if (train) 0 else 1 },
       Initializer.DYNAMIC_MEM -> !train
@@ -68,7 +70,7 @@ object Xor {
       x_values.update(0, if (x1) 1 else -1)
       x_values.update(1, if (x2) 1 else -1)
       y_value.set(if (x1 != x2) 1 else -1)
-      val spotLoss = ComputationGraph.forward(loss_expr).toFloat
+      val spotLoss = ComputationGraph.forward(loss_expr).toFloat()
       loss += spotLoss
     }
 //    println("loss = " + loss)
@@ -82,4 +84,9 @@ object Xor {
   def runDynamic(xorParameters: XorParameters): Float = {
     runDefault(xorParameters)
   }
+}
+
+object Xor {
+  val seed = 411865951L
+  val expectedLoss: Float = 6.372183E-10f
 }

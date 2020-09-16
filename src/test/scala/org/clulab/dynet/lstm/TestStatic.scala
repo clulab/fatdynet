@@ -4,7 +4,7 @@ import org.clulab.dynet.Test
 
 class TestStaticComputationGraph extends Test {
   val lstm = new Lstm()
-  val lstmParameters = new LstmParameters()
+  val lstmParameters = LstmParameters()
 
   behavior of "static Lstm"
 

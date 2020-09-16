@@ -4,8 +4,8 @@ import org.clulab.dynet.DynamicTest
 import org.clulab.fatdynet.test.Timer
 
 class TestDynamic extends DynamicTest {
-  val lstm = new Lstm(false)
-  val referenceLstmParameters = new LstmParameters()
+  val lstm = new Lstm(train = false)
+  val referenceLstmParameters = LstmParameters()
   val threadLocalLstmParameters = ThreadLocal.withInitial(referenceLstmParameters)
 
   behavior of "dynamic Lstm"

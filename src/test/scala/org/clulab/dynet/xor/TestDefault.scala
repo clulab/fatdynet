@@ -3,21 +3,20 @@ package org.clulab.dynet.xor
 import org.clulab.dynet.Test
 
 class TestDefault extends Test {
-  Xor.initialize()
-
-  val xorParameters = new Xor.XorParameters()
+  val xor = new Xor()
+  val xorParameters = new XorParameters()
 
   behavior of "default Xor"
 
   it should "run" in {
-    val loss = Xor.runDefault(xorParameters)
+    val loss = xor.runDefault(xorParameters)
 
     loss should be (Xor.expectedLoss)
   }
 
   it should "run repeatedly" in {
     Range.inclusive(1, 8).foreach { _ =>
-      val loss = Xor.runDefault(xorParameters)
+      val loss = xor.runDefault(xorParameters)
 
       loss should be (Xor.expectedLoss)
     }
