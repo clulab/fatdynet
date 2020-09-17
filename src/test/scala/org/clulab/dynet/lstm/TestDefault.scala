@@ -9,16 +9,20 @@ class TestDefault extends Test {
   behavior of "default Lstm"
 
   it should "run" in {
-    val loss = lstm.testDefault(lstmParameters)
+    val evenLoss = lstm.testStatic(lstmParameters, true)
+    val oddLoss = lstm.testStatic(lstmParameters, false)
 
-    loss should be (Lstm.expectedLoss)
+    evenLoss should be (Lstm.evenExpectedLoss)
+    oddLoss should be (Lstm.oddExpectedLoss)
   }
 
   it should "run repeatedly" in {
     1.to(8).foreach { _ =>
-      val loss = lstm.testDefault(lstmParameters)
+      val evenLoss = lstm.testStatic(lstmParameters, true)
+      val oddLoss = lstm.testStatic(lstmParameters, false)
 
-      loss should be (Lstm.expectedLoss)
+      evenLoss should be (Lstm.evenExpectedLoss)
+      oddLoss should be (Lstm.oddExpectedLoss)
     }
   }
 }

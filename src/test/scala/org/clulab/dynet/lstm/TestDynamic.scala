@@ -11,16 +11,20 @@ class TestDynamic extends DynamicTest {
   behavior of "dynamic Lstm"
 
   it should "run" in {
-    val loss = lstm.testDynamic(threadLocalLstmParameters.get)
+    val evenLoss = lstm.testStatic(threadLocalLstmParameters.get, true)
+    val oddLoss = lstm.testStatic(threadLocalLstmParameters.get, false)
 
-    loss should be (Lstm.expectedLoss)
+    evenLoss should be (Lstm.evenExpectedLoss)
+    oddLoss should be (Lstm.oddExpectedLoss)
   }
 
   it should "run in serial" in {
     Range.inclusive(1, 8).foreach { _ =>
-      val loss = lstm.testDynamic(threadLocalLstmParameters.get)
+      val evenLoss = lstm.testStatic(threadLocalLstmParameters.get, true)
+      val oddLoss = lstm.testStatic(threadLocalLstmParameters.get, false)
 
-      loss should be (Lstm.expectedLoss)
+      evenLoss should be (Lstm.evenExpectedLoss)
+      oddLoss should be (Lstm.oddExpectedLoss)
     }
   }
 
@@ -29,9 +33,11 @@ class TestDynamic extends DynamicTest {
 
     timer.time {
       Range.inclusive(1, 10000).par.foreach { _ =>
-        val loss = lstm.testDynamic(threadLocalLstmParameters.get)
+        val evenLoss = lstm.testStatic(threadLocalLstmParameters.get, true)
+        val oddLoss = lstm.testStatic(threadLocalLstmParameters.get, false)
 
-        loss should be(Lstm.expectedLoss)
+        evenLoss should be (Lstm.evenExpectedLoss)
+        oddLoss should be (Lstm.oddExpectedLoss)
       }
     }
     println(timer.toString)

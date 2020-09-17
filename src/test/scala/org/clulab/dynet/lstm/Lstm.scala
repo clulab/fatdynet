@@ -25,15 +25,17 @@ case class LstmParameters(model: ParameterCollection, lookup: LookupParameter, b
 }
 
 object LstmParameters {
-  val inputDim = 1
   val layers = 2
+  val inputDim = 3
   val hiddenDim = 10
+  val lookupLength = 12
+  val sequenceLength = 4
 
   def apply(filename: String = "./src/test/resources/lstm.rnn"): LstmParameters = {
     // This is the otherwise normal constructor.
     val model = new ParameterCollection
-    val lookup: LookupParameter = model.addLookupParameters(LstmParameters.hiddenDim, Dim(LstmParameters.inputDim))
-    val builder = new VanillaLstmBuilder(LstmParameters.layers, LstmParameters.inputDim, LstmParameters.hiddenDim, model)
+    val lookup: LookupParameter = model.addLookupParameters(lookupLength, Dim(inputDim))
+    val builder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
 
     // Rather than allowing any random initialization to be used, load parameters from a file.
     BaseTextModelLoader.newTextModelLoader(filename).autoClose { textModelLoader =>
@@ -58,13 +60,14 @@ class Lstm(train: Boolean = true) {
     Initializer.initialize(map)
   }
 
-  protected def test(lstmParameters: LstmParameters): Float = {
+  protected def test(lstmParameters: LstmParameters, even: Boolean): Float = {
     val builder = lstmParameters.builder
     val lookup = lstmParameters.lookup
 
     builder.startNewSequence()
-    Range(0, LstmParameters.inputDim).foreach { k =>
-      val lookedup = Expression.lookup(lookup, (LstmParameters.inputDim - 1) * LstmParameters.inputDim + k)
+    Range(0, LstmParameters.sequenceLength).foreach { k =>
+      val index = (if (even) 5 * k else 3 * k) % LstmParameters.lookupLength
+      val lookedup = Expression.lookup(lookup, index)
 
       builder.addInput(lookedup)
     }
@@ -75,20 +78,21 @@ class Lstm(train: Boolean = true) {
     loss
   }
 
-  def testDefault(lstmParameters: LstmParameters): Float = {
-    test(lstmParameters)
+  def testDefault(lstmParameters: LstmParameters, even: Boolean): Float = {
+    test(lstmParameters, even: Boolean)
   }
 
-  def testStatic(lstmParameters: LstmParameters): Float = {
-    test(lstmParameters)
+  def testStatic(lstmParameters: LstmParameters, even: Boolean): Float = {
+    test(lstmParameters, even: Boolean)
   }
 
-  def testDynamic(lstmParameters: LstmParameters): Float = {
-    test(lstmParameters)
+  def testDynamic(lstmParameters: LstmParameters, even: Boolean): Float = {
+    test(lstmParameters, even: Boolean)
   }
 }
 
 object Lstm {
   val seed = 42L
-  val expectedLoss: Float = 0.031386387f // This should match the C++ value, regardless of seed.
+  val evenExpectedLoss: Float = 0.0819774419f // This should match the C++ value, regardless of seed.
+  val oddExpectedLoss: Float = 0.0907375515f
 }
