@@ -9,7 +9,7 @@ way to understand something is to see an example.  Here are some links for those
 
 ### [processors](https://github.com/clulab/processors)
 * https://github.com/clulab/processors/blob/master/main/build.sbt#L21
-* https://github.com/clulab/processors/blob/master/main/src/main/scala/org/clulab/sequences/LstmCrfMtl.scala
+* https://github.com/clulab/processors/blob/master/main/src/main/scala/org/clulab/dynet/
 
 ### [factuality](https://github.com/clulab/factuality/)
 * https://github.com/clulab/factuality/blob/master/build.sbt#L16
