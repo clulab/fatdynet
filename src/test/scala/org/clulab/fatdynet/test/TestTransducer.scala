@@ -3,6 +3,7 @@ package org.clulab.fatdynet.test
 import java.io.File
 
 import edu.cmu.dynet._
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design.Design
 import org.clulab.fatdynet.parser.VanillaLstmParser
@@ -10,9 +11,8 @@ import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
-import org.scalatest._
 
-class TestTransducer extends FlatSpec with Matchers {
+class TestTransducer extends Test {
 
   /**
     * TODO

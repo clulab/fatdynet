@@ -6,15 +6,15 @@ import org.clulab.fatdynet.utils.Initializer
 object XorScala {
   val HIDDEN_SIZE = 8
   val ITERATIONS = 30
-  val RANDOM_SEED = 2522620396L
+  val RANDOM_SEED = 411865951L
 
-  def run(): (Float, Float) = {
+  def run(): (Float, Float, Float) = {
     println("Running XOR example")
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> RANDOM_SEED))
     println("Dynet initialized!")
     val m = new ParameterCollection
     val sgd = new SimpleSGDTrainer(m)
-    ComputationGraph.renew()
+    ComputationGraph.renew() // not necessary here unless call run more than once
     var mostRecentLoss = 0F
     var totalLoss = 0F
 
@@ -33,18 +33,17 @@ object XorScala {
 
     // Need a pointer representation of scalars so updates are tracked
     val y_value = new FloatPointer
-    y_value.set(0)
     val y = Expression.input(y_value)
 
     val h = Expression.tanh(W * x + b)
     val y_pred = V * h + a
     val loss_expr = Expression.squaredDistance(y_pred, y)
 
-    println()
-    println("Computation graphviz structure:")
-    ComputationGraph.printGraphViz()
-    println()
-    println("Training...")
+//    println()
+//    println("Computation graphviz structure:")
+//    ComputationGraph.printGraphViz()
+//    println()
+//    println("Training...")
 
     for (iter <- 0 until ITERATIONS) {
       var loss: Float = 0
@@ -58,14 +57,28 @@ object XorScala {
         ComputationGraph.backward(loss_expr)
         sgd.update()
       }
-      sgd.learningRate *= 0.998f
+      // sgd.learningRate *= 0.998f // This is not in the C++ version.
       loss /= 4
       println("iter = " + iter + ", loss = " + loss)
       mostRecentLoss = loss
       totalLoss += loss
     }
     println("--total--, loss = " + totalLoss)
-    (mostRecentLoss, totalLoss)
+
+    val staticLoss = {
+      var loss: Float = 0
+      for (mi <- 0 to 3) {
+        val x1: Boolean = mi % 2 > 0
+        val x2: Boolean = (mi / 2) % 2 > 0
+        x_values.update(0, if (x1) 1 else -1)
+        x_values.update(1, if (x2) 1 else -1)
+        y_value.set(if (x1 != x2) 1 else -1)
+        loss += ComputationGraph.forward(loss_expr).toFloat
+      }
+      loss
+    }
+
+    (mostRecentLoss, totalLoss, staticLoss)
   }
 
   def main(args: Array[String]): Unit = {

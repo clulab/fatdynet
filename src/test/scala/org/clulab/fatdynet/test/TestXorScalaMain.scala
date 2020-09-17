@@ -1,9 +1,9 @@
 package org.clulab.fatdynet.test
 
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.examples.XorScala
-import org.scalatest._
 
-class TestXorScalaMain extends FlatSpec with Matchers {
+class TestXorScalaMain extends Test {
 
   behavior of "XorScala"
 

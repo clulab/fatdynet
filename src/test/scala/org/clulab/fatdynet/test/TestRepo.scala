@@ -3,6 +3,7 @@ package org.clulab.fatdynet.test
 import java.io.File
 
 import edu.cmu.dynet._
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
@@ -10,7 +11,6 @@ import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
-import org.scalatest._
 
 /**
   * TODO
@@ -27,7 +27,7 @@ import org.scalatest._
   * Figure out how to do input on tree LSTMs.
   */
 
-class TestRepo extends FlatSpec with Matchers {
+class TestRepo extends Test {
   Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   abstract class ParserTester(val name: String) {

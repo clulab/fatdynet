@@ -3,13 +3,16 @@ package org.clulab.fatdynet.test
 import java.io.File
 
 import edu.cmu.dynet._
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.utils.Initializer
-import org.scalatest.TestSuite
 
 import scala.io.Source
 
-class TestCrash extends TestSuite {
-  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
+class TestCrash extends Test {
+  Initializer.initialize(Map(
+    Initializer.RANDOM_SEED -> 2522620396L,
+    Initializer.DYNET_MEM -> "2048"
+  ))
 
   def asString(lookupParameter: LookupParameter, name: String): Unit = {
     val tmpFile = File.createTempFile("model-", ".fatdynet")

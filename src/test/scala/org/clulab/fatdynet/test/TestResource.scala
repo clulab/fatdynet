@@ -1,14 +1,14 @@
 package org.clulab.fatdynet.test
 
-import org.clulab.fatdynet.utils.Closer.AutoCloser
-import org.scalatest._
 import java.util.zip.ZipFile
 
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.utils.BaseTextModelLoader
+import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import scala.io.Source
 
-class TestResource extends FlatSpec with Matchers {
+class TestResource extends Test {
 
   behavior of "Resource"
 
