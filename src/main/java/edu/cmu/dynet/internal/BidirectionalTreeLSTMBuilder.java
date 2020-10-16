@@ -91,4 +91,8 @@ public class BidirectionalTreeLSTMBuilder extends TreeLSTMBuilder {
     return (cPtr == 0) ? null : new ParameterCollection(cPtr, false);
   }
 
+  public BidirectionalTreeLSTMBuilder(BidirectionalTreeLSTMBuilder other) {
+    this(dynet_swigJNI.new_BidirectionalTreeLSTMBuilder__SWIG_2(BidirectionalTreeLSTMBuilder.getCPtr(other), other), true);
+  }
+
 }

@@ -4,14 +4,14 @@ import java.io.File
 
 import edu.cmu.dynet.Dim
 import edu.cmu.dynet.ParameterCollection
+import org.clulab.dynet.Test
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
-import org.scalatest._
 
-class TestRepoDelete extends FlatSpec with Matchers {
+class TestRepoDelete extends Test {
 
   behavior of "Repo"
 
