@@ -2,7 +2,7 @@ package org.clulab.dynet.lstm
 
 import org.clulab.dynet.Test
 
-class TestStaticComputationGraph extends Test {
+class TestStatic extends Test {
   val lstm = new Lstm()
   val lstmParameters = LstmParameters()
 
@@ -12,8 +12,8 @@ class TestStaticComputationGraph extends Test {
     val evenLoss = lstm.testStatic(lstmParameters, true)
     val oddLoss = lstm.testStatic(lstmParameters, false)
 
-    evenLoss should be (Lstm.evenExpectedLoss)
-    oddLoss should be (Lstm.oddExpectedLoss)
+    evenLoss should be (lstm.evenExpectedLoss)
+    oddLoss should be (lstm.oddExpectedLoss)
   }
 
   it should "run repeatedly" in {
@@ -21,8 +21,8 @@ class TestStaticComputationGraph extends Test {
       val evenLoss = lstm.testStatic(lstmParameters, true)
       val oddLoss = lstm.testStatic(lstmParameters, false)
 
-      evenLoss should be (Lstm.evenExpectedLoss)
-      oddLoss should be (Lstm.oddExpectedLoss)
+      evenLoss should be (lstm.evenExpectedLoss)
+      oddLoss should be (lstm.oddExpectedLoss)
     }
   }
 }

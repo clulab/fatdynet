@@ -1,7 +1,9 @@
 package org.clulab.fatdynet.test
 
+import edu.cmu.dynet.internal.dynet_swig
 import org.clulab.dynet.Test
 import org.clulab.fatdynet.examples.XorScala
+import org.clulab.fatdynet.utils.Initializer
 
 class TestXorScalaRerun extends Test {
 
@@ -10,11 +12,12 @@ class TestXorScalaRerun extends Test {
   val isMac: Boolean = osName.startsWith("Mac ")
   val isLinux: Boolean = !(isWindows || isMac)
   // Recent versions of fatdynet should produce the same results, independently of operating system.
-  val expectedMostRecentLoss = "8.828458E-10"
-  val expectedGpuMostRecentLoss = "5.9952043E-13"
-  val expectedTotalLoss = "13.468675"
-  val expectedGpuTotalLoss = "11.2634"
-  val expectedStaticLoss = "6.372183E-10"
+  val expectedCpuMostRecentLoss = "8.828458E-10"
+  val expectedGpuMostRecentLoss = "2.8176572E-11"
+  val expectedCpuTotalLoss = "13.468675"
+  val expectedGpuTotalLoss = "8.862729"
+  val expectedCpuStaticLoss = "6.372183E-10"
+  val expectedGpuStaticLoss = "2.0179414E-11"
 
   behavior of "XorScala"
 
@@ -30,17 +33,15 @@ class TestXorScalaRerun extends Test {
       val (mostRecentLoss, totalLoss, staticLoss) = XorScala.run()
 
       // This must be performed after initialization.
-      val deviceType = dynet_swig.getDefault_device().getType.toString
-      val (expectedMostRecentLoss, expectedTotalLoss) = deviceType match {
-        case "CPU" =>
-          println("Ran on CPU...")
-          (expectedCpuMostRecentLoss, expectedCpuTotalLoss)
-        case "GPU" =>
-          println("Ran on GPU...")
-          (expectedGpuMostRecentLoss, expectedGpuTotalLoss)
-        case _ =>
-          throw new RuntimeException(s"Could not recognize device $deviceType!")
-      }
+      val (expectedMostRecentLoss, expectedTotalLoss, expectedStaticLoss) =
+          if (Initializer.isCpu) {
+            println("Ran on CPU...")
+            (expectedCpuMostRecentLoss, expectedCpuTotalLoss, expectedCpuStaticLoss)
+          }
+          else {
+            println("Ran on GPU...")
+            (expectedGpuMostRecentLoss, expectedGpuTotalLoss, expectedGpuStaticLoss)
+          }
 
       if (check)
         if (isWindows) {

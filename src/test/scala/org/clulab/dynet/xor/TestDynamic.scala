@@ -9,24 +9,36 @@ class TestDynamic extends DynamicTest {
   behavior of "dynamic Xor"
 
   it should "run" in {
-    val loss = xor.runDynamic(xorParameters)
+    if (xor.isCpu) {
+      val loss = xor.runDynamic(xorParameters)
 
-    loss should be (Xor.expectedLoss)
+      loss should be (xor.expectedLoss)
+    }
+    else
+      println("Skipped dynamic test on GPU")
   }
 
   it should "run in serial" in {
-    Range.inclusive(1, 8).foreach { _ =>
-      val loss = xor.runDynamic(xorParameters)
+    if (xor.isCpu) {
+      Range.inclusive(1, 8).foreach { _ =>
+        val loss = xor.runDynamic(xorParameters)
 
-      loss should be (Xor.expectedLoss)
+        loss should be (xor.expectedLoss)
+      }
     }
+    else
+      println("Skipped dynamic test on GPU")
   }
 
   threaded should "run in parallel" in {
-    Range.inclusive(1, 1000).par.foreach { _ =>
-      val loss = xor.runDynamic(xorParameters)
+    if (xor.isCpu) {
+      Range.inclusive(1, 1000).par.foreach { _ =>
+        val loss = xor.runDynamic(xorParameters)
 
-      loss should be(Xor.expectedLoss)
+        loss should be(xor.expectedLoss)
+      }
     }
+    else
+      println("Skipped dynamic test on GPU")
   }
 }

@@ -2,7 +2,7 @@ package org.clulab.dynet.xor
 
 import org.clulab.dynet.Test
 
-class TestStaticComputationGraph extends Test {
+class TestStatic extends Test {
   val xor = new Xor()
   val xorParameters = new XorParameters()
 
@@ -11,14 +11,14 @@ class TestStaticComputationGraph extends Test {
   it should "run" in {
     val loss = xor.runStatic(xorParameters)
 
-    loss should be (Xor.expectedLoss)
+    loss should be (xor.expectedLoss)
   }
 
   it should "run repeatedly" in {
     Range.inclusive(1, 8).foreach { _ =>
       val loss = xor.runStatic(xorParameters)
 
-      loss should be (Xor.expectedLoss)
+      loss should be (xor.expectedLoss)
     }
   }
 }

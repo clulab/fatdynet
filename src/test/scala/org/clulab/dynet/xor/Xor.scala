@@ -7,6 +7,7 @@ import edu.cmu.dynet.FloatPointer
 import edu.cmu.dynet.FloatVector
 import edu.cmu.dynet.Parameter
 import edu.cmu.dynet.ParameterCollection
+import edu.cmu.dynet.internal.dynet_swig
 import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
@@ -31,6 +32,12 @@ object XorParameters {
 
 class Xor(train: Boolean = true) {
   initialize(train)
+
+  def isCpu: Boolean = dynet_swig.getDefault_device().getType.toString == "CPU"
+
+  def isGpu: Boolean = dynet_swig.getDefault_device().getType.toString == "GPU"
+
+  def expectedLoss = if (isCpu) Xor.expectedCpuLoss else Xor.expectedGpuLoss
 
   def initialize(train: Boolean = true): Unit = {
     val map = Map(
@@ -88,5 +95,6 @@ class Xor(train: Boolean = true) {
 
 object Xor {
   val seed = 411865951L
-  val expectedLoss: Float = 6.372183E-10f
+  val expectedCpuLoss: Float = 6.372183E-10f
+  val expectedGpuLoss: Float = 6.4507333E-10f
 }

@@ -11,35 +11,47 @@ class TestDynamic extends DynamicTest {
   behavior of "dynamic Lstm"
 
   it should "run" in {
-    val evenLoss = lstm.testStatic(threadLocalLstmParameters.get, true)
-    val oddLoss = lstm.testStatic(threadLocalLstmParameters.get, false)
-
-    evenLoss should be (Lstm.evenExpectedLoss)
-    oddLoss should be (Lstm.oddExpectedLoss)
-  }
-
-  it should "run in serial" in {
-    Range.inclusive(1, 8).foreach { _ =>
+    if (lstm.isCpu) {
       val evenLoss = lstm.testStatic(threadLocalLstmParameters.get, true)
       val oddLoss = lstm.testStatic(threadLocalLstmParameters.get, false)
 
-      evenLoss should be (Lstm.evenExpectedLoss)
-      oddLoss should be (Lstm.oddExpectedLoss)
+      evenLoss should be (lstm.evenExpectedLoss)
+      oddLoss should be (lstm.oddExpectedLoss)
     }
+    else
+      println("Skipped dynamic test on GPU")
   }
 
-  threaded should "run in parallel" in {
-    val timer = new Timer("running")
-
-    timer.time {
-      Range.inclusive(1, 10000).par.foreach { _ =>
+  it should "run in serial" in {
+    if (lstm.isCpu) {
+      Range.inclusive(1, 8).foreach { _ =>
         val evenLoss = lstm.testStatic(threadLocalLstmParameters.get, true)
         val oddLoss = lstm.testStatic(threadLocalLstmParameters.get, false)
 
-        evenLoss should be (Lstm.evenExpectedLoss)
-        oddLoss should be (Lstm.oddExpectedLoss)
+        evenLoss should be (lstm.evenExpectedLoss)
+        oddLoss should be (lstm.oddExpectedLoss)
       }
     }
-    println(timer.toString)
+    else
+      println("Skipped dynamic test on GPU")
+  }
+
+  threaded should "run in parallel" in {
+    if (lstm.isCpu) {
+      val timer = new Timer("running")
+
+      timer.time {
+        Range.inclusive(1, 10000).par.foreach { _ =>
+          val evenLoss = lstm.testStatic(threadLocalLstmParameters.get, true)
+          val oddLoss = lstm.testStatic(threadLocalLstmParameters.get, false)
+
+          evenLoss should be (lstm.evenExpectedLoss)
+          oddLoss should be (lstm.oddExpectedLoss)
+        }
+      }
+      println(timer.toString)
+    }
+    else
+      println("Skipped dynamic test on GPU")
   }
 }

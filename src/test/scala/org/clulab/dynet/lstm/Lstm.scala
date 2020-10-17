@@ -2,12 +2,12 @@ package org.clulab.dynet.lstm
 
 import java.util.function.Supplier
 
-import edu.cmu.dynet.ComputationGraph
 import edu.cmu.dynet.Dim
 import edu.cmu.dynet.Expression
 import edu.cmu.dynet.LookupParameter
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet.VanillaLstmBuilder
+import edu.cmu.dynet.internal.dynet_swig
 import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
@@ -48,6 +48,14 @@ object LstmParameters {
 
 class Lstm(train: Boolean = true) {
   initialize(train)
+
+  def isCpu: Boolean = dynet_swig.getDefault_device().getType.toString == "CPU"
+
+  def isGpu: Boolean = dynet_swig.getDefault_device().getType.toString == "GPU"
+
+  def evenExpectedLoss = if (isCpu) Lstm.evenExpectedCpuLoss else Lstm.evenExpectedGpuLoss
+
+  def oddExpectedLoss = if (isCpu) Lstm.oddExpectedCpuLoss else Lstm.oddExpectedGpuLoss
 
   def initialize(train: Boolean = true): Unit = {
     val map = Map(
@@ -93,6 +101,9 @@ class Lstm(train: Boolean = true) {
 
 object Lstm {
   val seed = 42L
-  val evenExpectedLoss: Float = 0.0819774419f // This should match the C++ value, regardless of seed.
-  val oddExpectedLoss: Float = 0.0907375515f
+  val evenExpectedCpuLoss: Float = 0.0819774419f // This should match the C++ value, regardless of seed.
+  val oddExpectedCpuLoss: Float = 0.0907375515f
+
+  val evenExpectedGpuLoss: Float = 0.081977464f
+  val oddExpectedGpuLoss: Float = 0.09073758f
 }
