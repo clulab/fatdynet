@@ -1,6 +1,7 @@
 package org.clulab.fatdynet.utils
 
 import edu.cmu.dynet._
+import edu.cmu.dynet.internal.dynet_swig
 import edu.cmu.dynet.internal.dynet_swig.reset_rng
 
 // According to devices.cc, "Devices cannot be deleted at the moment because
@@ -14,8 +15,18 @@ object Initializer {
   val SHARED_PARAMETERS = "shared-parameters"
   val AUTOBATCH = "autobatch"
   val PROFILING = "profiling"
+  val DYNAMIC_MEM = "dynamic-mem"
+  val FORWARD_ONLY = "forward-only"
 
   protected var initialized: Boolean = false
+
+  def isCpu: Boolean = {
+    dynet_swig.getDefault_device().getType.toString == "CPU"
+  }
+
+  def isGpu: Boolean = {
+    dynet_swig.getDefault_device().getType.toString == "GPU"
+  }
 
   def cleanup(): Boolean = this.synchronized {
     val oldInitialized = initialized

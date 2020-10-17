@@ -1,19 +1,41 @@
 package edu.cmu.dynet
 
+class ComputationGraph private[dynet] (val version: Long = 0L) extends internal.ComputationGraph(internal.dynet_swigJNI.new_ComputationGraph(), true) {
+
+  private[dynet] def this(cg: ComputationGraph) {
+    this {
+      if (cg == null) 0
+      else {
+        val gcVersion = cg.version
+
+        // The old should be deleted before the new one is created in order to work when memory is not dynamic.
+        cg.delete()
+        gcVersion + 1
+      }
+    }
+  }
+}
+
 /** The ComputationGraph object contains the singleton DyNet computation graph instance. Any C++
   * instance method is instead implemented as a static function here.*
   */
 object ComputationGraph {
-  private[dynet] var cg: internal.ComputationGraph = internal.ComputationGraph.getNew
-  var version: Long = 0L
-  private var defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
+  private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
+  protected val threadedCg = new ThreadLocal[ComputationGraph] {
+    override protected def initialValue() = new ComputationGraph()
+  }
 
-  /** Gets rid of the singleton Computation Graph and replaces it with a fresh one. Increments
-    * `version` to make sure we don't use any stale expressions.
-    */
-  def renew(): Unit = {
-    cg = internal.ComputationGraph.getNew
-    version += 1
+  private[dynet] def cg: ComputationGraph = threadedCg.get
+
+  def version: Long = cg.version
+
+  def renew(): Unit = threadedCg.set(new ComputationGraph(cg))
+
+  // Warning.  Call this only to clear out the C++ computation graph so that the
+  // JavaComputationGraph can be resynchronized under test conditions.
+  def reset(): Unit = {
+    cg.reset()
+    threadedCg.set(null)
   }
 
   def addInput(s: Float): VariableIndex = new VariableIndex(cg.add_input(s, defaultDevice))

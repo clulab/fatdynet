@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/clulab/fatdynet.svg?branch=master)](https://travis-ci.org/clulab/fatdynet)
+[![Build Status](https://travis-ci.com/clulab/fatdynet.svg?branch=master)](https://travis-ci.com/clulab/fatdynet)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.clulab/fatdynet_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.clulab/fatdynet_2.12)
+
 
 # fatdynet
 
@@ -9,7 +11,7 @@ way to understand something is to see an example.  Here are some links for those
 
 ### [processors](https://github.com/clulab/processors)
 * https://github.com/clulab/processors/blob/master/main/build.sbt#L21
-* https://github.com/clulab/processors/blob/master/main/src/main/scala/org/clulab/sequences/LstmCrfMtl.scala
+* https://github.com/clulab/processors/blob/master/main/src/main/scala/org/clulab/dynet/
 
 ### [factuality](https://github.com/clulab/factuality/)
 * https://github.com/clulab/factuality/blob/master/build.sbt#L16

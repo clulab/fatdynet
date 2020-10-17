@@ -15,25 +15,22 @@ libraryDependencies ++= Seq(
 
 Test / parallelExecution := false
 
-// All tests, not just the first one, are now able to reset the random
-// number generator, so it is no longer necessary to specify the first test.
-//{
-//  def namedFirst(tests: Seq[TestDefinition], name: String) = {
-//    def newRunPolicy = InProcess
-//
-//    val namedTests = tests.filter(_.name == name)
-//    val unnamedTests = tests.filter(_.name != name)
-//
-//    val namedGroup = new Group("named", namedTests, newRunPolicy)
-//    val unnamedGroup = new Group("unnamed", unnamedTests, newRunPolicy)
-//
-//    Seq(namedGroup, unnamedGroup)
-//  }
-//
-//  // This test must come first so that the random number generator is newly initialized.
-//  val name = "org.clulab.fatdynet.test.TestXorScalaRun"
-//  testGrouping in Test := namedFirst((definedTests in Test).value, name)
-//}
+{
+  def groupDynamic(tests: Seq[TestDefinition]) = {
+    def newRunPolicy = SubProcess(ForkOptions())
+    //def newRunPolicy = InProcess
+
+    val staticTests = tests.filter(!_.name.contains(".TestDynamic"))
+    val staticGroup = new Group("static", staticTests, newRunPolicy)
+
+    val dynamicTests = tests.filter(_.name.contains(".TestDynamic"))
+    val dynamicGroup = new Group("dynamic", dynamicTests, newRunPolicy)
+
+    Seq(dynamicGroup, staticGroup)
+  }
+
+  testGrouping in Test := groupDynamic((definedTests in Test).value)
+}
 
 lazy val root = (project in file("."))
 

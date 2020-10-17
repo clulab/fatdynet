@@ -1,0 +1,3 @@
+# This is not a text file!
+lstm.rnn -text
+xor.rnn -text
