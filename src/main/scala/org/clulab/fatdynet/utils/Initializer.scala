@@ -46,6 +46,7 @@ object Initializer {
       System.err.println(s"[dynet] random seed: $seed")
     }
     Initialize.initialize(args)
+    ComputationGraph.getClass
     initialized = true
     oldInitialized
   }
