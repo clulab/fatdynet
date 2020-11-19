@@ -93,6 +93,6 @@ class Lstm(train: Boolean = true) {
 
 object Lstm {
   val seed = 42L
-  val evenExpectedLoss: Float = 0.0819774419f // This should match the C++ value, regardless of seed.
+  val evenExpectedLoss: Float = 0.081977434f // This should match the C++ value, regardless of seed.
   val oddExpectedLoss: Float = 0.0907375515f
 }
