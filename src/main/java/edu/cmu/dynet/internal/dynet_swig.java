@@ -9,6 +9,34 @@
 package edu.cmu.dynet.internal;
 
 public class dynet_swig {
+  public static void throwRuntimeError() {
+    dynet_swigJNI.throwRuntimeError();
+  }
+
+  public static void throwSubRuntimeError() {
+    dynet_swigJNI.throwSubRuntimeError();
+  }
+
+  public static void throwLogicError() {
+    dynet_swigJNI.throwLogicError();
+  }
+
+  public static void throwSubLogicError() {
+    dynet_swigJNI.throwSubLogicError();
+  }
+
+  public static void throwException() {
+    dynet_swigJNI.throwException();
+  }
+
+  public static void throwSubException() {
+    dynet_swigJNI.throwSubException();
+  }
+
+  public static void throwUnknown() {
+    dynet_swigJNI.throwUnknown();
+  }
+
   public static SWIGTYPE_p_unsigned_int new_uintp() {
     long cPtr = dynet_swigJNI.new_uintp();
     return (cPtr == 0) ? null : new SWIGTYPE_p_unsigned_int(cPtr, false);

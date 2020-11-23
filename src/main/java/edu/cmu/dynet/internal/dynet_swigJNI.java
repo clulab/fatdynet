@@ -46,6 +46,13 @@ public class dynet_swigJNI {
         }
     }
 
+  public final static native void throwRuntimeError();
+  public final static native void throwSubRuntimeError();
+  public final static native void throwLogicError();
+  public final static native void throwSubLogicError();
+  public final static native void throwException();
+  public final static native void throwSubException();
+  public final static native void throwUnknown();
   public final static native long new_uintp();
   public final static native long copy_uintp(long jarg1);
   public final static native void delete_uintp(long jarg1);
