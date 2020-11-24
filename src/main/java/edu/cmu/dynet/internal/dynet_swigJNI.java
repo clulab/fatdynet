@@ -53,6 +53,28 @@ public class dynet_swigJNI {
   public final static native void throwException();
   public final static native void throwSubException();
   public final static native void throwUnknown();
+  public final static native void raiseSignal(int jarg1);
+  public final static native void readNullPtr();
+  public final static native void writeNullPtr();
+  public final static native long new_Callback();
+  public final static native void delete_Callback(long jarg1);
+  public final static native void Callback_run(long jarg1, Callback jarg1_);
+  public final static native void Callback_runSwigExplicitCallback(long jarg1, Callback jarg1_);
+  public final static native void Callback_director_connect(Callback obj, long cptr, boolean mem_own, boolean weak_global);
+  public final static native void Callback_change_ownership(Callback obj, long cptr, boolean take_or_release);
+  public final static native long new_Caller();
+  public final static native void delete_Caller(long jarg1);
+  public final static native void Caller_delCallback(long jarg1, Caller jarg1_);
+  public final static native void Caller_setCallback(long jarg1, Caller jarg1_, long jarg2, Callback jarg2_);
+  public final static native void Caller_call(long jarg1, Caller jarg1_);
+  public final static native void setSignalHandler(int jarg1, long jarg2, SignalHandler jarg2_);
+  public final static native void resetSignalHandler(int jarg1);
+  public final static native long new_SignalHandler();
+  public final static native void delete_SignalHandler(long jarg1);
+  public final static native int SignalHandler_run(long jarg1, SignalHandler jarg1_, int jarg2);
+  public final static native int SignalHandler_runSwigExplicitSignalHandler(long jarg1, SignalHandler jarg1_, int jarg2);
+  public final static native void SignalHandler_director_connect(SignalHandler obj, long cptr, boolean mem_own, boolean weak_global);
+  public final static native void SignalHandler_change_ownership(SignalHandler obj, long cptr, boolean take_or_release);
   public final static native long new_uintp();
   public final static native long copy_uintp(long jarg1);
   public final static native void delete_uintp(long jarg1);
@@ -1024,4 +1046,16 @@ public class dynet_swigJNI {
   public final static native long BaseFileLoader_SWIGUpcast(long jarg1);
   public final static native long TextFileLoader_SWIGUpcast(long jarg1);
   public final static native long ZipFileLoader_SWIGUpcast(long jarg1);
+
+  public static void SwigDirector_Callback_run(Callback jself) {
+    jself.run();
+  }
+  public static int SwigDirector_SignalHandler_run(SignalHandler jself, int signal) {
+    return jself.run(signal);
+  }
+
+  private final static native void swig_module_init();
+  static {
+    swig_module_init();
+  }
 }

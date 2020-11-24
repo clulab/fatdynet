@@ -4,7 +4,7 @@ import edu.cmu.dynet.internal.{dynet_swig => dynet}
 import org.clulab.fatdynet.utils.Initializer
 import org.scalatest._
 
-class TestExceptions extends FlatSpec with Matchers {
+class TestExceptionHandling extends FlatSpec with Matchers {
 
   def testException(thrower: => Unit, name: String, method: String, text: String): Unit = {
     val thrown = the [RuntimeException] thrownBy {

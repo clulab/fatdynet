@@ -37,6 +37,26 @@ public class dynet_swig {
     dynet_swigJNI.throwUnknown();
   }
 
+  public static void raiseSignal(int signal) {
+    dynet_swigJNI.raiseSignal(signal);
+  }
+
+  public static void readNullPtr() {
+    dynet_swigJNI.readNullPtr();
+  }
+
+  public static void writeNullPtr() {
+    dynet_swigJNI.writeNullPtr();
+  }
+
+  public static void setSignalHandler(int signal, SignalHandler signalHandler) {
+    dynet_swigJNI.setSignalHandler(signal, SignalHandler.getCPtr(signalHandler), signalHandler);
+  }
+
+  public static void resetSignalHandler(int signal) {
+    dynet_swigJNI.resetSignalHandler(signal);
+  }
+
   public static SWIGTYPE_p_unsigned_int new_uintp() {
     long cPtr = dynet_swigJNI.new_uintp();
     return (cPtr == 0) ? null : new SWIGTYPE_p_unsigned_int(cPtr, false);
