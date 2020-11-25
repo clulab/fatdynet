@@ -19,6 +19,8 @@ class TestSignalHandling extends FlatSpec with Matchers {
   import TestSignalHandling.SIGSEGV
   var count = 0
 
+  def isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
+
   Initializer.initialize()
 
   behavior of "signal handling routines"
@@ -26,7 +28,12 @@ class TestSignalHandling extends FlatSpec with Matchers {
   it should "work using the C++ signal handler" in {
     val signalHandler = new SignalHandler()
     dynet.setSignalHandler(SIGSEGV, signalHandler)
-    dynet.raiseSignal(SIGSEGV)
+    the [RuntimeException] thrownBy {
+      dynet.raiseSignal(SIGSEGV)
+    }
+    the [RuntimeException] thrownBy {
+      dynet.raiseSignal(SIGSEGV)
+    }
     dynet.resetSignalHandler(SIGSEGV)
   }
 
@@ -34,8 +41,14 @@ class TestSignalHandling extends FlatSpec with Matchers {
     val signalHandler = new JavaSignalHandler()
     dynet.setSignalHandler(SIGSEGV, signalHandler)
     signalHandler.count should be (0)
-    dynet.raiseSignal(SIGSEGV)
+    the [RuntimeException] thrownBy {
+      dynet.raiseSignal(SIGSEGV)
+    }
     signalHandler.count should be (1)
+    the [RuntimeException] thrownBy {
+      dynet.raiseSignal(SIGSEGV)
+    }
+    signalHandler.count should be (2)
     dynet.resetSignalHandler(SIGSEGV)
   }
 
@@ -43,30 +56,44 @@ class TestSignalHandling extends FlatSpec with Matchers {
     val signalHandler = new ScalaSignalHandler()
     dynet.setSignalHandler(SIGSEGV, signalHandler)
     signalHandler.count should be (0)
-    dynet.raiseSignal(SIGSEGV)
+    the [RuntimeException] thrownBy {
+      dynet.raiseSignal(SIGSEGV)
+    }
     signalHandler.count should be (1)
+    the [RuntimeException] thrownBy {
+      dynet.raiseSignal(SIGSEGV)
+    }
+    signalHandler.count should be (2)
     dynet.resetSignalHandler(SIGSEGV)
   }
 
-  ignore should "handle a null pointer read" in {
-    // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows
-    try {
-      dynet.readNullPtr()
-    }
-    catch {
-      case throwable: Throwable =>
-        throwable.printStackTrace()
+  it should "handle a null pointer read" in {
+    if (isWindows)
+      // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows with no signal
+      isWindows should be (true)
+    else {
+      try {
+        dynet.readNullPtr()
+      }
+      catch {
+        case throwable: Throwable =>
+          throwable.printStackTrace()
+      }
     }
   }
 
-  ignore should "handle a null pointer write" in {
-    // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows
-    try {
-      dynet.writeNullPtr()
-    }
-    catch {
-      case throwable: Throwable =>
-        throwable.printStackTrace()
+  it should "handle a null pointer write" in {
+    if (isWindows)
+      // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows with no signal
+      isWindows should be (true)
+    else {
+      try {
+        dynet.writeNullPtr()
+      }
+      catch {
+        case throwable: Throwable =>
+          throwable.printStackTrace()
+      }
     }
   }
 }
