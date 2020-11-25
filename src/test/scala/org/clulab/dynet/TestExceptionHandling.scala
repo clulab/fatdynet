@@ -5,6 +5,7 @@ import org.clulab.fatdynet.utils.Initializer
 import org.scalatest._
 
 class TestExceptionHandling extends FlatSpec with Matchers {
+  val isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
 
   def testException(thrower: => Unit, name: String, method: String, text: String): Unit = {
     val thrown = the [RuntimeException] thrownBy {
@@ -54,17 +55,18 @@ class TestExceptionHandling extends FlatSpec with Matchers {
   }
 
   it should "handle an exception" in {
-    val thrown = the [RuntimeException] thrownBy {
-      dynet.throwException()
-    }
-    println(thrown.getMessage)
+    testException(dynet.throwException(),
+      "std::exception",
+      "dynet::throwException",
+      "std::exception" // for linux
+    )
   }
 
   it should "handle a subclass of exception" in {
     testException(dynet.throwSubException(),
       "std::exception",
       "dynet::throwSubException",
-      "bad cast" // determined by C++
+      if (isWindows) "bad cast" else "bad_cast" // determined by C++
     )
   }
 

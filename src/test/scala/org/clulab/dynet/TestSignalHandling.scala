@@ -16,10 +16,8 @@ class ScalaSignalHandler extends SignalHandler {
 }
 
 class TestSignalHandling extends FlatSpec with Matchers {
-  import TestSignalHandling.SIGSEGV
-  var count = 0
-
-  def isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
+  val SIGSEGV = TestSignalHandling.SIGSEGV
+  val isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
 
   Initializer.initialize()
 
@@ -72,13 +70,18 @@ class TestSignalHandling extends FlatSpec with Matchers {
       // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows with no signal
       isWindows should be (true)
     else {
-      try {
+      val signalHandler = new ScalaSignalHandler()
+      dynet.setSignalHandler(SIGSEGV, signalHandler)
+      signalHandler.count should be (0)
+      the [RuntimeException] thrownBy {
         dynet.readNullPtr()
       }
-      catch {
-        case throwable: Throwable =>
-          throwable.printStackTrace()
+      signalHandler.count should be (1)
+      the [RuntimeException] thrownBy {
+        dynet.readNullPtr()
       }
+      signalHandler.count should be (2)
+      dynet.resetSignalHandler(SIGSEGV)
     }
   }
 
@@ -87,13 +90,18 @@ class TestSignalHandling extends FlatSpec with Matchers {
       // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows with no signal
       isWindows should be (true)
     else {
-      try {
+      val signalHandler = new ScalaSignalHandler()
+      dynet.setSignalHandler(SIGSEGV, signalHandler)
+      signalHandler.count should be (0)
+      the [RuntimeException] thrownBy {
         dynet.writeNullPtr()
       }
-      catch {
-        case throwable: Throwable =>
-          throwable.printStackTrace()
+      signalHandler.count should be (1)
+      the [RuntimeException] thrownBy {
+        dynet.writeNullPtr()
       }
+      signalHandler.count should be (2)
+      dynet.resetSignalHandler(SIGSEGV)
     }
   }
 }
