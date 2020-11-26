@@ -66,43 +66,33 @@ class TestSignalHandling extends FlatSpec with Matchers {
   }
 
   it should "handle a null pointer read" in {
-    if (isWindows)
-      // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows with no signal
-      isWindows should be (true)
-    else {
-      val signalHandler = new ScalaSignalHandler()
-      dynet.setSignalHandler(SIGSEGV, signalHandler)
-      signalHandler.count should be (0)
-      the [RuntimeException] thrownBy {
-        dynet.readNullPtr()
-      }
-      signalHandler.count should be (1)
-      the [RuntimeException] thrownBy {
-        dynet.readNullPtr()
-      }
-      signalHandler.count should be (2)
-      dynet.resetSignalHandler(SIGSEGV)
+    val signalHandler = new ScalaSignalHandler()
+    dynet.setSignalHandler(SIGSEGV, signalHandler)
+    signalHandler.count should be (0)
+    the [RuntimeException] thrownBy {
+      dynet.readNullPtr()
     }
+    signalHandler.count should be (1)
+    the [RuntimeException] thrownBy {
+      dynet.readNullPtr()
+    }
+    signalHandler.count should be (2)
+    dynet.resetSignalHandler(SIGSEGV)
   }
 
   it should "handle a null pointer write" in {
-    if (isWindows)
-      // Get EXCEPTION_ACCESS_VIOLATION = 0xc0000005 on Windows with no signal
-      isWindows should be (true)
-    else {
-      val signalHandler = new ScalaSignalHandler()
-      dynet.setSignalHandler(SIGSEGV, signalHandler)
-      signalHandler.count should be (0)
-      the [RuntimeException] thrownBy {
-        dynet.writeNullPtr()
-      }
-      signalHandler.count should be (1)
-      the [RuntimeException] thrownBy {
-        dynet.writeNullPtr()
-      }
-      signalHandler.count should be (2)
-      dynet.resetSignalHandler(SIGSEGV)
+    val signalHandler = new ScalaSignalHandler()
+    dynet.setSignalHandler(SIGSEGV, signalHandler)
+    signalHandler.count should be (0)
+    the [RuntimeException] thrownBy {
+      dynet.writeNullPtr()
     }
+    signalHandler.count should be (1)
+    the [RuntimeException] thrownBy {
+      dynet.writeNullPtr()
+    }
+    signalHandler.count should be (2)
+    dynet.resetSignalHandler(SIGSEGV)
   }
 }
 
