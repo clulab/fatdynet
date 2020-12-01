@@ -59,7 +59,7 @@ class TestExceptionHandling extends FlatSpec with Matchers {
     testException(dynet.throwException(),
       "std::exception",
       "dynet::throwException",
-      "Unknown exception"
+      if (isWindows) "Unknown exception"else "std::exception"
     )
   }
 
