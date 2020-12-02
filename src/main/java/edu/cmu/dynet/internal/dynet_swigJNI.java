@@ -13,38 +13,52 @@ package edu.cmu.dynet.internal;
 public class dynet_swigJNI {
 
     static {
+        // Attempt to load a local copy of the library before backing off to the resource.
         try {
-            File tempFile = File.createTempFile("dynet", ".dll");
-            String libname = System.mapLibraryName("dynet_swig");
+          String filename = "dynet_swig";
+          String libname = System.mapLibraryName(filename);
 
-            if (libname.endsWith("dylib")) {
-              libname = libname.replace(".dylib", ".jnilib");
-            }
-
-            // Load the dylib from the JAR-ed resource file, and write it to the temp file.
-            InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(libname);
-            OutputStream os = new FileOutputStream(tempFile);
-
-            byte buf[] = new byte[8192];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                os.write(buf, 0, len);
-            }
-
-            os.flush();
-            InputStream lock = new FileInputStream(tempFile);
-            os.close();
-
-            // Load the library from the tempfile.
-            System.load(tempFile.getPath());
-            lock.close();
-
-            // And delete the tempfile.
-            tempFile.delete();
-        } catch (IOException io) {
-            System.out.println(io);
+          if (libname.endsWith("dylib")) {
+            libname = libname.replace(".dylib", ".jnilib");
+          }
+          System.load(libname);
+          System.out.println("I'm loading the local version of dynet.");
         }
-    }
+        catch (UnsatisfiedLinkError exception) {
+          try {
+              String filename = "dynet_swig";
+              File tempFile = File.createTempFile("dynet", ".dll");
+              String libname = System.mapLibraryName(filename);
+
+              if (libname.endsWith("dylib")) {
+                libname = libname.replace(".dylib", ".jnilib");
+              }
+
+              // Load the dylib from the JAR-ed resource file, and write it to the temp file.
+              InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(libname);
+              OutputStream os = new FileOutputStream(tempFile);
+
+              byte buf[] = new byte[8192];
+              int len;
+              while ((len = is.read(buf)) > 0) {
+                  os.write(buf, 0, len);
+              }
+
+              os.flush();
+              InputStream lock = new FileInputStream(tempFile);
+              os.close();
+
+              // Load the library from the tempfile.
+              System.load(tempFile.getPath());
+              lock.close();
+
+              // And delete the tempfile.
+              tempFile.delete();
+          } catch (IOException io) {
+              System.out.println(io);
+          }
+      }
+  }
 
   public final static native void throwRuntimeError();
   public final static native void throwSubRuntimeError();
