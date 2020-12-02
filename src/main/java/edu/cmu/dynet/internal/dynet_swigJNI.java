@@ -50,6 +50,7 @@ public class dynet_swigJNI {
 
               // Load the library from the tempfile.
               System.load(tempFile.getPath());
+              System.out.println("I'm loading the temporary version of dynet.");
               lock.close();
 
               // And delete the tempfile.
