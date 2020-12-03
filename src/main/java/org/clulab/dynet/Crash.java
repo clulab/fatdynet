@@ -5,6 +5,7 @@ import edu.cmu.dynet.internal.dynet_swig;
 public class Crash {
 
 	public static void main(String[] args) {
-		dynet_swig.raiseSignal(11);
+		dynet_swig.readNullPtr();
+		System.out.println("Got here");
 	}
 }
