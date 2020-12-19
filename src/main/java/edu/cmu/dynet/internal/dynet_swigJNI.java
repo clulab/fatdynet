@@ -12,54 +12,78 @@ package edu.cmu.dynet.internal;
 
 public class dynet_swigJNI {
 
-    static {
-        // Attempt to load a local copy of the library before backing off to the resource.
-        try {
-          String filename = "dynet_swig";
-          String libname = System.mapLibraryName(filename);
 
-          if (libname.endsWith("dylib")) {
-            libname = libname.replace(".dylib", ".jnilib");
-          }
-          System.load(libname);
-          System.out.println("I'm loading the local version of dynet.");
-        }
-        catch (UnsatisfiedLinkError exception) {
-          try {
-              String filename = "dynet_swig";
-              File tempFile = File.createTempFile("dynet", ".dll");
-              String libname = System.mapLibraryName(filename);
-
-              if (libname.endsWith("dylib")) {
-                libname = libname.replace(".dylib", ".jnilib");
-              }
-
-              // Load the dylib from the JAR-ed resource file, and write it to the temp file.
-              InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(libname);
-              OutputStream os = new FileOutputStream(tempFile);
-
-              byte buf[] = new byte[8192];
-              int len;
-              while ((len = is.read(buf)) > 0) {
-                  os.write(buf, 0, len);
-              }
-
-              os.flush();
-              InputStream lock = new FileInputStream(tempFile);
-              os.close();
-
-              // Load the library from the tempfile.
-              System.load(tempFile.getPath());
-              System.out.println("I'm loading the temporary version of dynet.");
-              lock.close();
-
-              // And delete the tempfile.
-              tempFile.delete();
-          } catch (IOException io) {
-              System.out.println(io);
-          }
-      }
+  static boolean loadFromFile(String pathname) {
+    try {
+      System.load(pathname);
+      System.err.println("Loading DyNet from " + pathname + "...");
+      return true;
+    }
+    catch (UnsatisfiedLinkError exception) {
+      return false;
+    }
   }
+
+  static boolean loadFromFile(String dir, String libname) {
+    String pathname = dir + File.separator + libname;
+    return loadFromFile(pathname);
+  }
+
+  static String replaceSuffix(String text, String prev, String next) {
+    if (text.endsWith(prev))
+      return text.substring(0, text.length() - prev.length()) + next;
+    else
+      return text;
+  }
+
+  static {
+    String filename = "dynet_swig";
+    String libname = System.mapLibraryName(filename);
+    // The Mac reports a libname ending with .dylib, but Java needs .jnilib instead.
+    String jniname = replaceSuffix(libname, ".dylib", ".jnilib");
+
+    boolean loaded = false;
+    if (!loaded)
+      loaded = loadFromFile(System.getProperty("user.dir"), jniname); // Try current directory first.
+    if (!loaded)
+      loaded = loadFromFile(System.getProperty("user.home"), jniname); // Try home directory next.
+    if (!loaded) {
+      try {
+        // Attempt to load from the resource via the tmp directory.
+        int index = jniname.indexOf('.');
+        String prefix = jniname.substring(0, index);
+        String suffix = jniname.substring(index);
+        File tempFile = File.createTempFile(prefix + "-", suffix);
+
+        // Load the jnilib from the JAR-ed resource file, and write it to the temp file.
+        // We've anticipated the name and used it for the resource, but that could go wrong.
+        InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(jniname);
+        OutputStream os = new FileOutputStream(tempFile);
+
+        byte buf[] = new byte[8192];
+        int len;
+        while ((len = is.read(buf)) > 0) {
+          os.write(buf, 0, len);
+        }
+
+        os.flush();
+        InputStream lock = new FileInputStream(tempFile);
+        os.close();
+
+        loaded = loadFromFile(tempFile.getAbsolutePath());
+        lock.close();
+
+        tempFile.delete();
+
+        if (!loaded)
+          throw new RuntimeException("DyNet could not be loaded!");
+      }
+      catch (Exception exception) {
+        exception.printStackTrace(System.err);
+      }
+    }
+  }
+
 
   public final static native void throwRuntimeError();
   public final static native void throwSubRuntimeError();
