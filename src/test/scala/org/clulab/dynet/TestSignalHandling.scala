@@ -39,7 +39,7 @@ class TestSignalHandling extends FlatSpec with Matchers {
     }
   }
 
-  it should "handle a null pointer read" in {
+  ignore should "handle a null pointer read" in {
     the [RuntimeException] thrownBy {
       dynet.readNullPtr()
     }
