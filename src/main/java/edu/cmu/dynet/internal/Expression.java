@@ -9,12 +9,25 @@
 package edu.cmu.dynet.internal;
 
 public class Expression {
+  static int expressionCount = 0;
   private transient long swigCPtr;
   protected transient boolean swigCMemOwn;
+
+  protected static synchronized int incCount() {
+    int oldCount = expressionCount;
+    expressionCount++;
+    return oldCount;
+  }
+
+  protected static synchronized int decCount() {
+    expressionCount--;
+    return expressionCount;
+  }
 
   protected Expression(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
+//    System.out.println("Expression " + incCount() + " with cPtr " + swigCPtr + " was created");
   }
 
   protected static long getCPtr(Expression obj) {
@@ -26,6 +39,7 @@ public class Expression {
   }
 
   public synchronized void delete() {
+//    System.out.println("Expression " + decCount() + " with cPtr " + swigCPtr + " is being deleted");
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
         swigCMemOwn = false;

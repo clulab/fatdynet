@@ -4,7 +4,7 @@ package edu.cmu.dynet
   * functions contained in the companion object.
   */
 class Expression private[dynet](
-  private[dynet] val expr: internal.Expression,
+  val expr: internal.Expression,
   // Expressions sometimes rely on things (e.g. wrapped C++ vectors) that get deleted when the JVM
   // garbage collector runs. By explicitly grabbing references to them, we can prevent this
   // premature garbage collection.

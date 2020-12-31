@@ -9,12 +9,25 @@
 package edu.cmu.dynet.internal;
 
 public class ExpressionVector {
-  private transient long swigCPtr;
+  static int expressionVectorCount = 0;
+  public transient long swigCPtr;
   protected transient boolean swigCMemOwn;
+
+  protected static synchronized int incCount() {
+    int oldCount = expressionVectorCount;
+    expressionVectorCount++;
+    return oldCount;
+  }
+
+  protected static synchronized int decCount() {
+    expressionVectorCount--;
+    return expressionVectorCount;
+  }
 
   protected ExpressionVector(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
+    System.out.println("ExpressionVector " + incCount() + " with cPtr " + swigCPtr + " was created");
   }
 
   protected static long getCPtr(ExpressionVector obj) {
@@ -26,9 +39,11 @@ public class ExpressionVector {
   }
 
   public synchronized void delete() {
+    System.out.println("ExpressionVector " + decCount() + " with cPtr " + swigCPtr + " is being deleted");
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
         swigCMemOwn = false;
+        System.out.println("Deleting ExpressionVector with swigCPtr = " + swigCPtr);
         dynet_swigJNI.delete_ExpressionVector(swigCPtr);
       }
       swigCPtr = 0;

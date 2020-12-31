@@ -51,7 +51,7 @@ object FloatVector {
     new FloatVector(x)
 }
 
-class FloatVector private[dynet] (private[dynet] val vector: internal.FloatVector)
+class FloatVector private[dynet] (val vector: internal.FloatVector)
     extends scala.collection.mutable.IndexedSeq[Float] {
   def this(size: Long) { this(new internal.FloatVector(size)) }
   def this(values: Seq[Float] = Seq.empty) {
@@ -70,7 +70,7 @@ object ExpressionVector {
 }
 
 class ExpressionVector private[dynet] (
-  private[dynet] val version: Long, private[dynet] val vector: internal.ExpressionVector)
+  private[dynet] val version: Long, val vector: internal.ExpressionVector)
     extends scala.collection.mutable.IndexedSeq[Expression] {
   private[dynet] def this(vector: internal.ExpressionVector) = {
     this(ComputationGraph.version, vector)
@@ -93,7 +93,8 @@ class ExpressionVector private[dynet] (
     vector.add(v.expr)
   }
 
-  override def apply(idx: Int): Expression = new Expression(vector.get(idx))
+  // The vector must be kept around in order to index into it.
+  override def apply(idx: Int): Expression = new Expression(vector.get(idx), Seq(vector))
   override def length: Int = vector.size.toInt
   override def update(idx: Int, elem: Expression): Unit = {
     elem.ensureFresh()
