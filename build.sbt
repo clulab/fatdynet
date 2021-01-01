@@ -39,6 +39,8 @@ lazy val root = (project in file("."))
 
 mainClass in Compile := Some("org.clulab.fatdynet.apps.XorScalaApp")
 
+test in assembly := {}
+
 //
 // publishing settings
 //
