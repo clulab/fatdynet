@@ -16,7 +16,7 @@ public class dynet_swigJNI {
   static boolean loadFromFile(String pathname) {
     try {
       System.load(pathname);
-      System.err.println("Loading DyNet from " + pathname + "...");
+      System.err.println("[dynet] Loading DyNet from " + pathname + "...");
       return true;
     }
     catch (UnsatisfiedLinkError exception) {
