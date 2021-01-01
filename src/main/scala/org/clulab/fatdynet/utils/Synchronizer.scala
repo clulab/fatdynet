@@ -3,7 +3,7 @@ package org.clulab.fatdynet.utils
 import edu.cmu.dynet.ComputationGraph
 
 object Synchronizer {
-  protected val debug = true
+  protected val debug = false
   protected var count = 0
   protected var inSynchronized = false
 
