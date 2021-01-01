@@ -5,6 +5,7 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
 
 import scala.util.Random
 
@@ -44,8 +45,6 @@ object ExternalLookupParameterExampleApp {
   )
 
   protected def mkPredictionGraph(xorModel: XorModel, xorTransformation: XorTransformation): Expression = {
-    ComputationGraph.renew()
-
     val W = Expression.parameter(xorModel.w)
     val b = Expression.parameter(xorModel.b)
     val V = Expression.parameter(xorModel.v)
@@ -76,15 +75,16 @@ object ExternalLookupParameterExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(yValue)
+        Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.train()") {
+          val yPrediction = mkPredictionGraph(xorModel, transformation)
+          val y = Expression.input(yValue)
+          val loss = Expression.squaredDistance(yPrediction, y)
+          val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
 
-        val yPrediction = mkPredictionGraph(xorModel, transformation)
-        val y = Expression.input(yValue)
-        val loss = Expression.squaredDistance(yPrediction, y)
-        val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
-
-        ComputationGraph.backward(loss)
-        trainer.update()
-        lossValue
+          ComputationGraph.backward(loss)
+          trainer.update()
+          lossValue
+        }
       }.sum / transformations.length
 
       println(s"index = $iteration, loss = $lossValue")
@@ -101,8 +101,11 @@ object ExternalLookupParameterExampleApp {
 
     println
     val result = transformations.map { transformation =>
-      val yPrediction = mkPredictionGraph(xorModel, transformation)
-      val yValue = yPrediction.value().toFloat()
+      val yValue = Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.predict()") {
+        val yPrediction = mkPredictionGraph(xorModel, transformation)
+        val yValue = yPrediction.value().toFloat()
+        yValue
+      }
       val correct = transformation.output == yValue.round
 
       if (correct)

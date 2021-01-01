@@ -36,9 +36,9 @@ object XorScala {
     val y_pred = V * h + a
     val loss_expr = Expression.squaredDistance(y_pred, y)
 
-    println()
-    println("Computation graphviz structure:")
-    ComputationGraph.printGraphViz()
+//    println()
+//    println("Computation graphviz structure:")
+//    ComputationGraph.printGraphViz()
     println()
     println("Training...")
 

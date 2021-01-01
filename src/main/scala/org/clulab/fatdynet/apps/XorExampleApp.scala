@@ -5,6 +5,7 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
 
 import scala.util.Random
 
@@ -45,8 +46,6 @@ object XorExampleApp {
   )
 
   protected def mkPredictionGraph(xorModel: XorModel, xValues: FloatVector): Expression = {
-    ComputationGraph.renew()
-
     val x = Expression.input(Dim(xValues.length), xValues)
 
     val W = Expression.parameter(xorModel.w)
@@ -73,31 +72,33 @@ object XorExampleApp {
     // Y will be the expected output value, which we _input_ from gold data.
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
 
-    val yPrediction = mkPredictionGraph(xorModel, xValues)
-    // This is done after mkPredictionGraph so that the values are not made stale by it.
-    val y = Expression.input(yValue)
-    val loss = Expression.squaredDistance(yPrediction, y)
+    val results = Synchronizer.withComputationGraph("XorExampleApp.train()") {
+      val yPrediction = mkPredictionGraph(xorModel, xValues)
+      // This is done after mkPredictionGraph so that the values are not made stale by it.
+      val y = Expression.input(yValue)
+      val loss = Expression.squaredDistance(yPrediction, y)
 
-//    println()
-//    println("Computation graphviz structure:")
-//    ComputationGraph.printGraphViz()
+      //    println()
+      //    println("Computation graphviz structure:")
+      //    ComputationGraph.printGraphViz()
 
-    for (iteration <- 0 until ITERATIONS) {
-      val lossValue = random.shuffle(transformations).map { transformation =>
-        transformation.transform(xValues, yValue)
+      for (iteration <- 0 until ITERATIONS) {
+        val lossValue = random.shuffle(transformations).map { transformation =>
+          transformation.transform(xValues, yValue)
 
-        val lossValue = ComputationGraph.forward(loss).toFloat()
+          val lossValue = ComputationGraph.forward(loss).toFloat()
 
-        ComputationGraph.backward(loss)
-        trainer.update()
-        lossValue
-      }.sum / transformations.length
+          ComputationGraph.backward(loss)
+          trainer.update()
+          lossValue
+        }.sum / transformations.length
 
-      println(s"index = $iteration, loss = $lossValue")
-      trainer.learningRate *= 0.999f
+        println(s"index = $iteration, loss = $lossValue")
+        trainer.learningRate *= 0.999f
+      }
+      val results = predict(xorModel, xValues, yPrediction)
+      results
     }
-
-    val results = predict(xorModel, xValues, yPrediction)
 
     (xorModel, results)
   }
@@ -126,9 +127,11 @@ object XorExampleApp {
 
   def predict(xorModel: XorModel): Seq[Float] = {
     val xValues = new FloatVector(INPUT_SIZE)
-    val yPrediction = mkPredictionGraph(xorModel, xValues)
+    Synchronizer.withComputationGraph("XorExampleApp.predict()") {
+      val yPrediction = mkPredictionGraph(xorModel, xValues)
 
-    predict(xorModel, xValues, yPrediction)
+      predict(xorModel, xValues, yPrediction)
+    }
   }
 
   def save(filename: String, xorModel: XorModel): Unit = {

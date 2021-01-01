@@ -43,7 +43,9 @@ object Initializer {
       // Imitate normal initialization output.
       System.err.println(s"[dynet] random seed: $seed")
     }
-    Initialize.initialize(args)
+    Synchronizer.withoutComputationGraph("Initializer.initialize") {
+      Initialize.initialize(args)
+    }
     initialized = true
     oldInitialized
   }

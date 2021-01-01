@@ -5,6 +5,7 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
 import org.clulab.fatdynet.utils.Transducer
 
 import scala.util.Random
@@ -110,7 +111,8 @@ object PairExampleApp {
 
   protected def mkPredictionGraph(pairModel: PairModel, xValues: Seq[Float], builder: RnnBuilder): Expression = {
     // The graph will grow and grow without this next line.
-    ComputationGraph.renew()
+    // This is now handled by the Synchronizer.
+    // ComputationGraph.renew()
     // Use the new graph.
     builder.newGraph()
 
@@ -143,22 +145,22 @@ object PairExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
       val xValues = new Array[Float](transformation.inputs.length)
-
         transformation.transform(xValues, yValue)
+        Synchronizer.withComputationGraph("PairExampleApp.train()") {
+          val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
+          val y = Expression.input(transformation.output)
 
-        val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
-        val y = Expression.input(transformation.output)
+          val loss = Expression.squaredDistance(yPrediction, y)
+          val lossValue = loss.value().toFloat()
 
-        val loss = Expression.squaredDistance(yPrediction, y)
-        val lossValue = loss.value().toFloat()
+          //        println()
+          //        println("Computation graphviz structure:")
+          //        ComputationGraph.printGraphViz()
 
-//        println()
-//        println("Computation graphviz structure:")
-//        ComputationGraph.printGraphViz()
-
-        ComputationGraph.backward(loss)
-        trainer.update()
-        lossValue
+          ComputationGraph.backward(loss)
+          trainer.update()
+          lossValue
+        }
       }.sum
 
       println(s"index = $iteration, loss = $lossValue")
@@ -176,11 +178,13 @@ object PairExampleApp {
     println
     val result = transformations.map { transformation =>
       val xValues = new Array[Float](transformation.inputs.length)
-
       transformation.transform(xValues)
 
-      val yPrediction = mkPredictionGraph(pairModel, xValues, builder)
-      val yValue = yPrediction.value().toFloat()
+      val yValue = Synchronizer.withComputationGraph("PairExampleApp.predict()") {
+        val yPrediction = mkPredictionGraph(pairModel, xValues, builder)
+        val yValue = yPrediction.value().toFloat()
+        yValue
+      }
       val correct = transformation.output == yValue.round
 
       if (correct)
