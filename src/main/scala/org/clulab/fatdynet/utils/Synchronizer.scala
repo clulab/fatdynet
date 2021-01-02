@@ -36,7 +36,7 @@ object Synchronizer {
 
   def withComputationGraph[T](message: Any)(f: => T): T = {
     // In parallel version, synchronize on Thread.currentThread.
-    this.synchronized {
+    Synchronizer.synchronized {
       val startVersion = Some(ComputationGraph.version)
       val startCount = before(message, startVersion)
       try {
@@ -65,7 +65,7 @@ object Synchronizer {
 
   def withoutComputationGraph[T](message: Any)(f: => T): T = {
     // Synchronization here should be global.  There should be no active ComputationGraphs.
-    this.synchronized {
+    Synchronizer.synchronized {
       val startVersion = None
       val startCount = before(message, startVersion)
       try {
