@@ -94,7 +94,7 @@ class ExpressionVector private[dynet] (
   }
 
   // The vector must be kept around in order to index into it.
-  override def apply(idx: Int): Expression = new Expression(vector.get(idx), Seq(vector))
+  override def apply(idx: Int): Expression = new Expression(vector.get(idx), this)
   override def length: Int = vector.size.toInt
   override def update(idx: Int, elem: Expression): Unit = {
     elem.ensureFresh()
