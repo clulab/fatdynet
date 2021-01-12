@@ -73,7 +73,7 @@ public class dynet_swigJNI {
         loaded = loadFromFile(tempFile.getAbsolutePath());
         lock.close();
 
-        tempFile.delete();
+//        tempFile.delete();
 
         if (!loaded)
           throw new RuntimeException("DyNet could not be loaded!");
@@ -95,6 +95,11 @@ public class dynet_swigJNI {
   public final static native void raiseSignal(int jarg1);
   public final static native void readNullPtr();
   public final static native void writeNullPtr();
+  public final static native long new_MemDebug__SWIG_0(boolean jarg1);
+  public final static native long new_MemDebug__SWIG_1();
+  public final static native void delete_MemDebug(long jarg1);
+  public final static native void MemDebug_debug(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_leak(long jarg1, MemDebug jarg1_);
   public final static native long new_uintp();
   public final static native long copy_uintp(long jarg1);
   public final static native void delete_uintp(long jarg1);

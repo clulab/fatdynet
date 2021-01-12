@@ -46,6 +46,11 @@ object ComputationGraph {
   def checkpoint(): Unit = cg.checkpoint()
   def revert(): Unit = cg.revert()
 
+  def reset(): Unit = {
+    cg.reset()
+    cg = null
+  }
+
   def forward(last: Expression): Tensor = new Tensor(cg.forward(last.expr))
   def incrementalForward(last: Expression): Tensor = new Tensor(cg.incremental_forward(last.expr))
   def getValue(e: Expression): Tensor = new Tensor(cg.get_value(e.expr))

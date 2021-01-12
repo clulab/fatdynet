@@ -58,5 +58,7 @@ object XorScala {
       loss /= 4
       println("iter = " + iter + ", loss = " + loss)
     }
+    ComputationGraph.renew()
+    m.model.delete()
   }
 }
