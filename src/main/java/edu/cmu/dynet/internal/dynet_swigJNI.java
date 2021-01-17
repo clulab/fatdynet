@@ -100,6 +100,7 @@ public class dynet_swigJNI {
   public final static native void delete_MemDebug(long jarg1);
   public final static native void MemDebug_debug(long jarg1, MemDebug jarg1_);
   public final static native void MemDebug_leak(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_set_break(long jarg1, MemDebug jarg1_, int jarg2);
   public final static native long new_uintp();
   public final static native long copy_uintp(long jarg1);
   public final static native void delete_uintp(long jarg1);

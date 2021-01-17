@@ -6,6 +6,7 @@ import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Synchronizer
+import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
 
@@ -138,7 +139,7 @@ object ExternalLookupParameterExampleApp {
     XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
   }
 
-  def main(args: Array[String]) {
+  def run(args: Array[String]) {
     val filename = "XorModel.dat"
 
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
@@ -152,5 +153,11 @@ object ExternalLookupParameterExampleApp {
 
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)
+  }
+
+  def main(args: Array[String]): Unit = {
+    Utils.startup()
+    run(args)
+    Utils.shutdown()
   }
 }

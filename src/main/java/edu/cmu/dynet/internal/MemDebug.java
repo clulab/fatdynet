@@ -51,4 +51,8 @@ public class MemDebug {
     dynet_swigJNI.MemDebug_leak(swigCPtr, this);
   }
 
+  public void set_break(int index) {
+    dynet_swigJNI.MemDebug_set_break(swigCPtr, this, index);
+  }
+
 }

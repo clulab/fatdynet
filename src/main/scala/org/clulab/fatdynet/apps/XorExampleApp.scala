@@ -1,11 +1,15 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
+import edu.cmu.dynet.examples.XorScala
+import edu.cmu.dynet.internal.MemDebug
+import edu.cmu.dynet.internal.dynet_swig.cleanup
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Synchronizer
+import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
 
@@ -153,7 +157,7 @@ object XorExampleApp {
     XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
   }
 
-  def main(args: Array[String]) {
+  def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"
 
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
@@ -167,5 +171,11 @@ object XorExampleApp {
 
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)
+  }
+
+  def main(args: Array[String]): Unit = {
+    Utils.startup()
+    run(args)
+    Utils.shutdown()
   }
 }
