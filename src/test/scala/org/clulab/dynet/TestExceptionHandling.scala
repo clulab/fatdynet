@@ -1,10 +1,10 @@
 package org.clulab.dynet
 
 import edu.cmu.dynet.internal.{dynet_swig => dynet}
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Initializer
-import org.scalatest._
 
-class TestExceptionHandling extends FlatSpec with Matchers {
+class TestExceptionHandling extends FatdynetTest {
   val isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
 
   def testException(thrower: => Unit, name: String, method: String, text: String): Unit = {

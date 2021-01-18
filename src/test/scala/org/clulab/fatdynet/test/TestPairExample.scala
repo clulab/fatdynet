@@ -1,11 +1,11 @@
 package org.clulab.fatdynet.test
 
+
 import java.io.File
-
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.apps.PairExampleApp
-import org.scalatest._
 
-class TestPairExample extends FlatSpec with Matchers {
+class TestPairExample extends FatdynetTest {
 
   behavior of "PairExample"
 

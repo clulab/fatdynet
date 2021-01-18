@@ -2,10 +2,10 @@ package org.clulab.dynet
 
 import edu.cmu.dynet.Expression
 import edu.cmu.dynet.ExpressionVector
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Initializer
-import org.scalatest._
 
-class TestEmptyExpressionVector extends FlatSpec with Matchers {
+class TestEmptyExpressionVector extends FatdynetTest {
   Initializer.initialize()
 
   behavior of "empty expression vector"

@@ -1,8 +1,8 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet._
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design.Design
 import org.clulab.fatdynet.parser.VanillaLstmParser
@@ -10,9 +10,8 @@ import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
-import org.scalatest._
 
-class TestTransducer extends FlatSpec with Matchers {
+class TestTransducer extends FatdynetTest {
 
   /**
     * TODO
@@ -38,13 +37,15 @@ class TestTransducer extends FlatSpec with Matchers {
     def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns()
 
     val filename: String = "Test" + testname + ".txt"
-    val input: Expression = Expression.randomNormal(Dim(inputDim))
-    val inputs = Array(input, input, input)
 
     def test(): Unit = {
       behavior of testname
 
       it should "serialize the builder properly" in {
+        // The vars are used to facilitate garbage collection.
+        var input: Expression = Expression.randomNormal(Dim(inputDim))
+        var inputs = Array(input, input, input)
+
         val oldModel = new ParameterCollection
         val oldRnnBuilder = build(oldModel)
         val modelName = "/model"
@@ -93,6 +94,9 @@ class TestTransducer extends FlatSpec with Matchers {
           Array.fill(rounds) { newFloats(0) } should be (newFloats)
         }
         new File(filename).delete
+        // These are placed here to facilitate garbage collection.
+        inputs = null
+        input = null
       }
     }
   }

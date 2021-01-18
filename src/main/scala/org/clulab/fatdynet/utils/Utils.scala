@@ -16,7 +16,6 @@ object Utils {
     System.gc()
     // Let other threads do the garbage collection?
     Thread.sleep(5000)
-    println("I'm done garbage collecting")
   }
 
   def shutdown(): Unit = {

@@ -1,14 +1,13 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet._
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Initializer
-import org.scalatest.TestSuite
 
 import scala.io.Source
 
-class TestCrash extends TestSuite {
+class TestCrash extends FatdynetTest {
   Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
 
   def asString(lookupParameter: LookupParameter, name: String): Unit = {
@@ -35,6 +34,10 @@ class TestCrash extends TestSuite {
     // Must do this twice
     asString(oldLookupParameters, "/name")
     asString(oldLookupParameters, "/name")
+  }
+
+  it should "do something" in {
+    // This activates beforeAll and afterAll.
   }
 
   // Must be in this order

@@ -1,11 +1,10 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.apps.XorExampleApp
-import org.scalatest._
 
-class TestXorExample extends FlatSpec with Matchers {
+class TestXorExample extends FatdynetTest {
 
   behavior of "XorExample"
 

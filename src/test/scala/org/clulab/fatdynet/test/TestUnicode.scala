@@ -1,10 +1,10 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet.Dim
 import edu.cmu.dynet.LookupParameter
 import edu.cmu.dynet.ParameterCollection
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
@@ -12,9 +12,8 @@ import org.clulab.fatdynet.utils.CloseableZipModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
-import org.scalatest._
 
-class TestUnicode extends FlatSpec with Matchers {
+class TestUnicode extends FatdynetTest {
 
   def newModel(): LookupParameter = {
     val parameterCollection = new ParameterCollection()

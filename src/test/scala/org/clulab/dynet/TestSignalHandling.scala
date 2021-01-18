@@ -1,16 +1,20 @@
 package org.clulab.dynet
 
 import edu.cmu.dynet.internal.{dynet_swig => dynet}
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Initializer
-import org.scalatest._
 
-class TestSignalHandling extends FlatSpec with Matchers {
+class TestSignalHandling extends FatdynetTest {
   val SIGSEGV = TestSignalHandling.SIGSEGV
   val isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
 
   Initializer.initialize()
 
   behavior of "signal handling routines"
+
+  it should "do something" in {
+    // This activates beforeAll and afterAll.
+  }
 
   ignore should "work using the C++ signal handler" in {
     the [RuntimeException] thrownBy {

@@ -140,7 +140,7 @@ class ReleaseSynchronizer extends Synchronizer {
 
 object Synchronizer extends Synchronizer {
   val debug: Boolean = true
-  val verbose: Boolean = true
+  val verbose: Boolean = false
   val synchronizer: Synchronizer =
       if (debug) new DebugSynchronizer(verbose)
       else new ReleaseSynchronizer()
