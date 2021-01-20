@@ -8,7 +8,7 @@ object Utils {
 
   def startup(): Unit = {
     val memDebug = new MemDebug()
-    memDebug.leak()
+    memDebug.leak_malloc()
 //    memDebug.set_break(432) // If VS is not loaded, this will cause Java to crash.
   }
 

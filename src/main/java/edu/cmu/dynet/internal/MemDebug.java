@@ -47,8 +47,16 @@ public class MemDebug {
     dynet_swigJNI.MemDebug_debug(swigCPtr, this);
   }
 
-  public void leak() {
-    dynet_swigJNI.MemDebug_leak(swigCPtr, this);
+  public void leak_malloc() {
+    dynet_swigJNI.MemDebug_leak_malloc(swigCPtr, this);
+  }
+
+  public void leak_new() {
+    dynet_swigJNI.MemDebug_leak_new(swigCPtr, this);
+  }
+
+  public void leak_mm_malloc() {
+    dynet_swigJNI.MemDebug_leak_mm_malloc(swigCPtr, this);
   }
 
   public void set_break(int index) {
