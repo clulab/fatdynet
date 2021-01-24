@@ -49,6 +49,14 @@ public class dynet_swig {
     dynet_swigJNI.writeNullPtr();
   }
 
+  public static int mtrace() {
+    return dynet_swigJNI.mtrace();
+  }
+
+  public static int muntrace() {
+    return dynet_swigJNI.muntrace();
+  }
+
   public static SWIGTYPE_p_unsigned_int new_uintp() {
     long cPtr = dynet_swigJNI.new_uintp();
     return (cPtr == 0) ? null : new SWIGTYPE_p_unsigned_int(cPtr, false);

@@ -8,16 +8,16 @@
 
 package edu.cmu.dynet.internal;
 
-public class MemDebug {
+public class Trace {
   private transient long swigCPtr;
   protected transient boolean swigCMemOwn;
 
-  protected MemDebug(long cPtr, boolean cMemoryOwn) {
+  protected Trace(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
   }
 
-  protected static long getCPtr(MemDebug obj) {
+  protected static long getCPtr(Trace obj) {
     return (obj == null) ? 0 : obj.swigCPtr;
   }
 
@@ -29,34 +29,14 @@ public class MemDebug {
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
         swigCMemOwn = false;
-        dynet_swigJNI.delete_MemDebug(swigCPtr);
+        dynet_swigJNI.delete_Trace(swigCPtr);
       }
       swigCPtr = 0;
     }
   }
 
-  public MemDebug() {
-    this(dynet_swigJNI.new_MemDebug(), true);
-  }
-
-  public void debug() {
-    dynet_swigJNI.MemDebug_debug(swigCPtr, this);
-  }
-
-  public void leak_malloc() {
-    dynet_swigJNI.MemDebug_leak_malloc(swigCPtr, this);
-  }
-
-  public void leak_new() {
-    dynet_swigJNI.MemDebug_leak_new(swigCPtr, this);
-  }
-
-  public void leak_mm_malloc() {
-    dynet_swigJNI.MemDebug_leak_mm_malloc(swigCPtr, this);
-  }
-
-  public void set_break(int index) {
-    dynet_swigJNI.MemDebug_set_break(swigCPtr, this, index);
+  public Trace() {
+    this(dynet_swigJNI.new_Trace(), true);
   }
 
 }
