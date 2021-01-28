@@ -73,7 +73,7 @@ public class dynet_swigJNI {
         loaded = loadFromFile(tempFile.getAbsolutePath());
         lock.close();
 
-//        tempFile.delete();
+        tempFile.delete();
 
         if (!loaded)
           throw new RuntimeException("DyNet could not be loaded!");
