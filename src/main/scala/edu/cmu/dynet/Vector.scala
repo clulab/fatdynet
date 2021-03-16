@@ -17,7 +17,14 @@ class IntVector private[dynet] (private[dynet] val vector: internal.IntVector)
     extends scala.collection.mutable.IndexedSeq[Int] {
   def this(size: Long) { this(new internal.IntVector(size)) }
   def this(values: Seq[Int] = Seq.empty) {
-    this(new internal.IntVector(values.map(int2Integer).asJavaCollection))
+    // This previous code was shorter but unnecessarily slow.
+    // this(new internal.IntVector(values.map(int2Integer).asJavaCollection))
+    this(new internal.IntVector(values.length))
+    var i = 0 // optimization
+    for (value <- values) {
+      vector.set(i, value)
+      i += 1
+    }
   }
 
   def add(v: Int): Unit = vector.add(v)
@@ -37,7 +44,14 @@ class UnsignedVector private[dynet] (private[dynet] val vector: internal.Unsigne
     extends scala.collection.mutable.IndexedSeq[Long] {
   def this(size: Long) { this(new internal.UnsignedVector(size)) }
   def this(values: Seq[Long] = Seq.empty) {
-    this(new internal.UnsignedVector(values.map(_.toInt).map(int2Integer).asJavaCollection))
+    // This previous code was shorter but unnecessarily slow.
+    // this(new internal.UnsignedVector(values.map(_.toInt).map(int2Integer).asJavaCollection))
+    this(new internal.UnsignedVector(values.length))
+    var i = 0 // optimization
+    for (value <- values) {
+      vector.set(i, value.toInt)
+      i += 1
+    }
   }
 
   def add(v: Long): Unit = vector.add(v)
@@ -49,14 +63,27 @@ class UnsignedVector private[dynet] (private[dynet] val vector: internal.Unsigne
 object FloatVector {
   implicit def Seq2FloatVector(x: Seq[Float]) =
     new FloatVector(x)
+
+  def apply(values: Seq[Float] = Seq.empty, fast: Boolean): FloatVector =
+    if (fast) new FloatVector(values)
+    else new FloatVector(values, unused = false)
 }
 
 class FloatVector private[dynet] (private[dynet] val vector: internal.FloatVector)
     extends scala.collection.mutable.IndexedSeq[Float] {
   def this(size: Long) { this(new internal.FloatVector(size)) }
   def this(values: Seq[Float] = Seq.empty) {
-    this(new internal.FloatVector(values.map(float2Float).asJavaCollection))
+    // This previous code was shorter but unnecessarily slow.
+    // this(new internal.FloatVector(values.map(float2Float).asJavaCollection))
+    this(new internal.FloatVector(values.length))
+    var i = 0 // optimization
+    for (value <- values) {
+      vector.set(i, value)
+      i += 1
+    }
   }
+  def this(values: Seq[Float], unused: Boolean) =
+    this(new internal.FloatVector(values.map(float2Float).asJavaCollection))
 
   def add(v: Float): Unit = vector.add(v)
   override def apply(idx: Int): Float = vector.get(idx)
@@ -78,7 +105,14 @@ class ExpressionVector private[dynet] (
 
   def this(size: Long) { this(new internal.ExpressionVector(size)) }
   def this(values: Seq[Expression] = Seq.empty) {
-    this(new internal.ExpressionVector(values.map(_.expr).asJavaCollection))
+    // This previous code was shorter but unnecessarily slow.
+    // this(new internal.ExpressionVector(values.map(_.expr).asJavaCollection))
+    this(new internal.ExpressionVector(values.length))
+    var i = 0 // optimization
+    for (value <- values) {
+      vector.set(i, value.expr)
+      i += 1
+    }
     ensureFresh()
   }
 
@@ -111,7 +145,14 @@ class UnsignedVectorVector private[dynet] (private[dynet] val vector: internal.U
   extends scala.collection.mutable.IndexedSeq[UnsignedVector] {
   def this(size: Long) { this(new internal.UnsignedVectorVector(size)) }
   def this(values: Seq[UnsignedVector] = Seq.empty) {
-    this(new internal.UnsignedVectorVector(values.map(_.vector).asJavaCollection))
+    // This previous code was shorter but unnecessarily slow.
+    // this(new internal.UnsignedVectorVector(values.map(_.vector).asJavaCollection))
+    this(new internal.UnsignedVectorVector(values.length))
+    var i = 0 // optimization
+    for (value <- values) {
+      vector.set(i, value.vector)
+      i += 1
+    }
   }
 
   def add(v: UnsignedVector): Unit = vector.add(v.vector)
