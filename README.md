@@ -4,7 +4,7 @@
 
 # fatdynet
 
-[faydynet](https://github.com/clulab/fatdynet) packages [DyNet](https://github.com/clab/dynet) for direct integration into Scala/Java environments on Linux, Mac, and Windows.  No other downloads or compilers are necessary other than Java and [sbt](https://www.scala-sbt.org/).
+[faydynet](https://github.com/clulab/fatdynet) packages [DyNet](https://github.com/clab/dynet) for direct integration into Scala/Java environments on Linux, Mac, and Windows.  No other downloads or development tools are necessary other than Java and [sbt](https://www.scala-sbt.org/).
 
 ## Understanding by Example
 
