@@ -9,7 +9,7 @@ class TestFastFloatVector extends FatdynetTest {
 
   def timeFloatVector(floatVector: Seq[Float], fast: Boolean): Long = {
     val startTime = System.currentTimeMillis()
-    0.until(1000).foreach { index =>
+    0.until(10000).foreach { index =>
       FloatVector(floatVector, fast)
     }
     val endTime = System.currentTimeMillis()
@@ -27,7 +27,7 @@ class TestFastFloatVector extends FatdynetTest {
 
     println(s"Fast array: $fastElapsedTime")
     println(s"Slow array: $slowElapsedTime")
-    fastElapsedTime should be <(slowElapsedTime)
+    fastElapsedTime should be < (slowElapsedTime)
   }
 
   it should "be faster for lists" in {

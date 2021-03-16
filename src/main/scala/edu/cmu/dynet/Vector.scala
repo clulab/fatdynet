@@ -73,7 +73,10 @@ class FloatVector private[dynet] (private[dynet] val vector: internal.FloatVecto
     extends scala.collection.mutable.IndexedSeq[Float] {
   def this(size: Long) { this(new internal.FloatVector(size)) }
   def this(values: Seq[Float] = Seq.empty) {
-    // This previous code was shorter but unnecessarily slow.
+    // This previous code was shorter but unnecessarily slow.  At least,
+    // in Scala 2.12 and 2.13 this is the case.  In Scala 11 for which it
+    // may have been optimized, it is indeed faster.  However, preference
+    // is now being given to the newer versions.
     // this(new internal.FloatVector(values.map(float2Float).asJavaCollection))
     this(new internal.FloatVector(values.length))
     var i = 0 // optimization
