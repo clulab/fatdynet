@@ -81,7 +81,7 @@ class Repo(val textLoader: BaseTextLoader) {
       case exception: Exception => throw new ParseException(exception)
     }
 
-    designs
+    designs.toSeq // Scala 2.13 added toSeq.
   }
 
   protected def reorderDesigns(designs: Seq[Design]): Seq[Design] = {
