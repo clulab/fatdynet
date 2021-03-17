@@ -7,7 +7,6 @@ val scala13 = "2.13.5"  // up to 2.13.5
 
 ThisBuild / crossScalaVersions := Seq(scala12, scala11, scala13)
 ThisBuild / scalaVersion := crossScalaVersions.value.head
-ThisBuild / organization := "org.clulab"
 
 Compile / mainClass := Some("org.clulab.fatdynet.apps.XorScalaApp")
 
