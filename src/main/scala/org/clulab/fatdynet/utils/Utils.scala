@@ -29,6 +29,6 @@ object Utils {
     garbageCollect()
     // Garbage collection must be finished or else this removes some
     // objects from underneath the still live Scala/Java objects.
-    cleanup()
+    Initializer.cleanup()
   }
 }

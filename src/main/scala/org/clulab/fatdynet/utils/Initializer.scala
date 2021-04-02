@@ -19,28 +19,27 @@ object Initializer {
 
   protected val initialized: AtomicBoolean = new AtomicBoolean(false)
 
-  protected def rawCleanup(): Boolean = {
+  def isInitialized: Boolean = initialized.get
+
+  def cleanup(): Boolean = Synchronizer.withoutComputationGraph("Initializer.cleanup") {
     val oldInitialized = initialized.get
 
     if (oldInitialized) {
-      // internal.dynet_swig.cleanup()
-      // initialized = false
+      internal.dynet_swig.cleanup()
+      initialized.set(false)
     }
     oldInitialized
   }
 
-  def cleanup(): Boolean = Synchronizer.withoutComputationGraph("Initializer.cleanup") {
-    rawCleanup()
-  }
-
-  def isInitialized: Boolean = initialized.get
-
   // Returns whether had previously been initialized or not.
   def initialize(args: Map[String, Any] = Map.empty): Boolean = Synchronizer.withoutComputationGraph("Initializer.initialize") {
-    val oldInitialized = rawCleanup()
+    val oldInitialized = initialized.get()
 
-    if (oldInitialized && args.contains(RANDOM_SEED)) {
-      println("It was already initialized")
+    if (!oldInitialized) {
+      Initialize.initialize(args)
+      initialized.set(true)
+    }
+    else if (args.contains(RANDOM_SEED)) {
       // The initialization would have been ignored,
       // so the random seed will be set explicitly.
       val seed = args(RANDOM_SEED).asInstanceOf[Long]
@@ -49,9 +48,6 @@ object Initializer {
       // Imitate normal initialization output.
       System.err.println(s"[dynet] random seed: $seed")
     }
-    // This is still required, even if it was previously initialized.  Why?
-    Initialize.initialize(args)
-    initialized.set(true)
     oldInitialized
   }
 }
