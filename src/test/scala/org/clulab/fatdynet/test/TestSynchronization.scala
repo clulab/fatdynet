@@ -21,15 +21,34 @@ class TestSynchronization extends Test {
     }
   }
 
+  it should "work with lazy vals" in {
+    Synchronizer.synchronize(LazyInitializer.unsynchronizingLazyVal)
+  }
+
   it should "catch a problem with lazy vals" in {
     assertThrows[SynchronizationException] {
-      Synchronizer.synchronize(LazyInitializer.lazyVal)
+      Synchronizer.synchronize(LazyInitializer.synchronizingLazyVal)
     }
+  }
+
+  it should "work with companion objects" in {
+    Synchronizer.synchronize(UnsynchronizingLazyObject)
   }
 
   it should "catch a problem with companion objects" in {
     assertThrows[ExceptionInInitializerError] {
-      Synchronizer.synchronize(LazyObject)
+      Synchronizer.synchronize(SynchronizingLazyObject)
+    }
+  }
+
+  it should "work with an exception handler" in {
+    try {
+      Synchronizer.synchronize {
+        throw new Exception()
+      }
+    }
+    catch {
+      case _ => Synchronizer.synchronize() // try again
     }
   }
 
@@ -51,20 +70,31 @@ class SynchronizationException extends RuntimeException
 
 object LazyInitializer {
 
-  lazy val lazyVal: Int = {
+  lazy val unsynchronizingLazyVal: Int = {
+    println("Started unsynchronizing lazy val initialization...")
+    val result = 42
+    println("Finished unsynchronizing lazy val initialization...")
+    result
+  }
+
+  lazy val synchronizingLazyVal: Int = {
+    println("Started synchronizing lazy val initialization...")
     Synchronizer.synchronize()
-    42
+    val result = 42
+    println("Finished synchronizing lazy val initialization...")
+    result
   }
 }
 
-object LazyObjectRef {
-  val lazyObject = LazyObject
+object UnsynchronizingLazyObject {
+  println("Started UnsynchronizingLazyObject initialization...")
+  println("Finished UnsynchronizingLazyObject initialization...")
 }
 
-object LazyObject {
-  println("Started LazyObject initialization...")
+object SynchronizingLazyObject {
+  println("Started SynchronizingLazyObject initialization...")
   Synchronizer.synchronize()
-  println("Finished LazyObject initialization...")
+  println("Finished SynchronizingLazyObject initialization...")
 }
 
 object Synchronizer {
@@ -77,7 +107,7 @@ object Synchronizer {
     Synchronizer.synchronized {
       val wasSynchronizing = synchronizing.getAndSet(true)
 
-      println("Startd synchronizing...")
+      println("Started synchronizing...")
       try {
         if (wasSynchronizing) {
           throw new SynchronizationException()
