@@ -2,17 +2,29 @@ package org.clulab.fatdynet.utils
 
 import edu.cmu.dynet.ComputationGraph
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 trait Synchronizer {
+  protected val synchronizing = new AtomicBoolean(false)
+
+  // Allow public query of the read-only version.
+  def isSynchronized: Boolean = synchronizing.get
+
+  def enter(): Unit = {
+    if (synchronizing.getAndSet(true))
+      throw Synchronizer.newSynchronizationException()
+  }
+
+  def exit(): Unit = {
+    synchronizing.set(false)
+  }
+
   def withComputationGraph[T](message: Any)(f: => T): T
   def withoutComputationGraph[T](message: Any)(f: => T): T
 }
 
 class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
   protected var count = 0
-  protected var inSynchronized = false
-
-  // Allow public query of the read-only version.
-  def isSynchronized: Boolean = inSynchronized
 
   def log(index: Int, stage: String, startVersionOpt: Option[Long], message: Any): Unit = {
     val threadId: Long = Thread.currentThread.getId
@@ -23,22 +35,15 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
 
   def before(message: Any, startVersionOpt: Option[Long]): Int = {
     try {
-      // It is possible for the same thread to re-enter the synchronized section.  Avoid that!
-      assert(!inSynchronized)
-      inSynchronized = true
       val index = count
+      if (verbose) log(index, "before", startVersionOpt, message)
       count += 1 // Something else will see a different count now.
-      if (verbose)
-        log(index, "before", startVersionOpt, message)
       index
     }
     catch {
       case throwable: Throwable =>
         if (verbose) throwable.printStackTrace()
         throw throwable
-    }
-    finally {
-      inSynchronized = false
     }
   }
 
@@ -56,8 +61,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
 
   def after(message: Any, index: Int, startVersionOpt: Option[Long], endVersionOpt: Option[Long]): Unit = {
     try {
-      if (verbose)
-        log(index, "after", startVersionOpt, message)
+      if (verbose) log(index, "after", startVersionOpt, message)
       require(startVersionOpt == endVersionOpt, "ComputationGraph version should not change")
 
       // Make sure there is a ComputationGraph now as long as we're synchronized and
@@ -82,9 +86,6 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
         if (verbose) throwable.printStackTrace()
         throw throwable
     }
-    finally {
-      inSynchronized = false
-    }
   }
 
   def doSynchronized[T](message: Any, f: => T, getVersionOpt: () => Option[Long]): T = {
@@ -102,37 +103,62 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
   def withComputationGraph[T](message: Any)(f: => T): T = {
     // In parallel version, synchronize on Thread.currentThread or ComputationGraph.
     Synchronizer.synchronized {
-      doSynchronized(message, f, () => Some(ComputationGraph.version))
+      enter()
+      try {
+        doSynchronized(message, f, () => Some(ComputationGraph.version))
+      }
+      finally {
+        exit()
+      }
     }
   }
 
   def withoutComputationGraph[T](message: Any)(f: => T): T = {
     // Synchronization here should be global.  There should be no active ComputationGraphs.
     Synchronizer.synchronized {
-      doSynchronized(message, f, () => None)
+      enter()
+      try {
+        doSynchronized(message, f, () => None)
+      }
+      finally {
+        exit()
+      }
     }
   }
 }
 
 class ReleaseSynchronizer extends Synchronizer {
+
   def withComputationGraph[T](message: Any)(f: => T): T = {
     Synchronizer.synchronized {
+      enter()
       try {
         f
       }
       finally {
-        ComputationGraph.renew()
+        try {
+          ComputationGraph.renew()
+        }
+        finally {
+          exit()
+        }
       }
     }
   }
 
   def withoutComputationGraph[T](message: Any)(f: => T): T = {
     Synchronizer.synchronized {
+      enter()
       try {
         f
       }
       finally {
-        ComputationGraph.renew()
+        try {
+          ComputationGraph.renew()
+        }
+        finally {
+          exit()
+        }
       }
     }
   }
@@ -144,6 +170,9 @@ object Synchronizer extends Synchronizer {
   val synchronizer: Synchronizer =
       if (debug) new DebugSynchronizer(verbose)
       else new ReleaseSynchronizer()
+
+  def newSynchronizationException(): SynchronizationException =
+      new SynchronizationException("FatDynet is already being synchronized.")
 
   def withComputationGraph[T](message: Any)(f: => T): T = synchronizer.withComputationGraph(message)(f)
 

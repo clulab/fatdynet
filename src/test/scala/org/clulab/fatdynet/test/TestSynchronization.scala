@@ -10,13 +10,13 @@ class TestSynchronization extends Test {
   behavior of "a synchronized section"
 
   it should "work in serial" in {
-    0.until(count).foreach { index =>
+    0.until(count).foreach { _ =>
       Synchronizer.synchronize()
     }
   }
 
   it should "work in parallel" in {
-    0.until(count).par.foreach { index =>
+    0.until(count).par.foreach { _ =>
       Synchronizer.synchronize()
     }
   }
@@ -48,7 +48,7 @@ class TestSynchronization extends Test {
       }
     }
     catch {
-      case _ => Synchronizer.synchronize() // try again
+      case _: Exception => Synchronizer.synchronize() // try again
     }
   }
 
@@ -59,7 +59,7 @@ class TestSynchronization extends Test {
           throw new Exception()
         }
         catch {
-          case _ => Synchronizer.synchronize() // try again
+          case _: Exception => Synchronizer.synchronize() // try again
         }
       }
     }
@@ -103,7 +103,7 @@ object Synchronizer {
 
   def doNothing(): Unit = ()
 
-  def synchronize(f: => Unit = doNothing): Unit = {
+  def synchronize(f: => Unit = doNothing _): Unit = {
     Synchronizer.synchronized {
       val wasSynchronizing = synchronizing.getAndSet(true)
 
