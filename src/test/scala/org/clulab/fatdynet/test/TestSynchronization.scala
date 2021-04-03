@@ -64,7 +64,66 @@ class TestSynchronization extends Test {
       }
     }
   }
+
+  it should "not initialize zero times" in {
+    var initializationCount = 0
+    val initialized = new AtomicBoolean(false)
+
+    def block(): Unit = {
+      if (!initialized.getAndSet(true)) {
+        Thread.`yield`()
+        Thread.sleep(1000)
+        initializationCount += 1
+      }
+      println(s"returning with $initializationCount")
+    }
+
+    val results = 0.until(2).par.map { _ =>
+      block()
+      initializationCount
+    }
+    // This missed initialization should be avoided.
+    results.min should be (0)
+  }
+
+  it should "initialize one time" in {
+    var initializationCount = 0
+
+    def block(): Unit = {
+      if (initializationCount == 0) {
+        Thread.`yield`()
+        Thread.sleep(1000)
+        initializationCount += 1
+      }
+    }
+
+    0.until(2).par.foreach { _ =>
+      Synchronizer.synchronize {
+        block()
+      }
+    }
+    initializationCount should be (1)
+  }
+
+  it should "not initialize two times" in {
+    var initializationCount = 0
+
+    def block(): Unit = {
+      if (initializationCount == 0) {
+        Thread.`yield`()
+        Thread.sleep(1000)
+        initializationCount += 1
+      }
+    }
+
+    0.until(2).par.foreach { _ =>
+      block()
+    }
+    // This double initialization should be avoided.
+    initializationCount should be (2)
+  }
 }
+
 
 class SynchronizationException extends RuntimeException
 
