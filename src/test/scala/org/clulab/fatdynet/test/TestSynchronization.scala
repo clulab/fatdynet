@@ -111,7 +111,7 @@ class TestSynchronization extends Test {
     def block(): Unit = {
       if (initializationCount == 0) {
         Thread.`yield`()
-        Thread.sleep(1000)
+        Thread.sleep(2000)
         initializationCount += 1
       }
     }
