@@ -4,6 +4,8 @@ abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
 
   var version: Long = ComputationGraph.version
 
+  def close(): Unit = _builder.delete()
+
   def state(): Int = _builder.state
   def newGraph(update:Boolean = true): Unit = {
     version = ComputationGraph.version

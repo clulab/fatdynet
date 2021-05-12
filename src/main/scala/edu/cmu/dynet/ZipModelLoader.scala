@@ -5,6 +5,8 @@ package edu.cmu.dynet
 class ZipModelLoader private[dynet](loader: internal.ZipFileLoader) {
   def this(filename: String, zipname: String) { this(new internal.ZipFileLoader(filename, zipname))}
 
+  def close(): Unit = done()
+
   def populateModel(model: ParameterCollection, key: String = ""): Unit = loader.populate(model.model, key)
   def populateParameter(p: Parameter, key: String = ""): Unit = loader.populate(p.parameter, key)
   def populateLookupParameter(p: LookupParameter, key: String = ""): Unit = loader.populate(p.lookupParameter, key)

@@ -10,11 +10,24 @@ class Expression private[dynet](
   // premature garbage collection.
   val reference: AnyRef = null
 ) {
+
+  def close(): Unit = expr.delete()
+
+  override def finalize(): Unit = {
+    val currentVersion = ComputationGraph.version
+
+    if (version == currentVersion)
+      println("The expression might still be in use.")
+  }
+
   // Give it the current version
   val version = ComputationGraph.version
 
   /** Get the tensor value of this expression */
-  def value(): Tensor = new Tensor(expr.value)
+  def value(): Tensor = {
+    ensureFresh()
+    new Tensor(expr.value)
+  }
 
   /** Get the tensor dimension of this expression */
   def dim(): Dim = new Dim(expr.dim)

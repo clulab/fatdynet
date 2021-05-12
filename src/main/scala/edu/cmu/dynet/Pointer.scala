@@ -10,6 +10,8 @@ class FloatPointer {
   val floatp = dn.new_floatp
   set(0f)
 
+  def close(): Unit = dn.delete_floatp(floatp)
+
   def set(value: Float): Unit = dn.floatp_assign(floatp, value)
 
   def value(): Float = dn.floatp_value(floatp)
@@ -22,6 +24,8 @@ class FloatPointer {
 class IntPointer {
   val intp = dn.new_intp
   set(0)
+
+  def close(): Unit = dn.delete_intp(intp)
 
   def set(value: Int): Unit = dn.intp_assign(intp, value)
 
@@ -37,6 +41,8 @@ class IntPointer {
 class UnsignedPointer {
   val uintp = dn.new_uintp()
   set(0)
+
+  def close(): Unit = dn.delete_uintp(uintp)
 
   def set(value: Int): Unit = dn.uintp_assign(uintp, value)
 

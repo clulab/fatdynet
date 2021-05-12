@@ -6,13 +6,17 @@ package edu.cmu.dynet
 object ComputationGraph {
   private[dynet] var cg: internal.ComputationGraph = internal.ComputationGraph.getNew
   var version: Long = 0L
-  private var defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
+  // We can't know the lifetime of the defaultDevice here, so it can't be deleted.
+  private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
 
   /** Gets rid of the singleton Computation Graph and replaces it with a fresh one. Increments
     * `version` to make sure we don't use any stale expressions.
     */
   def renew(): Unit = {
-    cg = internal.ComputationGraph.getNew
+    cg = {
+      cg.delete() // We had better be done with it!
+      internal.ComputationGraph.getNew
+    }
     version += 1
   }
 
@@ -50,6 +54,8 @@ object ComputationGraph {
     cg.reset()
     cg = null
   }
+
+  def close(): Unit = reset()
 
   def forward(last: Expression): Tensor = new Tensor(cg.forward(last.expr))
   def incrementalForward(last: Expression): Tensor = new Tensor(cg.incremental_forward(last.expr))

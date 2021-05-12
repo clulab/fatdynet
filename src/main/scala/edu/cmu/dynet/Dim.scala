@@ -7,6 +7,8 @@ package edu.cmu.dynet
   */
 class Dim private[dynet] (private[dynet] val dim: internal.Dim) {
 
+  def close(): Unit = dim.delete()
+
   def size(): Long = dim.size
   def batchSize(): Long = dim.batch_size()
   def sumDims(): Long = dim.sum_dims()

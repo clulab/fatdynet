@@ -27,6 +27,8 @@ class IntVector private[dynet] (private[dynet] val vector: internal.IntVector)
     }
   }
 
+  def close(): Unit = vector.delete()
+
   def add(v: Int): Unit = vector.add(v)
 
   override def apply(idx: Int): Int = vector.get(idx)
@@ -53,6 +55,8 @@ class UnsignedVector private[dynet] (private[dynet] val vector: internal.Unsigne
       i += 1
     }
   }
+
+  def close(): Unit = vector.delete()
 
   def add(v: Long): Unit = vector.add(v)
   override def apply(idx: Int): Long = vector.get(idx)
@@ -87,6 +91,8 @@ class FloatVector private[dynet] (private[dynet] val vector: internal.FloatVecto
   }
   def this(values: Seq[Float], unused: Boolean) =
     this(new internal.FloatVector(values.map(float2Float).asJavaCollection))
+
+  def close(): Unit = vector.delete()
 
   def add(v: Float): Unit = vector.add(v)
   override def apply(idx: Int): Float = vector.get(idx)

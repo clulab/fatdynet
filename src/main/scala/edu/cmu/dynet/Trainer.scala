@@ -2,6 +2,8 @@ package edu.cmu.dynet
 
 /** Interface for [[edu.cmu.dynet.ParameterCollection]] trainers. You want to use a specific subclass. */
 class Trainer private[dynet](_trainer: internal.Trainer) {
+  def close(): Unit = _trainer.delete()
+
   def update(): Unit = _trainer.update()
   def updateEpoch(r: Float = 1.0f): Unit = _trainer.update_epoch(r)
   def restart(): Unit = _trainer.restart()
