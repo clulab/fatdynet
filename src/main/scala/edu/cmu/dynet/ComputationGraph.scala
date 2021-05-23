@@ -14,7 +14,7 @@ object ComputationGraph {
     */
   def renew(): Unit = {
     cg = {
-      cg.delete() // We had better be done with it!
+      Option(cg).map(_.delete()) // We had better be done with it!
       internal.ComputationGraph.getNew
     }
     version += 1
