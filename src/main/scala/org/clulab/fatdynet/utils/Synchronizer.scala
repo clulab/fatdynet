@@ -20,7 +20,7 @@ trait Synchronizer {
   }
 
   def withComputationGraph[T](message: Any)(f: => T): T
-  def withoutComputationGraph[T](message: Any)(f: => T): T
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
 }
 
 class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
@@ -59,7 +59,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     }
   }
 
-  def after(message: Any, index: Int, startVersionOpt: Option[Long], endVersionOpt: Option[Long]): Unit = {
+  def after(message: Any, index: Int, newComputationGraph: Boolean, startVersionOpt: Option[Long], endVersionOpt: Option[Long]): Unit = {
     try {
       if (verbose) log(index, "after", startVersionOpt, message)
       require(startVersionOpt == endVersionOpt, "ComputationGraph version should not change")
@@ -79,7 +79,8 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
       // classOf[ComputationGraph] does not compile, so the Java version is used.
       // ComputationGraph.getClass
       // However, it is more important to start in a known state.
-      ComputationGraph.renew()
+      if (newComputationGraph: Boolean)
+        ComputationGraph.renew()
     }
     catch {
       case throwable: Throwable =>
@@ -88,7 +89,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     }
   }
 
-  def doSynchronized[T](message: Any, f: => T, getVersionOpt: () => Option[Long]): T = {
+  def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: => T, getVersionOpt: () => Option[Long]): T = {
     val startVersion = getVersionOpt()
     val index = before(message, startVersion)
     try {
@@ -96,7 +97,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     }
     finally {
       val endVersion = getVersionOpt()
-      after(message, index, startVersion, endVersion)
+      after(message, index, newComputationGraph, startVersion, endVersion)
     }
   }
 
@@ -105,7 +106,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     Synchronizer.synchronized {
       enter()
       try {
-        doSynchronized(message, f, () => Some(ComputationGraph.version))
+        doSynchronized(message, true, f, () => Some(ComputationGraph.version))
       }
       finally {
         exit()
@@ -113,12 +114,12 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     }
   }
 
-  def withoutComputationGraph[T](message: Any)(f: => T): T = {
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
     // Synchronization here should be global.  There should be no active ComputationGraphs.
     Synchronizer.synchronized {
       enter()
       try {
-        doSynchronized(message, f, () => None)
+        doSynchronized(message, newComputationGraph, f, () => None)
       }
       finally {
         exit()
@@ -146,7 +147,7 @@ class ReleaseSynchronizer extends Synchronizer {
     }
   }
 
-  def withoutComputationGraph[T](message: Any)(f: => T): T = {
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
     Synchronizer.synchronized {
       enter()
       try {
@@ -154,7 +155,8 @@ class ReleaseSynchronizer extends Synchronizer {
       }
       finally {
         try {
-          ComputationGraph.renew()
+          if (newComputationGraph)
+            ComputationGraph.renew()
         }
         finally {
           exit()
@@ -176,5 +178,5 @@ object Synchronizer extends Synchronizer {
 
   def withComputationGraph[T](message: Any)(f: => T): T = synchronizer.withComputationGraph(message)(f)
 
-  def withoutComputationGraph[T](message: Any)(f: => T): T = synchronizer.withoutComputationGraph(message)(f)
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean = false)(f: => T): T = synchronizer.withoutComputationGraph(message, newComputationGraph)(f)
 }

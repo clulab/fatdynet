@@ -16,8 +16,8 @@ class Expression private[dynet](
   override def finalize(): Unit = {
     val currentVersion = ComputationGraph.version
 
-    if (version == currentVersion)
-      println("The expression might still be in use.")
+//    if (version == currentVersion)
+//      println("The expression might still be in use.")
   }
 
   // Give it the current version

@@ -21,7 +21,8 @@ object Initializer {
 
   def isInitialized: Boolean = initialized.get
 
-  def cleanup(): Boolean = Synchronizer.withoutComputationGraph("Initializer.cleanup") {
+  // In this special case we do not want a new ComputationGraph at the end.
+  def cleanup(): Boolean = Synchronizer.withoutComputationGraph("Initializer.cleanup", false) {
     val oldInitialized = initialized.get
 
     if (oldInitialized) {
