@@ -1,9 +1,6 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
-import edu.cmu.dynet.examples.XorScala
-import edu.cmu.dynet.internal.MemDebug
-import edu.cmu.dynet.internal.dynet_swig.cleanup
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser

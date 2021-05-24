@@ -2,6 +2,7 @@ package org.clulab.fatdynet.examples
 
 // These components are made explicit so that one knows what to close().
 import edu.cmu.dynet
+
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
@@ -138,9 +139,9 @@ object XorExampleApp {
   def predict(xorModel: XorModel): Seq[Float] = {
     new dynet.FloatVector(INPUT_SIZE).autoClose { xValues =>
       Synchronizer.withComputationGraph("XorExampleApp.predict()") {
-        val yPrediction = mkPredictionGraph(xorModel, xValues)
-
-        predict(xorModel, xValues, yPrediction)
+        mkPredictionGraph(xorModel, xValues).autoClose { yPrediction =>
+          predict(xorModel, xValues, yPrediction)
+        }
       }
     }
   }
@@ -175,7 +176,6 @@ object XorExampleApp {
       save(filename, xorModel1) // TODO: just once
       expectedResults
     }
-
     val actualResults = load(filename).autoClose { xorModel2 =>
       predict(xorModel2)
     }
