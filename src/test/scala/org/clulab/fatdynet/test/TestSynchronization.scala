@@ -3,6 +3,7 @@ package org.clulab.fatdynet.test
 import org.clulab.fatdynet.Test
 
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 class TestSynchronization extends Test {
   val count = 8
@@ -105,14 +106,16 @@ class TestSynchronization extends Test {
     initializationCount should be (1)
   }
 
-  it should "not initialize two times" in {
-    var initializationCount = 0
+  it should "increment two times" in {
+    val initializationCount = new AtomicInteger(0)
 
     def block(): Unit = {
-      if (initializationCount == 0) {
+      // This should be entered twice.  The second time, the first thread is sleeping and
+      // has not yet been able to increment the count.  Then they will both have a chance to increment.
+      if (initializationCount.get == 0) {
         Thread.`yield`()
         Thread.sleep(2000)
-        initializationCount += 1
+        initializationCount.incrementAndGet()
       }
     }
 
@@ -120,7 +123,7 @@ class TestSynchronization extends Test {
       block()
     }
     // This double initialization should be avoided.
-    initializationCount should be (2)
+    initializationCount.get should be (2)
   }
 }
 
