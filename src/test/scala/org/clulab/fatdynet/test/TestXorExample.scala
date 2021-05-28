@@ -19,6 +19,6 @@ class TestXorExample extends FatdynetTest {
           exception.printStackTrace()
           throw exception
       }
-   }
+    }
   }
 }
