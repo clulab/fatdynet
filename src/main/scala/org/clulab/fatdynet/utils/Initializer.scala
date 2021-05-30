@@ -18,8 +18,6 @@ object Initializer {
   val AUTOBATCH = "autobatch"
   val PROFILING = "profiling"
 
-  var cleanupCount = new AtomicInteger(0)
-
   protected val initialized: AtomicBoolean = new AtomicBoolean(false)
 
   def isInitialized: Boolean = initialized.get
@@ -29,8 +27,6 @@ object Initializer {
     val oldInitialized = initialized.get
 
     if (oldInitialized) {
-      val count = cleanupCount.getAndIncrement()
-      println(s"Cleaning up $count.")
       internal.dynet_swig.cleanup()
       initialized.set(false)
     }
