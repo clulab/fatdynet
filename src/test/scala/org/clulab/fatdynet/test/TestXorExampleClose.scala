@@ -1,18 +1,19 @@
 package org.clulab.fatdynet.test
 
-import java.io.File
 import org.clulab.fatdynet.FatdynetTest
-import org.clulab.fatdynet.apps.XorExampleApp
+import org.clulab.fatdynet.apps.XorExampleCloseApp
 
-class TestXorExample extends FatdynetTest {
+import java.io.File
 
-  behavior of "XorExample"
+class TestXorExampleClose extends FatdynetTest {
+
+  behavior of "XorExampleClose"
 
   it should "not throw an exception" in {
     noException should be thrownBy {
       try {
         // Do not run main, because it cleans up.
-        XorExampleApp.run(Array[String]())
+        XorExampleCloseApp.run(Array[String]())
         new File("XorModel.dat").delete
       }
       catch {

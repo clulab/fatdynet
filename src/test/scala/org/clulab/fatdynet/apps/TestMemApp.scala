@@ -1,11 +1,9 @@
-package org.clulab.fatdynet
+package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet.ComputationGraph
 import org.clulab.fatdynet.utils.Utils
-import org.scalatest.flatspec.{AnyFlatSpec => FlatSpec}
-import org.scalatest.matchers.should.Matchers
 
-class TestMem extends FlatSpec with Matchers {
+object TestMemApp extends App {
   // Use a debug build of DyNet under Windows and also make
   // sure that environment variable MALLOC_TRACE is set.
 
@@ -18,5 +16,5 @@ class TestMem extends FlatSpec with Matchers {
 
   // Stopping here would leak if shutdown did not call Initializer.cleanup which uses
   // newComputationGraph = false when synchronizing.
-  Utils.shutdown()
+  Utils.shutdown(true)
 }

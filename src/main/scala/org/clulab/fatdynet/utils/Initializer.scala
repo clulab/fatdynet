@@ -4,6 +4,7 @@ import edu.cmu.dynet._
 import edu.cmu.dynet.internal.dynet_swig.reset_rng
 
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 // According to devices.cc, "Devices cannot be deleted at the moment because
 // the destructor is protected."  Cleanup is therefore disallowed.
@@ -17,6 +18,8 @@ object Initializer {
   val AUTOBATCH = "autobatch"
   val PROFILING = "profiling"
 
+  var cleanupCount = new AtomicInteger(0)
+
   protected val initialized: AtomicBoolean = new AtomicBoolean(false)
 
   def isInitialized: Boolean = initialized.get
@@ -26,6 +29,8 @@ object Initializer {
     val oldInitialized = initialized.get
 
     if (oldInitialized) {
+      val count = cleanupCount.getAndIncrement()
+      println(s"Cleaning up $count.")
       internal.dynet_swig.cleanup()
       initialized.set(false)
     }

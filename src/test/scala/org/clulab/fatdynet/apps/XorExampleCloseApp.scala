@@ -1,4 +1,4 @@
-package org.clulab.fatdynet.examples
+package org.clulab.fatdynet.apps
 
 // These components are made explicit so that one knows what to close().
 import edu.cmu.dynet
@@ -39,7 +39,7 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
   }
 }
 
-object XorExampleApp {
+object XorExampleCloseApp {
   protected val random: Random = new Random(1234L)
 
   val  INPUT_SIZE = 2
@@ -185,8 +185,11 @@ object XorExampleApp {
   }
 
   def main(args: Array[String]): Unit = {
+    // Use this version only if nothing else will run afterwards.
+    // Utils.shutdown(true) will trash DyNet.  Call run() instead,
+    // if further operations will be performed.
     Utils.startup()
     run(args)
-    Utils.shutdown()
+    Utils.shutdown(true)
   }
 }
