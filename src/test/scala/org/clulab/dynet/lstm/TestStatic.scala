@@ -1,9 +1,8 @@
 package org.clulab.dynet.lstm
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.clulab.fatdynet.Test
 
-class TestStaticComputationGraph extends FlatSpec with Matchers {
+class TestStaticComputationGraph extends Test {
   Lstm.initialize()
 
   val lstmParameters = new Lstm.LstmParameters()

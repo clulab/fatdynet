@@ -1,10 +1,9 @@
 package org.clulab.dynet.lstm
 
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
+import org.clulab.fatdynet.Test
 import org.clulab.fatdynet.test.Timer
 
-class TestDynamic extends FlatSpec with Matchers {
+class TestDynamic extends Test {
   Lstm.initialize(false)
 
   val lstmParameters = new Lstm.LstmParameters()

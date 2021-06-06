@@ -35,25 +35,29 @@ public class ComputationGraph {
     }
   }
 
-  public synchronized void reset() {
+  public void reset() {
     delete();
     // Make sure this is updated as well!
-    singletonInstance = null;
+//    singletonInstance = null;
   }
 
   // DyNet only allows one ComputationGraph at a time. This means that if you construct them
   // manually you have to remember to delete each one before you construct a new one, or your
   // program will crash. `getNew` will handle that deletion for you.
-  private static ComputationGraph singletonInstance = null;
+//  private static ComputationGraph singletonInstance = null;
 
-  public synchronized static ComputationGraph getNew() {
-    if (singletonInstance != null) {
-      singletonInstance.delete();
-    }
-
-    singletonInstance = new ComputationGraph();
-    return singletonInstance;
+  public static ComputationGraph getNew() {
+    return new ComputationGraph();
   }
+
+//  public synchronized static ComputationGraph getNew() {
+//    if (singletonInstance != null) {
+//      singletonInstance.delete();
+//    }
+//
+//    singletonInstance = new ComputationGraph();
+//    return singletonInstance;
+//  }
 
   private ComputationGraph() {
     this(dynet_swigJNI.new_ComputationGraph(), true);

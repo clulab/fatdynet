@@ -4,14 +4,12 @@ import edu.cmu.dynet.internal.dynet_swigJNI
 
 class ComputationGraph(val version: Long = 0L) extends internal.ComputationGraph(dynet_swigJNI.new_ComputationGraph(), true) {
 
-  def this(cg: ComputationGraph) {
-    this {
-      val gcVersion = cg.version
+  def this(cg: ComputationGraph) = this {
+    val gcVersion = cg.version
 
-      // The old should be deleted before the new one is created in order to work when memory is not dynamic.
-      cg.delete()
-      gcVersion + 1
-    }
+    // The old should be deleted before the new one is created in order to work when memory is not dynamic.
+    cg.delete()
+    gcVersion + 1
   }
 }
 
@@ -19,24 +17,24 @@ class ComputationGraph(val version: Long = 0L) extends internal.ComputationGraph
   * instance method is instead implemented as a static function here.*
   */
 object ComputationGraph {
-  private[dynet] var cg: internal.ComputationGraph = internal.ComputationGraph.getNew
-  var version: Long = 0L
+//  private[dynet] var cg: internal.ComputationGraph = internal.ComputationGraph.getNew
+//  var version: Long = 0L
   // We can't know the lifetime of the defaultDevice here, so it can't be deleted.
   private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
 
   /** Gets rid of the singleton Computation Graph and replaces it with a fresh one. Increments
     * `version` to make sure we don't use any stale expressions.
     */
-  def renew(): Unit = {
+/*  def renew(): Unit = {
     cg = {
       Option(cg).foreach(_.delete()) // We had better be done with it!
       internal.ComputationGraph.getNew
     }
     version += 1
   }
+*/
 
-/*
-  protected[dynet] val threadedCg = new ThreadLocal[ComputationGraph] {
+  protected[dynet] def threadedCg = new ThreadLocal[ComputationGraph] {
     override protected def initialValue() = new ComputationGraph()
   }
 
@@ -45,7 +43,7 @@ object ComputationGraph {
   def version: Long = cg.version
 
   def renew(): Unit = threadedCg.set(new ComputationGraph(cg))
-*/
+
   def addInput(s: Float): VariableIndex = new VariableIndex(cg.add_input(s, defaultDevice))
   def addInput(d: Dim, data: FloatVector): VariableIndex =
     new VariableIndex(cg.add_input(d.dim, data.vector, defaultDevice))
@@ -78,7 +76,7 @@ object ComputationGraph {
 
   def reset(): Unit = {
     cg.reset()
-    cg = null
+//    cg = null
   }
 
   def close(): Unit = reset()

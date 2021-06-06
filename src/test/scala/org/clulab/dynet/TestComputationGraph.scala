@@ -2,11 +2,10 @@ package org.clulab.dynet
 
 import edu.cmu.dynet.internal.{ComputationGraph => JavaComputationGraph}
 import edu.cmu.dynet.{ComputationGraph => ScalaComputationGraph}
+import org.clulab.fatdynet.Test
 import org.clulab.fatdynet.utils.Initializer
-import org.scalatest.FlatSpec
-import org.scalatest.Matchers
 
-class TestComputationGraph extends FlatSpec with Matchers {
+class TestComputationGraph extends Test {
   Initializer.initialize()
 
   behavior of "Java ComputationGraph"
