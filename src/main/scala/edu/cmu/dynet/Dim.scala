@@ -5,7 +5,7 @@ package edu.cmu.dynet
   *
   * @param dim
   */
-class Dim private[dynet] (private[dynet] val dim: internal.Dim) {
+class Dim(val dim: internal.Dim) {
 
   def close(): Unit = dim.delete()
 

@@ -19,7 +19,7 @@ class LookupParameterStorage private[dynet](private[dynet] val storage: internal
 
 /** A (learnable) parameter of a model.
   */
-class Parameter private[dynet] (private[dynet] val parameter: internal.Parameter) {
+class Parameter private[dynet] (val parameter: internal.Parameter) {
   //def this(model: ParameterCollection, index: Long) { this(new internal.Parameter(model.model, index)) }
 
   def close(): Unit = parameter.delete()
@@ -33,7 +33,7 @@ class Parameter private[dynet] (private[dynet] val parameter: internal.Parameter
   def isUpdated(): Boolean = parameter.is_updated()
 }
 
-class LookupParameter private[dynet] (private[dynet] val lookupParameter: internal.LookupParameter) {
+class LookupParameter private[dynet] (val lookupParameter: internal.LookupParameter) {
 
   //def this(model: ParameterCollection, index: Long) { this(new internal.LookupParameter(model.model, index))}
 

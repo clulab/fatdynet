@@ -29,7 +29,7 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
   }
 }
 
-object XorExampleApp {
+class XorExample {
   protected val random: Random = new Random(1234L)
 
   val  INPUT_SIZE = 2
@@ -202,13 +202,16 @@ object XorExampleApp {
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)
   }
+}
+
+object XorExampleApp {
 
   def main(args: Array[String]): Unit = {
     // Use this version only if nothing else will run afterwards.
     // Utils.shutdown(true) will trash DyNet.  Call run() instead,
     // if further operations will be performed.
     Utils.startup()
-    run(args)
+    new XorExample().run(args)
     Utils.shutdown(true)
   }
 }

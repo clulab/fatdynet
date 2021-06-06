@@ -1,9 +1,11 @@
 package edu.cmu.dynet
 
 class VanillaLstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLSTMBuilder)
-  extends RnnBuilder(builder) {
+  extends RnnBuilder(builder) with Cloneable {
 
   def this() { this(new internal.VanillaLSTMBuilder()) }
+
+  override def clone: VanillaLstmBuilder = new VanillaLstmBuilder(new internal.VanillaLSTMBuilder(builder))
 
   def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) {
     this(new internal.VanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model, lnLSTM))
