@@ -13,9 +13,11 @@ class TestComputationGraph extends Test {
   it should "support getNew()" in {
     val cg1 = JavaComputationGraph.getNew
     cg1.clear()
+    cg1.delete()
 
     val cg2 = JavaComputationGraph.getNew
     cg2.clear()
+    cg2.delete()
 
     cg1.eq(cg2) should be (false)
     // This must be deleted if the new ScalaComputationGraph is used

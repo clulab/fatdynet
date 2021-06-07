@@ -18,6 +18,9 @@ object Utils {
   }
 
   def shutdown(cleanup: Boolean = false): Unit = {
+    // In order to renew the ComputationGraph, DyNet must have been initialized.
+    if (!Initializer.isInitialized)
+      Initializer.initialize()
     // This will release the global computation graph.
     ComputationGraph.renew()
     // So that it can be collected here.
