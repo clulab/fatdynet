@@ -17,25 +17,14 @@ class ComputationGraph(val version: Long = 0L) extends internal.ComputationGraph
   * instance method is instead implemented as a static function here.*
   */
 object ComputationGraph {
-//  private[dynet] var cg: internal.ComputationGraph = internal.ComputationGraph.getNew
-//  var version: Long = 0L
   // We can't know the lifetime of the defaultDevice here, so it can't be deleted.
   private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
 
-  /** Gets rid of the singleton Computation Graph and replaces it with a fresh one. Increments
-    * `version` to make sure we don't use any stale expressions.
-    */
-/*  def renew(): Unit = {
-    cg = {
-      Option(cg).foreach(_.delete()) // We had better be done with it!
-      internal.ComputationGraph.getNew
+  protected[dynet] val threadedCg = new ThreadLocal[ComputationGraph] {
+    override protected def initialValue() = {
+      println("A new, thread-specific cg is being created.")
+      new ComputationGraph()
     }
-    version += 1
-  }
-*/
-
-  protected[dynet] def threadedCg = new ThreadLocal[ComputationGraph] {
-    override protected def initialValue() = new ComputationGraph()
   }
 
   private[dynet] def cg: ComputationGraph = threadedCg.get
@@ -76,7 +65,7 @@ object ComputationGraph {
 
   def reset(): Unit = {
     cg.reset()
-//    cg = null
+    threadedCg.remove()
   }
 
   def close(): Unit = reset()

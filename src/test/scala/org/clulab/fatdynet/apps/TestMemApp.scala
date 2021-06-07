@@ -1,6 +1,7 @@
 package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet.ComputationGraph
+import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Utils
 
 object TestMemApp extends App {
@@ -11,6 +12,8 @@ object TestMemApp extends App {
   // secret message left in the memory.
   Utils.startup()
 
+  // Parallel operation requires initialization before renewal.
+  Initializer.initialize()
   // Stopping here will result in leaked computation graphs.
   ComputationGraph.renew()
 
