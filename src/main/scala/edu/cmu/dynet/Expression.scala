@@ -14,7 +14,8 @@ class Expression(
   def close(): Unit = expr.delete()
 
   override def finalize(): Unit = {
-    val currentVersion = ComputationGraph.version
+    // When multi-threaded, this can result in the creation of a ComputationGraph in order to extract the version.
+//    val currentVersion = ComputationGraph.version
 
 //    if (version == currentVersion)
 //      println("The expression might still be in use.")
