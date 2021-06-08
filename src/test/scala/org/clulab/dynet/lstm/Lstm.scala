@@ -8,6 +8,7 @@ import edu.cmu.dynet.VanillaLstmBuilder
 import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
 
 object Lstm {
   val inputDim = 1
@@ -86,5 +87,11 @@ object Lstm {
 
   def runDynamic(lstmParameters: LstmParameters): Float = {
     runDefault(lstmParameters)
+  }
+
+  def runSynchronized(lstmParameters: LstmParameters): Float = {
+    Synchronizer.withComputationGraph("runSynchronized()") {
+      runDefault(lstmParameters)
+    }
   }
 }

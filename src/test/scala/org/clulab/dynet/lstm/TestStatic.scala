@@ -2,7 +2,7 @@ package org.clulab.dynet.lstm
 
 import org.clulab.fatdynet.Test
 
-class TestStaticComputationGraph extends Test {
+class TestStatic extends Test {
   Lstm.initialize()
 
   val lstmParameters = new Lstm.LstmParameters()
