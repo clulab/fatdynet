@@ -2,6 +2,7 @@ package org.clulab.dynet.lstm
 
 import org.clulab.fatdynet.Test
 import org.clulab.fatdynet.test.Timer
+import org.clulab.fatdynet.utils.SynchronizationException
 
 class TestSynchronized extends Test {
   Lstm.initialize(false)
@@ -36,5 +37,11 @@ class TestSynchronized extends Test {
       }
     }
     println(timer.toString)
+  }
+
+  it should "complain when asynchronized" in {
+    the [SynchronizationException] thrownBy {
+      Lstm.runAsynchronized(lstmParameters)
+    }
   }
 }

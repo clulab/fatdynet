@@ -94,4 +94,17 @@ object Lstm {
       runDefault(lstmParameters)
     }
   }
+
+  def runAsynchronized(lstmParameters: LstmParameters): Float = {
+
+    def runAsynchronized(lstmParameters: LstmParameters): Float = {
+      Synchronizer.withComputationGraph("runAsynchronized()") {
+        runDefault(lstmParameters)
+      }
+    }
+
+    Synchronizer.withComputationGraph("runSynchronized()") {
+      runAsynchronized(lstmParameters)
+    }
+  }
 }
