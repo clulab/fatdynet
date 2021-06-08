@@ -45,7 +45,7 @@ object Lstm {
     case class LstmParameterPack(model: ParameterCollection, lookup: LookupParameter, builder: VanillaLstmBuilder)
   }
 
-  val expectedLoss: Float = 0.031386387f // This should match the C++ value, regardless of seed.
+  val expectedLoss: Float = 0.03138639f // This should match the C++ value, regardless of seed.
 
   def initialize(train: Boolean = true): Unit = {
     val map = Map(
