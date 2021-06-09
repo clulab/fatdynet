@@ -10,8 +10,9 @@ def groupBySynchronizer(tests: Seq[TestDefinition]) = {
   val dynetTests = tests.filter(_.name.contains("org.clulab.dynet.Test"))
   val lstmTests = tests.filter(_.name.contains("org.clulab.dynet.lstm"))
   val xorTests = tests.filter(_.name.contains("org.clulab.dynet.xor"))
+  val soloTests = tests.filter(_.name.contains("org.clulab.dynet.solo"))
   val otherTests = {
-    val groupedTests = (fatdynetTests ++ dynetTests ++ lstmTests ++ xorTests).toSet
+    val groupedTests = (fatdynetTests ++ dynetTests ++ lstmTests ++ xorTests ++ soloTests).toSet
     tests.toSet.diff(groupedTests).toSeq
   }
 
@@ -19,9 +20,10 @@ def groupBySynchronizer(tests: Seq[TestDefinition]) = {
   val dynetGroup = new Group("dynet", dynetTests, newRunPolicy)
   val lstmGroup = new Group("lstm", lstmTests, newRunPolicy)
   val xorGroup = new Group("xor", xorTests, newRunPolicy)
+  val soloGroup = new Group("solo", soloTests, newRunPolicy)
   val otherGroup = new Group("other", otherTests, newRunPolicy)
 
-  Seq(lstmGroup, xorGroup, fatdynetGroup, dynetGroup, otherGroup)
+  Seq(lstmGroup, xorGroup, soloGroup, fatdynetGroup, dynetGroup, otherGroup)
 }
 
 Test / testGrouping := groupBySynchronizer((Test / definedTests).value)

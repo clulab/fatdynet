@@ -245,11 +245,9 @@ object Synchronizer extends SerialSynchronizer {
   var verbose: Boolean = false
 
   lazy val synchronizer: Synchronizer = {
-    println(s"Resetting synchronizer with threaded = $threaded!!!")
-      if (threaded) new ThreadedSynchronizer()
-      else if (debug) new DebugSynchronizer(verbose)
-      else new ReleaseSynchronizer()
-
+    if (threaded) new ThreadedSynchronizer()
+    else if (debug) new DebugSynchronizer(verbose)
+    else new ReleaseSynchronizer()
   }
 
   def newSynchronizationException(): SynchronizationException =

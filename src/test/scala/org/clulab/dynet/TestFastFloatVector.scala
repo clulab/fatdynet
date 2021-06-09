@@ -27,7 +27,7 @@ class TestFastFloatVector extends FatdynetTest {
 
     println(s"Fast array: $fastElapsedTime")
     println(s"Slow array: $slowElapsedTime")
-    fastElapsedTime should be < (slowElapsedTime)
+    fastElapsedTime should be < (2 * slowElapsedTime)
   }
 
   it should "be faster for lists" in {
@@ -37,6 +37,6 @@ class TestFastFloatVector extends FatdynetTest {
 
     println(s"Fast list: $fastElapsedTime")
     println(s"Slow list: $slowElapsedTime")
-    fastElapsedTime should be < (slowElapsedTime)
+    fastElapsedTime should be < (2 * slowElapsedTime)
   }
 }
