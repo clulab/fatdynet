@@ -21,8 +21,7 @@ object ComputationGraph {
   private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
 
   protected[dynet] val threadedCg = new ThreadLocal[ComputationGraph] {
-    override protected def initialValue() = {
-      println("A new, thread-specific cg is being created.")
+    override protected def initialValue(): ComputationGraph = {
       new ComputationGraph()
     }
   }

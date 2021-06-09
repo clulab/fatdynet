@@ -3,8 +3,16 @@ package org.clulab.fatdynet.utils
 import edu.cmu.dynet.ComputationGraph
 
 import java.util.concurrent.atomic.AtomicBoolean
+import scala.concurrent.Await
+import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 
 trait Synchronizer {
+  def withComputationGraph[T](message: Any)(f: => T): T
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
+}
+
+trait SerialSynchronizer extends Synchronizer {
   protected val synchronizing = new AtomicBoolean(false)
 
   // Allow public query of the read-only version.
@@ -18,12 +26,9 @@ trait Synchronizer {
   def exit(): Unit = {
     synchronizing.set(false)
   }
-
-  def withComputationGraph[T](message: Any)(f: => T): T
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
 }
 
-class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
+class DebugSynchronizer(verbose: Boolean) extends SerialSynchronizer {
   protected var count = 0
 
   def log(index: Int, stage: String, startVersionOpt: Option[Long], message: Any): Unit = {
@@ -128,7 +133,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
   }
 }
 
-class ReleaseSynchronizer extends Synchronizer {
+class ReleaseSynchronizer extends SerialSynchronizer {
 
   def withComputationGraph[T](message: Any)(f: => T): T = {
     Synchronizer.synchronized {
@@ -166,12 +171,86 @@ class ReleaseSynchronizer extends Synchronizer {
   }
 }
 
-object Synchronizer extends Synchronizer {
+trait ParallelSynchronizer extends Synchronizer {
+
+  protected val synchronizing = new ThreadLocal[AtomicBoolean] {
+    override protected def initialValue(): AtomicBoolean = {
+      new AtomicBoolean(false)
+    }
+  }
+
+  // Allow public query of the read-only version.
+  def isSynchronized: Boolean = synchronizing.get.get
+
+  def enter(): Unit = {
+    if (synchronizing.get.getAndSet(true))
+      throw Synchronizer.newSynchronizationException()
+  }
+
+  def exit(): Unit = {
+    synchronizing.get.set(false)
+  }
+}
+
+class ThreadedSynchronizer extends ParallelSynchronizer {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  // This is not synchronized at all, but it does try to catch problems.
+  // Really it should try to synchronize on the thread-specific computation graph.
+  // However, that might disappear.
+
+  def withComputationGraph[T](message: Any)(f: => T): T = {
+    // Make a new thread here
+    val future: Future[T] = Future {
+      enter()
+      try {
+        f
+      }
+      finally {
+        try {
+          ComputationGraph.reset() // Get rid of it completely.
+        }
+        finally {
+          exit()
+        }
+      }
+    }
+
+    val result = Await.result(future, Duration.Inf)
+    result
+  }
+
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
+    {
+      enter()
+      try {
+        f
+      }
+      finally {
+        try {
+          if (newComputationGraph)
+            ComputationGraph.renew()
+        }
+        finally {
+          exit()
+        }
+      }
+    }
+  }
+}
+
+object Synchronizer extends SerialSynchronizer {
+  var threaded: Boolean = false
   var debug: Boolean = true
   var verbose: Boolean = false
-  val synchronizer: Synchronizer =
-      if (debug) new DebugSynchronizer(verbose)
+
+  lazy val synchronizer: Synchronizer = {
+    println(s"Resetting synchronizer with threaded = $threaded!!!")
+      if (threaded) new ThreadedSynchronizer()
+      else if (debug) new DebugSynchronizer(verbose)
       else new ReleaseSynchronizer()
+
+  }
 
   def newSynchronizationException(): SynchronizationException =
       new SynchronizationException("FatDynet is already being synchronized.")

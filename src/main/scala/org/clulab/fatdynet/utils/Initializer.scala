@@ -20,35 +20,49 @@ object Initializer {
   val DYNAMIC_MEM = "dynamic-mem"
   val FORWARD_ONLY = "forward-only"
 
-  protected val initialized: AtomicBoolean = new AtomicBoolean(false)
+  protected var initialized: Boolean = false
 
-  def isInitialized: Boolean = initialized.get
+  def isInitialized: Boolean = initialized
 
   // In this special case we do not want a new ComputationGraph at the end.
-  def cleanup(): Boolean = Synchronizer.withoutComputationGraph("Initializer.cleanup", false) {
-    val oldInitialized = initialized.get
+  def cleanup(): Boolean = Initializer.synchronized {
+    val oldInitialized = initialized
 
     if (oldInitialized) {
-      internal.dynet_swig.cleanup()
-      initialized.set(false)
+      Synchronizer.withoutComputationGraph("Initializer.cleanup", false) {
+        internal.dynet_swig.cleanup()
+      }
+      initialized = false
     }
     oldInitialized
   }
 
+  protected def isThreaded(args: Map[String, Any]): Boolean = {
+    lazy val dynamicMem = args.get(DYNAMIC_MEM).map(_.asInstanceOf[Boolean]).getOrElse(false)
+    lazy val forwardOnly = args.get(FORWARD_ONLY).map(_.asInstanceOf[Int]).getOrElse(0) != 0
+
+    dynamicMem && forwardOnly
+  }
+
   // Returns whether had previously been initialized or not.
-  def initialize(args: Map[String, Any] = Map.empty): Boolean = Synchronizer.withoutComputationGraph("Initializer.initialize") {
-    val oldInitialized = initialized.get()
+  def initialize(args: Map[String, Any] = Map.empty): Boolean = Initializer.synchronized {
+    val oldInitialized = initialized
 
     if (!oldInitialized) {
-      Initialize.initialize(args)
-      initialized.set(true)
+      Synchronizer.threaded = isThreaded(args)
+      Synchronizer.withoutComputationGraph("Initializer.initialize") {
+        Initialize.initialize(args)
+      }
+      initialized = true
     }
     else if (args.contains(RANDOM_SEED)) {
       // The initialization would have been ignored,
       // so the random seed will be set explicitly.
       val seed = args(RANDOM_SEED).asInstanceOf[Long]
 
-      reset_rng(seed)
+      Synchronizer.withoutComputationGraph("Initializer.initialize") {
+        reset_rng(seed)
+      }
       // Imitate normal initialization output.
       System.err.println(s"[dynet] random seed: $seed")
     }

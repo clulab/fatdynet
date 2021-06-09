@@ -1,4 +1,4 @@
-package org.clulab.dynet
+package org.clulab.fatdynet.test
 
 import edu.cmu.dynet.internal.{ComputationGraph => JavaComputationGraph}
 import edu.cmu.dynet.{ComputationGraph => ScalaComputationGraph}
@@ -31,10 +31,12 @@ class TestComputationGraph extends Test {
   behavior of "Scala ComputationGraph"
 
   it should "support renew()" in {
-    ScalaComputationGraph.version should be (0)
+    val version = ScalaComputationGraph.version
+
+    ScalaComputationGraph.version should be (version)
     ScalaComputationGraph.renew()
-    ScalaComputationGraph.version should be (1)
+    ScalaComputationGraph.version should be (version + 1)
     ScalaComputationGraph.renew()
-    ScalaComputationGraph.version should be (2)
+    ScalaComputationGraph.version should be (version + 2)
   }
 }
