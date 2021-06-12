@@ -1,4 +1,4 @@
-package org.clulab.fatdynet.test
+package org.clulab.dynet.solo
 
 import edu.cmu.dynet.internal.{ComputationGraph => JavaComputationGraph}
 import edu.cmu.dynet.{ComputationGraph => ScalaComputationGraph}
