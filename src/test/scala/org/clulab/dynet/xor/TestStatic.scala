@@ -2,7 +2,7 @@ package org.clulab.dynet.xor
 
 import edu.cmu.dynet.ComputationGraph
 
-class TestStaticComputationGraph extends TestXor {
+class TestStatic extends TestXor {
   // This results in the single ComputationGraph being used.
   Xor.initialize(train = true)
 
