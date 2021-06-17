@@ -20,17 +20,34 @@ object ComputationGraph {
   // We can't know the lifetime of the defaultDevice here, so it can't be deleted.
   private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device()
 
-  protected[dynet] val threadedCg = new ThreadLocal[ComputationGraph] {
-    override protected def initialValue(): ComputationGraph = {
-      new ComputationGraph()
+  protected[dynet] val threadedCg = new ThreadLocal[Option[ComputationGraph]] {
+    override protected def initialValue(): Option[ComputationGraph] = {
+      None
     }
   }
 
-  private[dynet] def cg: ComputationGraph = threadedCg.get
+  private[dynet] def cg: ComputationGraph = {
+    threadedCg.get.getOrElse {
+      val cg = new ComputationGraph
+      threadedCg.set(Some(cg))
+      cg
+    }
+  }
 
   def version: Long = cg.version
 
-  def renew(): Unit = threadedCg.set(new ComputationGraph(cg))
+  def renew(): Unit = {
+    // This cg will be deleted after its version number gets copied.
+    threadedCg.set {
+      val cgOpt = threadedCg.get
+      Some {
+        if (cgOpt.isDefined)
+          new ComputationGraph(cgOpt.get)
+        else
+          new ComputationGraph
+      }
+    }
+  }
 
   def addInput(s: Float): VariableIndex = new VariableIndex(cg.add_input(s, defaultDevice))
   def addInput(d: Dim, data: FloatVector): VariableIndex =
@@ -63,8 +80,12 @@ object ComputationGraph {
   def revert(): Unit = cg.revert()
 
   def reset(): Unit = {
-    cg.reset()
-    threadedCg.remove()
+    val cgOpt = threadedCg.get
+
+    cgOpt.foreach { cg =>
+      threadedCg.set(None)
+      cg.reset()
+    }
   }
 
   def close(): Unit = reset()

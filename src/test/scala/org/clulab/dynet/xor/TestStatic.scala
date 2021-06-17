@@ -1,25 +1,24 @@
 package org.clulab.dynet.xor
 
-import org.clulab.fatdynet.Test
+import edu.cmu.dynet.ComputationGraph
 
-class TestStaticComputationGraph extends Test {
-  Xor.initialize()
+class TestStaticComputationGraph extends TestXor {
+  // This results in the single ComputationGraph being used.
+  Xor.initialize(train = true)
 
   val xorParameters = new Xor.XorParameters()
 
-  behavior of "static Xor"
-
-  it should "run" in {
-    val loss = Xor.runStatic(xorParameters)
-
-    loss should be (Xor.expectedLoss)
-  }
-
-  it should "run repeatedly" in {
-    Range.inclusive(1, 8).foreach { _ =>
-      val loss = Xor.runStatic(xorParameters)
-
-      loss should be (Xor.expectedLoss)
+  def f(parallel: Boolean): Float = {
+    if (parallel) {
+      Xor.synchronized {
+        // if there was previously a graph, it needs to be reset.
+        ComputationGraph.reset()
+        Xor.runDefault(xorParameters)
+      }
     }
+    else
+      Xor.runDefault(xorParameters)
   }
+
+  test("static Xor", f)
 }

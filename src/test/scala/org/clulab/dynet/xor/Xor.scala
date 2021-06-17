@@ -58,12 +58,4 @@ object Xor {
 //    println("loss = " + loss)
     loss
   }
-
-  def runStatic(xorParameters: XorParameters): Float = {
-    runDefault(xorParameters)
-  }
-
-  def runDynamic(xorParameters: XorParameters): Float = {
-    runDefault(xorParameters)
-  }
 }

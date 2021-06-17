@@ -8,13 +8,19 @@
 
 package edu.cmu.dynet.internal;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class ComputationGraph {
   private transient long swigCPtr;
   protected transient boolean swigCMemOwn;
 
+  protected static AtomicInteger count = new AtomicInteger(0);
+
   protected ComputationGraph(long cPtr, boolean cMemoryOwn) {
     swigCMemOwn = cMemoryOwn;
     swigCPtr = cPtr;
+    int tempCount = count.incrementAndGet();
+    System.out.println("There is " + tempCount + " computation graph.");
   }
 
   protected static long getCPtr(ComputationGraph obj) {
@@ -28,10 +34,15 @@ public class ComputationGraph {
   public synchronized void delete() {
     if (swigCPtr != 0) {
       if (swigCMemOwn) {
+        int tempCount = count.decrementAndGet();
         swigCMemOwn = false;
         dynet_swigJNI.delete_ComputationGraph(swigCPtr);
+        System.out.println("There is " + tempCount + " computation graph.");
       }
       swigCPtr = 0;
+    }
+    else {
+      System.out.println("This is unexpected!");
     }
   }
 

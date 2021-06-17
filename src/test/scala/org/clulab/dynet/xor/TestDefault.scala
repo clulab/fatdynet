@@ -1,25 +1,39 @@
 package org.clulab.dynet.xor
 
-import org.clulab.fatdynet.Test
+import edu.cmu.dynet.ComputationGraph
 
-class TestDefault extends Test {
+class TestDefault extends TestXor {
   Xor.initialize()
 
   val xorParameters = new Xor.XorParameters()
 
-  behavior of "default Xor"
+  var insideCount = 0
 
-  it should "run" in {
-    val loss = Xor.runDefault(xorParameters)
+  def f(parallel: Boolean): Float = {
+    if (parallel) {
+      this.synchronized {
+        val threadId = Thread.currentThread.getId
+        println(s"Enter with threadId $threadId.")
+        if (insideCount != 0)
+          println("This isn't right")
+        insideCount += 1
+        // If there was previously a graph, it needs to be reset.
+//        val result = Xor.expectedLoss
+        val result = Xor.runDefault(xorParameters)
+        // Get rid of the graph used in this thread, because the one reset just before
+        // the next loop might be in a different thread and leave this one dangling.
+        ComputationGraph.reset()
 
-    loss should be (Xor.expectedLoss)
-  }
-
-  it should "run repeatedly" in {
-    Range.inclusive(1, 8).foreach { _ =>
-      val loss = Xor.runDefault(xorParameters)
-
-      loss should be (Xor.expectedLoss)
+        insideCount -= 1
+        if (insideCount != 0)
+          println("This isn't right 2")
+        println(s" Exit with threadId $threadId.")
+        result
+      }
     }
+    else
+      Xor.runDefault(xorParameters)
   }
+
+  test("default Xor", f)
 }
