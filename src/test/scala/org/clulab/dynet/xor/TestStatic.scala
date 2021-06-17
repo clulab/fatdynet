@@ -10,10 +10,12 @@ class TestStaticComputationGraph extends TestXor {
 
   def f(parallel: Boolean): Float = {
     if (parallel) {
-      Xor.synchronized {
-        // if there was previously a graph, it needs to be reset.
+      this.synchronized {
+        val result = Xor.runDefault(xorParameters)
+        // Get rid of the graph used in this thread, because the one reset just before
+        // the next loop might be in a different thread and leave this one dangling.
         ComputationGraph.reset()
-        Xor.runDefault(xorParameters)
+        result
       }
     }
     else
