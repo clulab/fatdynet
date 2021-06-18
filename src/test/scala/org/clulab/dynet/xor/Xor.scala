@@ -46,9 +46,12 @@ object Xor {
     val x = Expression.input(Dim(2), x_values)
 
     // Need a pointer representation of scalars so updates are tracked
-    val y_value = new FloatPointer
-    y_value.set(0)
-    val y = Expression.input(y_value)
+//    val y_value = new FloatPointer
+//    y_value.set(0)
+//    val y = Expression.input(y_value) // try something different
+
+    val y_values = new FloatVector(1)
+    val y = Expression.input(Dim(1), y_values)
 
     val h = Expression.tanh(W * x + b)
     val y_pred = V * h + a
