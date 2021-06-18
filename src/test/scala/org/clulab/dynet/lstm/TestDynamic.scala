@@ -1,5 +1,6 @@
 package org.clulab.dynet.lstm
 
+import org.clulab.dynet.utils.ThreadUtils
 import org.clulab.fatdynet.Test
 import org.clulab.fatdynet.test.Timer
 
@@ -28,7 +29,7 @@ class TestDynamic extends Test {
     val timer = new Timer("running")
 
     timer.time {
-      Range.inclusive(1, 10000).par.foreach { _ =>
+      ThreadUtils.parallelize(Range.inclusive(1, 10000), 8).foreach { _ =>
         val loss = Lstm.runDynamic(lstmParameters)
 
         loss should be(Lstm.expectedLoss)
