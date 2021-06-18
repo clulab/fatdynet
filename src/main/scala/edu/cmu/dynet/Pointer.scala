@@ -10,13 +10,17 @@ class FloatPointer {
   val floatp = dn.new_floatp
   set(0f)
 
-  def close(): Unit = dn.delete_floatp(floatp)
+  def close(): Unit = {
+    println("Deleting the Scala FloatPointer")
+    dn.delete_floatp(floatp)
+  }
 
   def set(value: Float): Unit = dn.floatp_assign(floatp, value)
 
   def value(): Float = dn.floatp_value(floatp)
 
   override protected def finalize(): Unit = {
+    println("Deleting the Scala FloatPointer")
     dn.delete_floatp(floatp)
   }
 }
