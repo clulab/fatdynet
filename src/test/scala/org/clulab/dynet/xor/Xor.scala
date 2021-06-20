@@ -43,31 +43,19 @@ object Xor {
     val a = Expression.parameter(xorParameters.p_a)
 
     val x_values = new FloatVector(2)
+    x_values(0) = 0f
+    x_values(1) = 0f
     val x = Expression.input(Dim(2), x_values)
-
-    // Need a pointer representation of scalars so updates are tracked
 
     val y_value = new FloatPointer
     y_value.set(0)
-
-    val y = if (true) {
-      Expression.input(y_value)
-      // This expression holds reference to y_value
-      // Expression goes away,
-      // then y_value can go away.
-      // So far, they never do for Windows.
-    }
-    else {
-      val y_values = new FloatVector(1)
-      Expression.input(Dim(1), y_values)
-    }
+    val y = Expression.input(y_value)
 
     val h = Expression.tanh(W * x + b)
     val y_pred = V * h + a
     val loss_expr = Expression.squaredDistance(y_pred, y)
     val loss = ComputationGraph.forward(loss_expr).toFloat()
 
-//    y_value.close()
 //    println("loss = " + loss)
     loss
   }
