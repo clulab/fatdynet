@@ -32,7 +32,7 @@ class TestXor extends Test {
         val loss = f(true)
         if (loss.isNaN)
           println("loss is NaN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-//        loss should be(Xor.expectedLoss)
+        loss should be(Xor.expectedLoss)
         println(s" Exit with index $index, threadId $threadId")
       }
       println(s"parallel end")
