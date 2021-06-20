@@ -41,9 +41,9 @@ public class ComputationGraph {
       }
       swigCPtr = 0;
     }
-    else {
-      System.out.println("This is unexpected!");
-    }
+//    else {
+//      System.out.println("This is unexpected!");
+//    }
   }
 
   public void reset() {
