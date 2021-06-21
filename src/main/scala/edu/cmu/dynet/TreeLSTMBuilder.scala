@@ -21,6 +21,8 @@ class BidirectionalTreeLSTMBuilder private[dynet](private[dynet] builder: intern
   def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) {
     this(new internal.BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
+
+  override def clone: BidirectionalTreeLSTMBuilder = new BidirectionalTreeLSTMBuilder(new internal.BidirectionalTreeLSTMBuilder(builder))
 }
 
 class UnidirectionalTreeLSTMBuilder private[dynet](private[dynet] builder: internal.UnidirectionalTreeLSTMBuilder)
@@ -29,4 +31,6 @@ class UnidirectionalTreeLSTMBuilder private[dynet](private[dynet] builder: inter
   def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) {
     this(new internal.UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
+
+  override def clone: UnidirectionalTreeLSTMBuilder = new UnidirectionalTreeLSTMBuilder(new internal.UnidirectionalTreeLSTMBuilder(builder))
 }

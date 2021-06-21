@@ -1,15 +1,15 @@
 package edu.cmu.dynet
 
 class VanillaLstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLSTMBuilder)
-  extends RnnBuilder(builder) with Cloneable {
+  extends RnnBuilder(builder) {
 
   def this() { this(new internal.VanillaLSTMBuilder()) }
-
-  override def clone: VanillaLstmBuilder = new VanillaLstmBuilder(new internal.VanillaLSTMBuilder(builder))
 
   def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) {
     this(new internal.VanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model, lnLSTM))
   }
+
+  override def clone: VanillaLstmBuilder = new VanillaLstmBuilder(new internal.VanillaLSTMBuilder(builder))
 
   def setDropout(d: Float, dR: Float): Unit = builder.set_dropout(d, dR)
 
@@ -25,6 +25,8 @@ class LstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLST
   def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) {
     this(new internal.VanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model, lnLSTM))
   }
+
+  override def clone: LstmBuilder = new LstmBuilder(new internal.VanillaLSTMBuilder(builder))
 
   def setDropout(d: Float, dR: Float): Unit = builder.set_dropout(d, dR)
 
@@ -46,6 +48,8 @@ class CoupledLstmBuilder private[dynet](private[dynet] val builder: internal.Cou
     this(new internal.CoupledLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
 
+  override def clone: CoupledLstmBuilder = new CoupledLstmBuilder(new internal.CoupledLSTMBuilder(builder))
+
   def setDropout(d: Float, dH: Float, dC: Float): Unit = builder.set_dropout(d, dH, dC)
 
   def setDropoutMasks(batchSize:Long): Unit = builder.set_dropout_masks(batchSize)
@@ -59,6 +63,8 @@ class CompactVanillaLSTMBuilder private[dynet](private[dynet] val builder: inter
   def this(layers:Long, inputDim:Long, hiddenDim: Long, model: ParameterCollection) {
     this(new internal.CompactVanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
+
+  override def clone: CompactVanillaLSTMBuilder = new CompactVanillaLSTMBuilder(new internal.CompactVanillaLSTMBuilder(builder))
 
   def setDropout(d: Float, dR: Float): Unit = builder.set_dropout(d, dR)
 

@@ -24,6 +24,8 @@ object Initializer {
 
   def isInitialized: Boolean = initialized
 
+  def isThreaded: Boolean = Synchronizer.threaded
+
   // In this special case we do not want a new ComputationGraph at the end.
   def cleanup(): Boolean = Initializer.synchronized {
     val oldInitialized = initialized

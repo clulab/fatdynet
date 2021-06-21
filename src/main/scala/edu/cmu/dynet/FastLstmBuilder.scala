@@ -9,4 +9,5 @@ class FastLstmBuilder private[dynet](private[dynet] val builder: internal.FastLS
     this(new internal.FastLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
 
+  override def clone: FastLstmBuilder = new FastLstmBuilder(new internal.FastLSTMBuilder(builder))
 }
