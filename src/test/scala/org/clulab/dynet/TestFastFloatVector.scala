@@ -3,6 +3,7 @@ package org.clulab.dynet
 import edu.cmu.dynet.FloatVector
 import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.ScalaVersion
 
 class TestFastFloatVector extends FatdynetTest {
   Initializer.initialize()
@@ -27,7 +28,9 @@ class TestFastFloatVector extends FatdynetTest {
 
     println(s"Fast array: $fastElapsedTime")
     println(s"Slow array: $slowElapsedTime")
-    fastElapsedTime should be < (slowElapsedTime)
+
+    if (ScalaVersion.current < ScalaVersion._2_13)
+      fastElapsedTime should be < (slowElapsedTime)
   }
 
   it should "be faster for lists" in {
@@ -37,6 +40,7 @@ class TestFastFloatVector extends FatdynetTest {
 
     println(s"Fast list: $fastElapsedTime")
     println(s"Slow list: $slowElapsedTime")
-    fastElapsedTime should be < (slowElapsedTime)
+    if (ScalaVersion.current < ScalaVersion._2_13)
+      fastElapsedTime should be < (slowElapsedTime)
   }
 }
