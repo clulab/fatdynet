@@ -21,5 +21,5 @@ object ScalaVersion {
   }
   val _2_11 = new ScalaVersion(2, 11)
   val _2_12 = new ScalaVersion(2, 12)
-  val _2_13 = new ScalaVersion(2, 13)    
+  val _2_13 = new ScalaVersion(2, 13)
 }
