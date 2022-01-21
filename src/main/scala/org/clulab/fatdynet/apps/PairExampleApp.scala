@@ -20,14 +20,14 @@ case class PairTransformation(inputs: Array[Int], output: Int) {
   // Testing
   def transform(inputValues: Array[Float]): Unit = {
     inputs.indices.foreach { index =>
-      inputValues(index) = inputs(index)
+      inputValues(index) = inputs(index).toFloat
     }
   }
 
   // Training
   def transform(inputValues: Array[Float], outputValue: FloatPointer): Unit = {
     transform(inputValues)
-    outputValue.set(output)
+    outputValue.set(output.toFloat)
   }
 }
 
@@ -110,7 +110,7 @@ object PairExampleApp {
     PairTransformation(Array(1, 1, 1, 1, 1), 1)
   )
 
-  protected def mkPredictionGraph(pairModel: PairModel, xValues: Seq[Float], builder: RnnBuilder): Expression = {
+  protected def mkPredictionGraph(pairModel: PairModel, xValues: Array[Float], builder: RnnBuilder): Expression = {
     // The graph will grow and grow without this next line.
     // This is now handled by the Synchronizer.
     // ComputationGraph.renew()
@@ -149,7 +149,7 @@ object PairExampleApp {
         transformation.transform(xValues, yValue)
         Synchronizer.withComputationGraph("PairExampleApp.train()") {
           val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
-          val y = Expression.input(transformation.output)
+          val y = Expression.input(transformation.output.toFloat)
 
           val loss = Expression.squaredDistance(yPrediction, y)
           val lossValue = loss.value().toFloat()
@@ -176,7 +176,7 @@ object PairExampleApp {
   def predict(pairModel: PairModel, builder: RnnBuilder): Seq[Float] = {
     var count = 0
 
-    println
+    println()
     val result = transformations.map { transformation =>
       val xValues = new Array[Float](transformation.inputs.length)
       transformation.transform(xValues)

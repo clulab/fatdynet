@@ -55,7 +55,7 @@ object XorScala {
           x_values.update(0, if (x1) 1 else -1)
           x_values.update(1, if (x2) 1 else -1)
           y_value.set(if (x1 != x2) 1 else -1)
-          loss += ComputationGraph.forward(loss_expr).toFloat
+          loss += ComputationGraph.forward(loss_expr).toFloat()
           ComputationGraph.backward(loss_expr)
           sgd.update()
         }

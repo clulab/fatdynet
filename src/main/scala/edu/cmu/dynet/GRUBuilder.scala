@@ -7,11 +7,11 @@ class GruBuilder private[dynet](private[dynet] val builder: internal.GRUBuilder)
     extends RnnBuilder(builder) {
 
   /** Create a new, empty GruBuilder. */
-  def this() { this(new internal.GRUBuilder()) }
+  def this() = { this(new internal.GRUBuilder()) }
 
   /** Create a GruBuilder with the specified parameters.
     */
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) = {
     this(new internal.GRUBuilder(layers, inputDim, hiddenDim, model.model))
   }
 }

@@ -29,7 +29,7 @@ object InternalLookupParameterExampleApp {
 
     // Training
     def transform(outputValue: FloatPointer): Unit = {
-      outputValue.set(output)
+      outputValue.set(output.toFloat)
     }
   }
 
@@ -107,7 +107,7 @@ object InternalLookupParameterExampleApp {
   protected def predict(xorModel: XorModel): Seq[Float] = {
     var count = 0
 
-    println
+    println()
     val result = transformations.map { transformation =>
       val yValue = Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.predict()") {
         val yPrediction = mkPredictionGraph(xorModel, transformation)

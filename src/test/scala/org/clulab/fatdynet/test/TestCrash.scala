@@ -25,7 +25,7 @@ class TestCrash extends FatdynetTest {
   def makeParameter = {
     val oldParameterCollection = new ParameterCollection()
     val oldParameter = oldParameterCollection.addParameters(Dim(51))
-    val oldParametersList = oldParameterCollection.parametersList
+    val oldParametersList = oldParameterCollection.parametersList()
   }
 
   def makeLookupParameter = {

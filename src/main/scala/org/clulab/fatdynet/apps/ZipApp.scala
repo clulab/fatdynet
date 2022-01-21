@@ -14,7 +14,7 @@ import org.clulab.fatdynet.utils.Initializer
 
 object ZipApp {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val filename = "model.rnn"

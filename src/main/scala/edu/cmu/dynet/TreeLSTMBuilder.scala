@@ -18,7 +18,7 @@ abstract class TreeLSTMBuilder[A<: internal.TreeLSTMBuilder] private[dynet](priv
 class BidirectionalTreeLSTMBuilder private[dynet](private[dynet] builder: internal.BidirectionalTreeLSTMBuilder)
   extends TreeLSTMBuilder[internal.BidirectionalTreeLSTMBuilder](builder) {
 
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) = {
     this(new internal.BidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
 }
@@ -26,7 +26,7 @@ class BidirectionalTreeLSTMBuilder private[dynet](private[dynet] builder: intern
 class UnidirectionalTreeLSTMBuilder private[dynet](private[dynet] builder: internal.UnidirectionalTreeLSTMBuilder)
   extends TreeLSTMBuilder[internal.UnidirectionalTreeLSTMBuilder](builder) {
 
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) = {
     this(new internal.UnidirectionalTreeLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
 }

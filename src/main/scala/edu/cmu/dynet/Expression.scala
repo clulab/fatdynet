@@ -45,9 +45,9 @@ class Expression private[dynet](
   def *(r: Float): Expression = Expression.exprTimes(this, r)
   def -(r: Float): Expression = Expression.exprMinus(this, r)
   def /(r: Float): Expression = Expression.exprDivide(this, r)
-  def unary_-(): Expression = Expression.exprMinus(this)
+  def unary_- : Expression = Expression.exprMinus(this)
 
-  def debugString(): String = s"(Expression: ${dim.debugString} ${value.toSeq})"
+  def debugString(): String = s"(Expression: ${dim().debugString()} ${value().toSeq()})"
 }
 
 /** Contains methods for creating [[edu.cmu.dynet.Expression]]s. There are several ways to create
@@ -260,12 +260,12 @@ object Expression {
   def stdDim(x: Expression, v: UnsignedVector, b: Boolean = false, n: Long = 0L): Expression =
     unary(x, x => dn.std_dim(x, v.vector, b, n))
 
-  def pick(x: Expression, v: Long, d: Long = 0l): Expression = unary(x, x => dn.pick(x, v, d))
+  def pick(x: Expression, v: Long, d: Long = 0L): Expression = unary(x, x => dn.pick(x, v, d))
   def pick(x: Expression, v: UnsignedVector, d: Long): Expression =
     unary(x, x => dn.pick(x, v.vector, d))
   def pick(x: Expression, v: UnsignedPointer, d: Long): Expression =
     unary(x, x => dn.pick(x, v.uintp, d))
-  def pickrange(x: Expression, v: Long, u: Long, d: Long = 0l): Expression =
+  def pickrange(x: Expression, v: Long, u: Long, d: Long = 0L): Expression =
     unary(x, x => dn.pick_range(x, v, u, d))
   def pickBatchElem(x: Expression, v: Long): Expression = unary(x, x => dn.pick_batch_elem(x, v))
   def pickBatchElems(x: Expression, v: UnsignedVector): Expression =
@@ -301,7 +301,7 @@ object Expression {
   //def conv1dWide(x: Expression, f: Expression): Expression = binary(x, f, dn.conv1d_wide)
   def filter1DNarrow(x: Expression, f: Expression): Expression = binary(x, f, dn.filter1d_narrow)
   def kMaxPooling(x: Expression, k: Long): Expression = unary(x, x => dn.kmax_pooling(x, k))
-  def foldRows(x: Expression, nRows: Long = 2l): Expression = unary(x, x => dn.fold_rows(x, nRows))
+  def foldRows(x: Expression, nRows: Long = 2L): Expression = unary(x, x => dn.fold_rows(x, nRows))
   def sumDim(x: Expression, dims: UnsignedVector, b: Boolean = false): Expression = unary(x, x => dn.sum_dim(x, dims.vector, b))
   def sumCols(x: Expression): Expression = unary(x, dn.sum_cols)
   def sumRows(x: Expression): Expression = unary(x, dn.sum_rows)
@@ -325,15 +325,15 @@ object Expression {
 
   def contract3d1d(x: Expression, y: Expression): Expression = binary(x, y, dn.contract3d_1d)
   def contract3d1d1d(x: Expression, y: Expression, z: Expression): Expression = {
-    Seq(x, y, z).foreach(_.ensureFresh)
+    Seq(x, y, z).foreach(_.ensureFresh())
     new Expression(dn.contract3d_1d_1d(x.expr, y.expr, z.expr), Seq(x, y, z))
   }
   def contract3d1d1d(x: Expression, y: Expression, z: Expression, b: Expression): Expression = {
-    Seq(x, y, z, b).foreach(_.ensureFresh)
+    Seq(x, y, z, b).foreach(_.ensureFresh())
     new Expression(dn.contract3d_1d_1d(x.expr, y.expr, z.expr, b.expr), Seq(x, y, z, b))
   }
   def contract3d1d(x: Expression, y: Expression, b: Expression): Expression = {
-    Seq(x, y, b).foreach(_.ensureFresh)
+    Seq(x, y, b).foreach(_.ensureFresh())
     new Expression(dn.contract3d_1d(x.expr, y.expr, b.expr), Seq(x, y, b))
   }
 
@@ -346,7 +346,7 @@ object Expression {
   /* NORMALIZATION OPERATIONS */
 
   def layerNorm(x: Expression, g: Expression, b: Expression): Expression = {
-    Seq(x, g, b).foreach(_.ensureFresh)
+    Seq(x, g, b).foreach(_.ensureFresh())
     new Expression(dn.layer_norm(x.expr, g.expr, b.expr), Seq(x, g, b))
   }
   def weightNorm(w: Expression, g: Expression): Expression = binary(w, g, dn.weight_norm)

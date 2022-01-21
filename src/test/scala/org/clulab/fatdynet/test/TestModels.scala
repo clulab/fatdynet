@@ -30,7 +30,7 @@ class TestModels extends FatdynetTest {
   def equalsLPS(lefts: Seq[LookupParameterStorage], rights: Seq[LookupParameterStorage]): Boolean = {
     lefts.size == rights.size &&
         // These values cannot be accessed!
-        lefts.zip(rights).forall { case (left, right) => left.size == right.size }
+        lefts.zip(rights).forall { case (left, right) => left.size() == right.size() }
   }
 
   def asString(operation: ModelSaver => Unit): String = {
@@ -67,13 +67,13 @@ class TestModels extends FatdynetTest {
   }
 
   def equals(left: Parameter, right: Parameter, name: String): Boolean = {
-    left.dim == right.dim &&
+    left.dim() == right.dim() &&
         equals(left.values().toSeq(), right.values().toSeq()) &&
         asString(left, name) == asString(right, name)
   }
 
   def equals(left: LookupParameter, right: LookupParameter, name: String): Boolean = {
-    left.dim == right.dim &&
+    left.dim() == right.dim() &&
         asString(left, name) == asString(right, name)
   }
 

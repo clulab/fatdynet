@@ -17,8 +17,8 @@ ThisBuild / organization := "org.clulab"
 ThisBuild / organizationHomepage := Some(url("http://clulab.org/"))
 ThisBuild / organizationName := "Computational Language Understanding (CLU) Lab"
 // The sonatype plugin seems to overwrite these two values.
-ThisBuild / pomIncludeRepository := { _ => false }
-ThisBuild / publishMavenStyle := true
+pomIncludeRepository := { _ => false }
+publishMavenStyle := true
 ThisBuild / publishTo := {
   val nexus = "https://oss.sonatype.org/" // the standard maven repository
   if (isSnapshot.value)

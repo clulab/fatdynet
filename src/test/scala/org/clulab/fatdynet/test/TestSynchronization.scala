@@ -4,6 +4,7 @@ import org.clulab.fatdynet.Test
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.parallel.immutable.ParRange
 
 class TestSynchronization extends Test {
   val count = 8
@@ -11,13 +12,13 @@ class TestSynchronization extends Test {
   behavior of "a synchronized section"
 
   it should "work in serial" in {
-    0.until(count).foreach { _ =>
+    new ParRange(0.until(count)).foreach { _ =>
       Synchronizer.synchronize()
     }
   }
 
   it should "work in parallel" in {
-    0.until(count).par.foreach { _ =>
+    new ParRange(0.until(count)).foreach { _ =>
       Synchronizer.synchronize()
     }
   }
@@ -79,7 +80,7 @@ class TestSynchronization extends Test {
       println(s"returning with $initializationCount")
     }
 
-    val results = 0.until(2).par.map { _ =>
+    val results = new ParRange(0.until(2)).map { _ =>
       block()
       initializationCount
     }
@@ -98,7 +99,7 @@ class TestSynchronization extends Test {
       }
     }
 
-    0.until(2).par.foreach { _ =>
+    new ParRange(0.until(2)).foreach { _ =>
       Synchronizer.synchronize {
         block()
       }
@@ -119,7 +120,7 @@ class TestSynchronization extends Test {
       }
     }
 
-    0.until(2).par.foreach { _ =>
+    new ParRange(0.until(2)).foreach { _ =>
       block()
     }
     // This double initialization should be avoided.
@@ -163,9 +164,7 @@ object Synchronizer {
 
   val synchronizing = new AtomicBoolean(false)
 
-  def doNothing(): Unit = ()
-
-  def synchronize(f: => Unit = doNothing _): Unit = {
+  def synchronize(f: => Unit = ()): Unit = {
     Synchronizer.synchronized {
       val wasSynchronizing = synchronizing.getAndSet(true)
 

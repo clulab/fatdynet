@@ -3,7 +3,7 @@
 package edu.cmu.dynet
 
 class ZipModelLoader private[dynet](loader: internal.ZipFileLoader) {
-  def this(filename: String, zipname: String) { this(new internal.ZipFileLoader(filename, zipname))}
+  def this(filename: String, zipname: String) = { this(new internal.ZipFileLoader(filename, zipname))}
 
   def close(): Unit = done()
 

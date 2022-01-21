@@ -31,7 +31,7 @@ class Trainer private[dynet](_trainer: internal.Trainer) {
 class SimpleSGDTrainer private[dynet] (private[dynet] val trainer: internal.SimpleSGDTrainer)
   extends Trainer(trainer)
 {
-  def this(m: ParameterCollection, learningRate: Float = 0.1f) {
+  def this(m: ParameterCollection, learningRate: Float = 0.1f) = {
     this(new internal.SimpleSGDTrainer(m.model, learningRate))
   }
 }
@@ -39,7 +39,7 @@ class SimpleSGDTrainer private[dynet] (private[dynet] val trainer: internal.Simp
 class CyclicalSGDTrainer private[dynet] (private[dynet] val trainer: internal.CyclicalSGDTrainer)
   extends Trainer(trainer)
 {
-  def this(m: ParameterCollection, learningRateMin: Float = 0.01f, learningRateMax: Float = 0.1f, stepSize: Float = 2000f, gamma: Float = 0.0f, edecay: Float = 0.0f) {
+  def this(m: ParameterCollection, learningRateMin: Float = 0.01f, learningRateMax: Float = 0.1f, stepSize: Float = 2000f, gamma: Float = 0.0f, edecay: Float = 0.0f) = {
     this(new internal.CyclicalSGDTrainer(m.model, learningRateMin, learningRateMax, stepSize, gamma, edecay))
   }
 }
@@ -47,7 +47,7 @@ class CyclicalSGDTrainer private[dynet] (private[dynet] val trainer: internal.Cy
 class MomentumSGDTrainer private[dynet] (private[dynet] val trainer: internal.MomentumSGDTrainer)
   extends Trainer(trainer)
 {
-  def this(m: ParameterCollection, learningRate: Float = 0.01f, mom: Float = 0.9f) {
+  def this(m: ParameterCollection, learningRate: Float = 0.01f, mom: Float = 0.9f) = {
     this(new internal.MomentumSGDTrainer(m.model, learningRate, mom))
   }
 }
@@ -55,7 +55,7 @@ class MomentumSGDTrainer private[dynet] (private[dynet] val trainer: internal.Mo
 class AdagradTrainer private[dynet] (private[dynet] val trainer: internal.AdagradTrainer)
   extends Trainer(trainer)
 {
-  def this(m: ParameterCollection, learningRate: Float = 0.1f, eps: Float = 1e-20f) {
+  def this(m: ParameterCollection, learningRate: Float = 0.1f, eps: Float = 1e-20f) = {
     this(new internal.AdagradTrainer(m.model, learningRate, eps))
   }
 }
@@ -63,7 +63,7 @@ class AdagradTrainer private[dynet] (private[dynet] val trainer: internal.Adagra
 class AdadeltaTrainer private[dynet] (private[dynet] val trainer: internal.AdadeltaTrainer)
   extends Trainer(trainer)
 {
-  def this(m: ParameterCollection, eps: Float = 1e-6f, rho:Float = 0.95f) {
+  def this(m: ParameterCollection, eps: Float = 1e-6f, rho:Float = 0.95f) = {
     this(new internal.AdadeltaTrainer(m.model, eps, rho))
   }
 }
@@ -71,7 +71,7 @@ class AdadeltaTrainer private[dynet] (private[dynet] val trainer: internal.Adade
 class RMSPropTrainer private[dynet] (private[dynet] val trainer: internal.RMSPropTrainer)
   extends Trainer(trainer)
 {
-  def this(m: ParameterCollection, learningRate: Float = 0.001f, eps: Float = 1e-8f, rho: Float = 0.9f) {
+  def this(m: ParameterCollection, learningRate: Float = 0.001f, eps: Float = 1e-8f, rho: Float = 0.9f) = {
     this(new internal.RMSPropTrainer(m.model, learningRate, eps, rho))
   }
 }
@@ -80,7 +80,7 @@ class AdamTrainer private[dynet] (private[dynet] val trainer: internal.AdamTrain
   extends Trainer(trainer)
 {
   def this(m: ParameterCollection, learningRate: Float = 0.001f, beta1: Float = 0.9f, beta2: Float = 0.999f,
-           eps: Float = 1e-8f) {
+           eps: Float = 1e-8f) = {
     this(new internal.AdamTrainer(m.model, learningRate, beta1, beta2, eps))
   }
 }
@@ -89,14 +89,14 @@ class AmsgradTrainer private[dynet] (private[dynet] val trainer: internal.Amsgra
   extends Trainer(trainer)
 {
   def this(m: ParameterCollection, learningRate: Float = 0.001f, beta1: Float = 0.9f, beta2: Float = 0.999f,
-           eps: Float = 1e-8f) {
+           eps: Float = 1e-8f) = {
     this(new internal.AmsgradTrainer(m.model, learningRate, beta1, beta2, eps))
   }
 }
 
 //class EGTrainer private[dynet] (private[dynet] val trainer: internal.EGTrainer) extends Trainer(trainer)
 //{
-//  def this(m: ParameterCollection, learningRate: Float = 0.1f, mom: Float = 0.9f, ne: Float = 0.0f) {
+//  def this(m: ParameterCollection, learningRate: Float = 0.1f, mom: Float = 0.9f, ne: Float = 0.0f) = {
 //    this(new internal.EGTrainer(m.model, learningRate, mom, ne))
 //  }
 //

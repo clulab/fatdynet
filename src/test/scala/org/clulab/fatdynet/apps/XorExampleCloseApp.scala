@@ -28,14 +28,14 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
   // Testing
   def transform(inputValues: dynet.FloatVector): Unit = {
-    inputValues.update(0, input1)
-    inputValues.update(1, input2)
+    inputValues.update(0, input1.toFloat)
+    inputValues.update(1, input2.toFloat)
   }
 
   // Training
   def transform(inputValues: dynet.FloatVector, outputValue: dynet.FloatPointer): Unit = {
     transform(inputValues)
-    outputValue.set(output)
+    outputValue.set(output.toFloat)
   }
 }
 
@@ -117,7 +117,7 @@ object XorExampleCloseApp {
   protected def predict(xorModel: XorModel, xValues: dynet.FloatVector, yPrediction: dynet.Expression): Seq[Float] = {
     var count = 0
 
-    println
+    println()
     val result = transformations.map { transformation =>
       transformation.transform(xValues)
       // This is necessary in this version of the program, possibly because the values
