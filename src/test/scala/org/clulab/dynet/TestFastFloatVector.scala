@@ -21,7 +21,7 @@ class TestFastFloatVector extends FatdynetTest {
   behavior of "fast float vector"
 
   it should "be faster for arrays" in {
-    val floats = new Array[Float](300)
+    val floats = new Array[Float](300).toSeq
     val fastElapsedTime = timeFloatVector(floats, true)
     val slowElapsedTime = timeFloatVector(floats, false)
 

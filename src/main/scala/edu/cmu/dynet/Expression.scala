@@ -260,12 +260,12 @@ object Expression {
   def stdDim(x: Expression, v: UnsignedVector, b: Boolean = false, n: Long = 0L): Expression =
     unary(x, x => dn.std_dim(x, v.vector, b, n))
 
-  def pick(x: Expression, v: Long, d: Long = 0l): Expression = unary(x, x => dn.pick(x, v, d))
+  def pick(x: Expression, v: Long, d: Long = 0L): Expression = unary(x, x => dn.pick(x, v, d))
   def pick(x: Expression, v: UnsignedVector, d: Long): Expression =
     unary(x, x => dn.pick(x, v.vector, d))
   def pick(x: Expression, v: UnsignedPointer, d: Long): Expression =
     unary(x, x => dn.pick(x, v.uintp, d))
-  def pickrange(x: Expression, v: Long, u: Long, d: Long = 0l): Expression =
+  def pickrange(x: Expression, v: Long, u: Long, d: Long = 0L): Expression =
     unary(x, x => dn.pick_range(x, v, u, d))
   def pickBatchElem(x: Expression, v: Long): Expression = unary(x, x => dn.pick_batch_elem(x, v))
   def pickBatchElems(x: Expression, v: UnsignedVector): Expression =
@@ -301,7 +301,7 @@ object Expression {
   //def conv1dWide(x: Expression, f: Expression): Expression = binary(x, f, dn.conv1d_wide)
   def filter1DNarrow(x: Expression, f: Expression): Expression = binary(x, f, dn.filter1d_narrow)
   def kMaxPooling(x: Expression, k: Long): Expression = unary(x, x => dn.kmax_pooling(x, k))
-  def foldRows(x: Expression, nRows: Long = 2l): Expression = unary(x, x => dn.fold_rows(x, nRows))
+  def foldRows(x: Expression, nRows: Long = 2L): Expression = unary(x, x => dn.fold_rows(x, nRows))
   def sumDim(x: Expression, dims: UnsignedVector, b: Boolean = false): Expression = unary(x, x => dn.sum_dim(x, dims.vector, b))
   def sumCols(x: Expression): Expression = unary(x, dn.sum_cols)
   def sumRows(x: Expression): Expression = unary(x, dn.sum_rows)

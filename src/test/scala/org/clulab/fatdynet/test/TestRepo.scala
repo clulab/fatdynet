@@ -173,7 +173,7 @@ class TestRepo extends FatdynetTest {
       extends RnnParserTester(layers, inputDim, hiddenDim, "VanillaLstmLoader" + "_" + lnLSTM) {
 
     // These should fail because they are hidden by LstmParserTester.
-    override def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns(Array(VanillaLstmParser.mkParser _))
+    override def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns(Seq(VanillaLstmParser.mkParser _))
 
     def build(model: ParameterCollection): Unit = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model, lnLSTM)
 

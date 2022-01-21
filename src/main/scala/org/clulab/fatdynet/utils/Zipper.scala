@@ -1,6 +1,6 @@
 package org.clulab.fatdynet.utils
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import java.io.File
 import java.nio.file.FileSystems

@@ -55,7 +55,7 @@ class Repo(val textLoader: BaseTextLoader) {
 
     def getHeadersSlowly(source: Source): Iterator[Header] = {
       source
-          .getLines
+          .getLines()
           .zipWithIndex
           .filter { case (line, _) => line.startsWith("#") }
           .map { case (line, lineNo) => new Header(line, lineNo) }
@@ -147,7 +147,7 @@ class Repo(val textLoader: BaseTextLoader) {
 object Repo {
   type ParserFactory = Header => Option[Parser]
 
-  val parserFactories: Array[ParserFactory] = Array(
+  val parserFactories: Seq[ParserFactory] = Seq(
     CompactVanillaLstmParser.mkParser,
     CoupledLstmParser.mkParser,
     FastLstmParser.mkParser,

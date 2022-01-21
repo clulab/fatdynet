@@ -6,7 +6,7 @@ package edu.cmu.dynet
   */
 
 import scala.language.implicitConversions
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object IntVector {
   implicit def Seq2IntVector(x: Seq[Int]): IntVector =

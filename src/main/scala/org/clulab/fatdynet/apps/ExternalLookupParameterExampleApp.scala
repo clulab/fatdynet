@@ -25,7 +25,7 @@ object ExternalLookupParameterExampleApp {
 
     // Training
     def transform(outputValue: FloatPointer): Unit = {
-      outputValue.set(output)
+      outputValue.set(output.toFloat)
     }
   }
 
@@ -100,7 +100,7 @@ object ExternalLookupParameterExampleApp {
   protected def predict(xorModel: XorModel): Seq[Float] = {
     var count = 0
 
-    println
+    println()
     val result = transformations.map { transformation =>
       val yValue = Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.predict()") {
         val yPrediction = mkPredictionGraph(xorModel, transformation)
