@@ -2,7 +2,7 @@ package edu.cmu.dynet
 
 class ParameterCollection private[dynet] (private[dynet] val model: internal.ParameterCollection) {
 
-  def this() { this( new internal.ParameterCollection ) }
+  def this() = { this( new internal.ParameterCollection ) }
 
   def close(): Unit = model.delete()
 

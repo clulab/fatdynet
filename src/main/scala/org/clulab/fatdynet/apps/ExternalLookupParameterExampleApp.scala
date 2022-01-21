@@ -139,7 +139,7 @@ object ExternalLookupParameterExampleApp {
     XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
   }
 
-  def run(args: Array[String]) {
+  def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"
 
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))

@@ -3,9 +3,9 @@ package edu.cmu.dynet
 class VanillaLstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLSTMBuilder)
   extends RnnBuilder(builder) {
 
-  def this() { this(new internal.VanillaLSTMBuilder()) }
+  def this() = { this(new internal.VanillaLSTMBuilder()) }
 
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) = {
     this(new internal.VanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model, lnLSTM))
   }
 
@@ -18,9 +18,9 @@ class VanillaLstmBuilder private[dynet](private[dynet] val builder: internal.Van
 class LstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLSTMBuilder)
   extends RnnBuilder(builder) {
 
-  def this() { this(new internal.VanillaLSTMBuilder()) }
+  def this() = { this(new internal.VanillaLSTMBuilder()) }
 
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, lnLSTM: Boolean = false) = {
     this(new internal.VanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model, lnLSTM))
   }
 
@@ -36,11 +36,11 @@ class CoupledLstmBuilder private[dynet](private[dynet] val builder: internal.Cou
   extends RnnBuilder(builder) {
 
   /** Create a new, empty LstmBuilder. */
-  def this() { this(new internal.CoupledLSTMBuilder()) }
+  def this() = { this(new internal.CoupledLSTMBuilder()) }
 
   /** Create a LstmBuilder with the specified parameters.
     */
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) = {
     this(new internal.CoupledLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
 
@@ -52,9 +52,9 @@ class CoupledLstmBuilder private[dynet](private[dynet] val builder: internal.Cou
 class CompactVanillaLSTMBuilder private[dynet](private[dynet] val builder: internal.CompactVanillaLSTMBuilder)
   extends RnnBuilder(builder) {
 
-  def this() {this(new internal.CompactVanillaLSTMBuilder()) }
+  def this() = {this(new internal.CompactVanillaLSTMBuilder()) }
 
-  def this(layers:Long, inputDim:Long, hiddenDim: Long, model: ParameterCollection) {
+  def this(layers:Long, inputDim:Long, hiddenDim: Long, model: ParameterCollection) = {
     this(new internal.CompactVanillaLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
 

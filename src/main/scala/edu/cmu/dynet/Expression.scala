@@ -45,9 +45,9 @@ class Expression private[dynet](
   def *(r: Float): Expression = Expression.exprTimes(this, r)
   def -(r: Float): Expression = Expression.exprMinus(this, r)
   def /(r: Float): Expression = Expression.exprDivide(this, r)
-  def unary_-(): Expression = Expression.exprMinus(this)
+  def unary_- : Expression = Expression.exprMinus(this)
 
-  def debugString(): String = s"(Expression: ${dim.debugString} ${value.toSeq})"
+  def debugString(): String = s"(Expression: ${dim().debugString()} ${value().toSeq()})"
 }
 
 /** Contains methods for creating [[edu.cmu.dynet.Expression]]s. There are several ways to create
@@ -325,15 +325,15 @@ object Expression {
 
   def contract3d1d(x: Expression, y: Expression): Expression = binary(x, y, dn.contract3d_1d)
   def contract3d1d1d(x: Expression, y: Expression, z: Expression): Expression = {
-    Seq(x, y, z).foreach(_.ensureFresh)
+    Seq(x, y, z).foreach(_.ensureFresh())
     new Expression(dn.contract3d_1d_1d(x.expr, y.expr, z.expr), Seq(x, y, z))
   }
   def contract3d1d1d(x: Expression, y: Expression, z: Expression, b: Expression): Expression = {
-    Seq(x, y, z, b).foreach(_.ensureFresh)
+    Seq(x, y, z, b).foreach(_.ensureFresh())
     new Expression(dn.contract3d_1d_1d(x.expr, y.expr, z.expr, b.expr), Seq(x, y, z, b))
   }
   def contract3d1d(x: Expression, y: Expression, b: Expression): Expression = {
-    Seq(x, y, b).foreach(_.ensureFresh)
+    Seq(x, y, b).foreach(_.ensureFresh())
     new Expression(dn.contract3d_1d(x.expr, y.expr, b.expr), Seq(x, y, b))
   }
 
@@ -346,7 +346,7 @@ object Expression {
   /* NORMALIZATION OPERATIONS */
 
   def layerNorm(x: Expression, g: Expression, b: Expression): Expression = {
-    Seq(x, g, b).foreach(_.ensureFresh)
+    Seq(x, g, b).foreach(_.ensureFresh())
     new Expression(dn.layer_norm(x.expr, g.expr, b.expr), Seq(x, g, b))
   }
   def weightNorm(w: Expression, g: Expression): Expression = binary(w, g, dn.weight_norm)

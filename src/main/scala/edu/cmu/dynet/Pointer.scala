@@ -31,7 +31,7 @@ class IntPointer {
 
   def value(): Int = dn.intp_value(intp)
 
-  def increment(by: Int = 1) = set(value + by)
+  def increment(by: Int = 1) = set(value() + by)
 
   override protected def finalize(): Unit = {
     dn.delete_intp(intp)
