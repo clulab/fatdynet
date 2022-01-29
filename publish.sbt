@@ -20,11 +20,14 @@ ThisBuild / organizationName := "Computational Language Understanding (CLU) Lab"
 pomIncludeRepository := { _ => false }
 publishMavenStyle := true
 ThisBuild / publishTo := {
-  val nexus = "https://oss.sonatype.org/" // the standard maven repository
-  if (isSnapshot.value)
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    val artifactory = "http://artifactory.cs.arizona.edu:8081/artifactory/"
+    val repository = "sbt-release-local"
+    val details =
+        if (isSnapshot.value) ";build.timestamp=" + new java.util.Date().getTime
+        else ""
+    val location = artifactory + repository + details
+
+    Some(("Artifactory Realm" at location).withAllowInsecureProtocol(true))
 }
 ThisBuild / scmInfo := Some(
   ScmInfo(
