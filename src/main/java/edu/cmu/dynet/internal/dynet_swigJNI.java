@@ -36,11 +36,20 @@ public class dynet_swigJNI {
       return text;
   }
 
+  static Boolean isMac() {
+    return System.getProperty("os.name").startsWith("Mac ");
+  }
+
+  static Boolean isApple() {
+    return System.getProperty("os.arch").equals("aarch64");
+  }
+
   static {
     String filename = "dynet_swig";
     String libname = System.mapLibraryName(filename);
     // The Mac reports a libname ending with .dylib, but Java needs .jnilib instead.
     String jniname = replaceSuffix(libname, ".dylib", ".jnilib");
+    String resourcename = !isMac() ? jniname : (isApple() ? "apple-" + jniname: "intel-" + jniname);
 
     boolean loaded = false;
     if (!loaded)
@@ -57,7 +66,7 @@ public class dynet_swigJNI {
 
         // Load the jnilib from the JAR-ed resource file, and write it to the temp file.
         // We've anticipated the name and used it for the resource, but that could go wrong.
-        InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(jniname);
+        InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(resourcename);
         OutputStream os = new FileOutputStream(tempFile);
 
         byte buf[] = new byte[8192];
