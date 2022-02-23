@@ -1,4 +1,4 @@
-name: Habitus CI
+name: FatDynet CI
 
 on:
   push:
