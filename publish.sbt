@@ -1,4 +1,5 @@
 val publication = "fatdynet"
+val useArtifactory = true
 
 ThisBuild / developers := List(
   Developer(
@@ -20,6 +21,7 @@ ThisBuild / organizationName := "Computational Language Understanding (CLU) Lab"
 pomIncludeRepository := { _ => false }
 publishMavenStyle := true
 ThisBuild / publishTo := {
+  if (useArtifactory) {
     val artifactory = "http://artifactory.cs.arizona.edu:8081/artifactory/"
     val repository = "sbt-release-local"
     val details =
@@ -28,6 +30,14 @@ ThisBuild / publishTo := {
     val location = artifactory + repository + details
 
     Some(("Artifactory Realm" at location).withAllowInsecureProtocol(true))
+  }
+  else {
+    val nexus = "https://oss.sonatype.org/" // the standard maven repository
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")  
+  }
 }
 ThisBuild / scmInfo := Some(
   ScmInfo(
