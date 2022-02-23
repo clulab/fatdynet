@@ -100,7 +100,6 @@ public class dynet_swigJNI {
     }
   }
 
-
   public final static native void throwRuntimeError();
   public final static native void throwSubRuntimeError();
   public final static native void throwLogicError();
