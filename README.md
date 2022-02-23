@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/clulab/fatdynet.svg?branch=master)](https://travis-ci.com/clulab/fatdynet)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.clulab/fatdynet_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.clulab/fatdynet_2.12)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.clulab/fatdynet_2.12/badge.svg?dummy=unused)](https://maven-badges.herokuapp.com/maven-central/org.clulab/fatdynet_2.12)
 
 
 # fatdynet
