@@ -1,5 +1,5 @@
 val publication = "fatdynet"
-val useArtifactory = true
+val useArtifactory = false
 
 ThisBuild / developers := List(
   Developer(
