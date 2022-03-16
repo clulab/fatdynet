@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** DyNet operates on `Tensor` objects. You should never need to construct them directly;
   * however, here are some methods for getting values out of them.

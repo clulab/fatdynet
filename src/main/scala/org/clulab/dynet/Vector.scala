@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** Behind the scenes, DyNet frequently operates on C++ `std::vector<>` types. The wrapper
   * classes implement [[scala.collection.mutable.IndexedSeq]] to make them easy to work with

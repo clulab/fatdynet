@@ -1,7 +1,7 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** The underlying storage for a model parameter. You will never need to construct this yourself,
-  * but can get it back from [[edu.cmu.dynet.ParameterCollection.parametersList]].
+  * but can get it back from [[org.clulab.dynet.ParameterCollection.parametersList]].
   */
 class ParameterStorage private[dynet](private[dynet] val storage: internal.ParameterStorage) {
   def close(): Unit = storage.delete()

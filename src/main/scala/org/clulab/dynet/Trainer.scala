@@ -1,6 +1,6 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
-/** Interface for [[edu.cmu.dynet.ParameterCollection]] trainers. You want to use a specific subclass. */
+/** Interface for [[org.clulab.dynet.ParameterCollection]] trainers. You want to use a specific subclass. */
 class Trainer private[dynet](_trainer: internal.Trainer) {
   def close(): Unit = _trainer.delete()
 

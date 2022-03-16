@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 import scala.language.implicitConversions
 

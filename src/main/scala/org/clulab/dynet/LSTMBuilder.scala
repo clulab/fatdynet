@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 class VanillaLstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLSTMBuilder)
   extends RnnBuilder(builder) {
@@ -30,7 +30,7 @@ class LstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLST
 }
 
 /** Builder method for creating LSTMs, as in the C++ code. For its public methods see
-  * [[edu.cmu.dynet.RnnBuilder]].
+  * [[org.clulab.dynet.RnnBuilder]].
   */
 class CoupledLstmBuilder private[dynet](private[dynet] val builder: internal.CoupledLSTMBuilder)
   extends RnnBuilder(builder) {

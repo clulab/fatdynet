@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 import internal.{dynet_swig => dn}
 

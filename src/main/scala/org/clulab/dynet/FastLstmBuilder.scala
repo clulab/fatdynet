@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 class FastLstmBuilder private[dynet](private[dynet] val builder: internal.FastLSTMBuilder)
   extends RnnBuilder(builder) {

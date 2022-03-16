@@ -1,6 +1,6 @@
 // Because this class must have access to model.model, which is marked
 // private[dynet], it be packaged here, even though it comes from clulab.
-package edu.cmu.dynet
+package org.clulab.dynet
 
 class ZipModelLoader private[dynet](loader: internal.ZipFileLoader) {
   def this(filename: String, zipname: String) = { this(new internal.ZipFileLoader(filename, zipname))}

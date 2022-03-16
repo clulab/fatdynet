@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
 

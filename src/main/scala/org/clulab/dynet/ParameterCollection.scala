@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 class ParameterCollection private[dynet] (private[dynet] val model: internal.ParameterCollection) {
 

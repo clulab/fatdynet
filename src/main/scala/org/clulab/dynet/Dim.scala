@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** Represents a "dimension", which you should think of as the dimension of a tensor. Can only be
   *  constructed using factory methods in the companion object.
@@ -44,7 +44,7 @@ class Dim private[dynet] (private[dynet] val dim: internal.Dim) {
   def debugString(): String = s"(Dim: ${size()} ${nDims()} ${(0 until nDims().toInt).map(get(_))} )"
 }
 
-/** Factory for [[edu.cmu.dynet.Dim]] instances. */
+/** Factory for [[org.clulab.dynet.Dim]] instances. */
 object Dim {
   /** Creates a Dim object from a `Seq` of dimensions and a batch size
     *

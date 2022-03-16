@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** New serialization, much less featureful than old serialization. */
 

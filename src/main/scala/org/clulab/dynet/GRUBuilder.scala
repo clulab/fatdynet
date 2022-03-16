@@ -1,7 +1,7 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** Builder method for creating GRUs, as in the C++ code. For its public methods see
-  * [[edu.cmu.dynet.RnnBuilder]].
+  * [[org.clulab.dynet.RnnBuilder]].
   */
 class GruBuilder private[dynet](private[dynet] val builder: internal.GRUBuilder)
     extends RnnBuilder(builder) {

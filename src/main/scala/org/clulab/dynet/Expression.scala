@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** Represents an expression on the computation graph. Can only be constructed using the
   * functions contained in the companion object.
@@ -50,16 +50,16 @@ class Expression private[dynet](
   def debugString(): String = s"(Expression: ${dim().debugString()} ${value().toSeq()})"
 }
 
-/** Contains methods for creating [[edu.cmu.dynet.Expression]]s. There are several ways to create
+/** Contains methods for creating [[org.clulab.dynet.Expression]]s. There are several ways to create
   *  expressions:
   *
   *  * from explicit values (e.g. `input`)
   *  * randomly (e.g. `randomNormal`)
-  *  * from [[edu.cmu.dynet.ParameterCollection]] parameters (e.g. `parameter`)
+  *  * from [[org.clulab.dynet.ParameterCollection]] parameters (e.g. `parameter`)
   *  * from other expressions (e.g. `softmax` and `pow`)
   */
 object Expression {
-  import edu.cmu.dynet.internal.{dynet_swig => dn}
+  import org.clulab.dynet.internal.{dynet_swig => dn}
 
   /** Private helper function for wrapping methods that get expressions from the computation
     * graph */

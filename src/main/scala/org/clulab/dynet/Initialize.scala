@@ -1,4 +1,4 @@
-package edu.cmu.dynet
+package org.clulab.dynet
 
 /** Contains methods for initializing DyNet */
 object Initialize {

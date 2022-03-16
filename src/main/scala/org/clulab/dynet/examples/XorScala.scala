@@ -1,6 +1,6 @@
-package edu.cmu.dynet.examples
+package org.clulab.dynet.examples
 
-import edu.cmu.dynet._
+import org.clulab.dynet._
 
 object XorScala {
   val HIDDEN_SIZE = 8
