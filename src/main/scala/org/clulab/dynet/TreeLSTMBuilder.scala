@@ -1,5 +1,6 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
 
 abstract class TreeLSTMBuilder[A<: internal.TreeLSTMBuilder] private[dynet](private[dynet] val builder: A)
   extends RnnBuilder(builder) {

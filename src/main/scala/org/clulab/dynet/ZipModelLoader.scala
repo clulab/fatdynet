@@ -2,6 +2,8 @@
 // private[dynet], it be packaged here, even though it comes from clulab.
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 class ZipModelLoader private[dynet](loader: internal.ZipFileLoader) {
   def this(filename: String, zipname: String) = { this(new internal.ZipFileLoader(filename, zipname))}
 

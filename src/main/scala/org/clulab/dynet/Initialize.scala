@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 /** Contains methods for initializing DyNet */
 object Initialize {
   private def initialize(params: internal.DynetParams): Unit = {

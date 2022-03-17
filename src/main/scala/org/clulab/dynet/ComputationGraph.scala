@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 /** The ComputationGraph object contains the singleton DyNet computation graph instance. Any C++
   * instance method is instead implemented as a static function here.*
   */

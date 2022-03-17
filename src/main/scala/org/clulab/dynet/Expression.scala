@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 /** Represents an expression on the computation graph. Can only be constructed using the
   * functions contained in the companion object.
   */
@@ -59,7 +61,7 @@ class Expression private[dynet](
   *  * from other expressions (e.g. `softmax` and `pow`)
   */
 object Expression {
-  import org.clulab.dynet.internal.{dynet_swig => dn}
+  import edu.cmu.dynet.internal.{dynet_swig => dn}
 
   /** Private helper function for wrapping methods that get expressions from the computation
     * graph */

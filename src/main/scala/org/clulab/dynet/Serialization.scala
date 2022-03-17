@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 /** New serialization, much less featureful than old serialization. */
 
 class ModelSaver private[dynet](saver: internal.TextFileSaver) {

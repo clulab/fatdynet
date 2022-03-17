@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 /** Represents a "dimension", which you should think of as the dimension of a tensor. Can only be
   *  constructed using factory methods in the companion object.
   *

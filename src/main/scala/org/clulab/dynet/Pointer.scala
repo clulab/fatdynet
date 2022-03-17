@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 import internal.{dynet_swig => dn}
 
 /** For the most part, SWIG makes it so you just use Scala classes where you would use C++ pointers

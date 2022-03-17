@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 /** Builder method for creating GRUs, as in the C++ code. For its public methods see
   * [[org.clulab.dynet.RnnBuilder]].
   */

@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
 
   var version: Long = ComputationGraph.version

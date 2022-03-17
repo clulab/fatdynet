@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 class ParameterCollection private[dynet] (private[dynet] val model: internal.ParameterCollection) {
 
   def this() = { this( new internal.ParameterCollection ) }

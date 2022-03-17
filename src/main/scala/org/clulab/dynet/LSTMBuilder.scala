@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 class VanillaLstmBuilder private[dynet](private[dynet] val builder: internal.VanillaLSTMBuilder)
   extends RnnBuilder(builder) {
 

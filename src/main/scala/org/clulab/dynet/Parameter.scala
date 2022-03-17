@@ -1,5 +1,7 @@
 package org.clulab.dynet
 
+import edu.cmu.dynet.internal
+
 /** The underlying storage for a model parameter. You will never need to construct this yourself,
   * but can get it back from [[org.clulab.dynet.ParameterCollection.parametersList]].
   */
