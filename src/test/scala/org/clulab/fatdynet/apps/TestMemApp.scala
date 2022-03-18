@@ -12,7 +12,7 @@ object TestMemApp extends App {
   Utils.startup()
 
   // Stopping here will result in leaked computation graphs.
-  ComputationGraph.renew()
+  ComputationGraph.cluRenew()
 
   // Stopping here would leak if shutdown did not call Initializer.cleanup which uses
   // newComputationGraph = false when synchronizing.

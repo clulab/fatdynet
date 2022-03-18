@@ -45,7 +45,7 @@ class TestModelLoader extends TestLoader {
   }
 
   def initialize(): Unit = {
-    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
+    Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
   }
 
   initialize()

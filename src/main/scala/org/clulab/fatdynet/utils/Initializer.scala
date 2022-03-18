@@ -35,6 +35,8 @@ object Initializer {
     oldInitialized
   }
 
+  def cluInitialize(args: Map[String, Any] = Map.empty): Boolean = initialize(args + (DYNAMIC_MEM -> true))
+
   // Returns whether had previously been initialized or not.
   def initialize(args: Map[String, Any] = Map.empty): Boolean = Synchronizer.withoutComputationGraph("Initializer.initialize") {
     val oldInitialized = initialized.get()

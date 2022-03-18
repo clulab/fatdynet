@@ -8,7 +8,7 @@ class TestSignalHandling extends FatdynetTest {
   val SIGSEGV = TestSignalHandling.SIGSEGV
   val isWindows: Boolean = System.getProperty("os.name").toLowerCase().contains("win")
 
-  Initializer.initialize()
+  Initializer.cluInitialize()
 
   behavior of "signal handling routines"
 

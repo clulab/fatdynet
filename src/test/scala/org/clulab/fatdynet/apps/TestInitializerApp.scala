@@ -13,14 +13,14 @@ object TestInitializerApp extends App {
 
   {
     Initializer.cleanup()
-    assert(!Initializer.initialize())
+    assert(!Initializer.cluInitialize())
     assert(Initializer.isInitialized)
   }
 
   {
     Initializer.cleanup()
-    Initializer.initialize()
-    assert(Initializer.initialize())
+    Initializer.cluInitialize()
+    assert(Initializer.cluInitialize())
     assert(Initializer.isInitialized)
   }
 }

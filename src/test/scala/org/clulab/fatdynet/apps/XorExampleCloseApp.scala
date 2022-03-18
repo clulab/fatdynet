@@ -93,15 +93,15 @@ object XorExampleCloseApp {
 
         //    println()
         //    println("Computation graphviz structure:")
-        //    ComputationGraph.printGraphViz()
+        //    cg.printGraphViz()
 
         for (iteration <- 0 until ITERATIONS) {
           val lossValue = random.shuffle(transformations).map { transformation =>
             transformation.transform(xValues, yValue)
 
-            val lossValue = dynet.ComputationGraph.forward(loss).toFloat()
+            val lossValue = cg.forward(loss).toFloat()
 
-            dynet.ComputationGraph.backward(loss)
+            cg.backward(loss)
             trainer.update()
             lossValue
           }.sum / transformations.length
@@ -116,7 +116,7 @@ object XorExampleCloseApp {
     }
   }
 
-  protected def predict(xorModel: XorModel, xValues: dynet.FloatVector, yPrediction: dynet.Expression): Seq[Float] = {
+  protected def predict(xorModel: XorModel, xValues: dynet.FloatVector, yPrediction: dynet.Expression)(implicit cg: ComputationGraph): Seq[Float] = {
     var count = 0
 
     println()
@@ -124,7 +124,7 @@ object XorExampleCloseApp {
       transformation.transform(xValues)
       // This is necessary in this version of the program, possibly because the values
       // of the input are changed without creating another ComputationGraph.
-      val yValue = dynet.ComputationGraph.forward(yPrediction).toFloat()
+      val yValue = cg.forward(yPrediction).toFloat()
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -171,7 +171,7 @@ object XorExampleCloseApp {
   def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"
 
-    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+    Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val (xorModel1, initialResults) = train
     val expectedResults = xorModel1.autoClose { xorModel1 =>

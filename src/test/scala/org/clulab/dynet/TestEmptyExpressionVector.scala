@@ -7,7 +7,7 @@ import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Initializer
 
 class TestEmptyExpressionVector extends FatdynetTest {
-  Initializer.initialize()
+  Initializer.cluInitialize()
 
   behavior of "empty expression vector"
 

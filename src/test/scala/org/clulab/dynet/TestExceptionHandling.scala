@@ -19,7 +19,7 @@ class TestExceptionHandling extends FatdynetTest {
     message should include (text)
   }
 
-  Initializer.initialize()
+  Initializer.cluInitialize()
 
   behavior of "exception handling routines"
 

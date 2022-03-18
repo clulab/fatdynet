@@ -27,7 +27,7 @@ import org.clulab.fatdynet.utils.Zipper
   */
 
 class TestRepo extends FatdynetTest {
-  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+  Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   abstract class ParserTester(val name: String) {
     val testname: String

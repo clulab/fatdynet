@@ -39,7 +39,7 @@ class TestFileLoader extends TestLoader {
     model
   }
 
-  Initializer.initialize(
+  Initializer.cluInitialize(
     Map(
       Initializer.RANDOM_SEED -> 2522620396L,
       Initializer.DYNET_MEM -> "2048"

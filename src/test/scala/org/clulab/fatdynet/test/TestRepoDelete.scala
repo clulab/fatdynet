@@ -15,7 +15,7 @@ class TestRepoDelete extends FatdynetTest {
   behavior of "Repo"
 
   it should "be deleted successfull" in {
-    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+    Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val filename = "model.rnn"
     val zipname = "model.jar"

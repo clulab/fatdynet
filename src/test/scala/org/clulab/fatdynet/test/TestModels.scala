@@ -12,7 +12,7 @@ import org.clulab.fatdynet.utils.Initializer
 import scala.io.Source
 
 class TestModels extends FatdynetTest {
-  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
+  Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {
     lefts.size == rights.size && {

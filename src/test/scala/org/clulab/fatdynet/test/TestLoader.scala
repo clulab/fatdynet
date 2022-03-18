@@ -16,7 +16,7 @@ class TestLoader extends FatdynetTest {
   val name = "/name"
   val expectedValue = "-0.14423102"
 
-  Initializer.initialize()
+  Initializer.cluInitialize()
 
   def loadParameter(textModelLoader: BaseTextModelLoader): Unit = {
     // This is placed here so that it gets garbage collected timely.

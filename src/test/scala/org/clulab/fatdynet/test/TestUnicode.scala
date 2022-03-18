@@ -48,7 +48,7 @@ class TestUnicode extends FatdynetTest {
     }
   }
 
-  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+  Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   behavior of "model with Unicode name"
 

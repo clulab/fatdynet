@@ -7,7 +7,8 @@ object Utils {
 
   def startup(): Unit = {
     val memDebug = new MemDebug()
-    memDebug.leak_malloc()
+// TODO: Fix this
+//    memDebug.leak_malloc()
 //    memDebug.set_break(432) // If VS is not loaded, this will cause Java to crash.
   }
 
@@ -19,7 +20,7 @@ object Utils {
 
   def shutdown(cleanup: Boolean = false): Unit = {
     // This will release the global computation graph.
-    ComputationGraph.renew()
+    ComputationGraph.cluRenew()
     // So that it can be collected here.
     garbageCollect()
     // This will undermine the computation graph, so it had better be collected.

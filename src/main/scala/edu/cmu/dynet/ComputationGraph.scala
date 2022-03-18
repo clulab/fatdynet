@@ -55,6 +55,8 @@ object ComputationGraph {
   // We can't know the lifetime of the defaultDevice here, so it can't be deleted.
   private val defaultDevice: internal.Device = internal.dynet_swig.getDefault_device
 
+  def cluRenew(): ComputationGraph = renew(true)
+
   /** Gets rid of the singleton Computation Graph and replaces it with a fresh one. Increments
     * `version` to make sure we don't use any stale expressions.
     */
@@ -100,7 +102,7 @@ object ComputationGraph {
   def revert(): Unit = cgOpt.get.revert()
 
   def reset(): Unit = {
-    cgOpt.get.reset()
+    cgOpt.foreach(_.reset())
     cgOpt = None
   }
 

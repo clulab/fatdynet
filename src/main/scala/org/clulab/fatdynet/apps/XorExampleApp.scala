@@ -61,7 +61,7 @@ object XorExampleApp {
   def train: (XorModel, Seq[Float]) = {
     println("train 1")
     val model = new ParameterCollection
-    println("train ")
+    println("train 2")
     val trainer = new SimpleSGDTrainer(model) // i.e., stochastic gradient descent trainer
     println("train 3")
 
@@ -85,11 +85,11 @@ object XorExampleApp {
     println("train 10")
 
     val results = Synchronizer.withComputationGraph("XorExampleApp.train()") { cg =>
-      implicit val computationGraph = cg
+      implicit val computationGraph: ComputationGraph = cg
 
       println("train 11")
       val yPrediction = mkPredictionGraph(xorModel, xValues)
-      println("train 1")
+      println("train 12")
       // This is done after mkPredictionGraph so that the values are not made stale by it.
       val y = Expression.input(yValue)
       println("train 13")
@@ -107,10 +107,10 @@ object XorExampleApp {
           transformation.transform(xValues, yValue)
           println("train 17")
 
-          val lossValue = ComputationGraph.forward(loss).toFloat()
+          val lossValue = cg.forward(loss).toFloat()
           println("train 18")
 
-          ComputationGraph.backward(loss)
+          cg.backward(loss)
           println("train 19")
           trainer.update()
           println("train 20")
@@ -133,7 +133,7 @@ object XorExampleApp {
     (xorModel, results)
   }
 
-  protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression): Seq[Float] = {
+  protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression)(implicit cg: ComputationGraph): Seq[Float] = {
     var count = 0
 
     println()
@@ -141,7 +141,7 @@ object XorExampleApp {
       transformation.transform(xValues)
       // This is necessary in this version of the program, possibly because the values
       // of the input are changed without creating another ComputationGraph.
-      val yValue = ComputationGraph.forward(yPrediction).toFloat()
+      val yValue = cg.forward(yPrediction).toFloat()
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -158,7 +158,7 @@ object XorExampleApp {
   def predict(xorModel: XorModel): Seq[Float] = {
     val xValues = new FloatVector(INPUT_SIZE)
     Synchronizer.withComputationGraph("XorExampleApp.predict()") { cg =>
-      implicit val computationGraph = cg
+      implicit val computationGraph: ComputationGraph = cg
       val yPrediction = mkPredictionGraph(xorModel, xValues)
 
       predict(xorModel, xValues, yPrediction)
@@ -187,7 +187,7 @@ object XorExampleApp {
   def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"
 
-    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+    Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     println("run One")
     val (xorModel1, initialResults) = train

@@ -6,7 +6,7 @@ import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.ScalaVersion
 
 class TestFastFloatVector extends FatdynetTest {
-  Initializer.initialize()
+  Initializer.cluInitialize()
 
   def timeFloatVector(floatVector: Seq[Float], fast: Boolean): Long = {
     val startTime = System.currentTimeMillis()
