@@ -1,6 +1,6 @@
 package org.clulab.fatdynet.apps
 
-import org.clulab.dynet._
+import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
@@ -14,12 +14,12 @@ object ExternalLookupParameterExampleApp {
 
   case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
 
-  case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int)(implicit cg: ComputationGraph) {
+  case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int) {
 
     override def toString: String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
 
     // Testing
-    def transform: Expression = {
+    def transform()(implicit cg: ComputationGraph): Expression = {
       Expression.input(Dim(2), Seq(input1.toFloat, input2.toFloat))
     }
 
@@ -37,7 +37,7 @@ object ExternalLookupParameterExampleApp {
 
   val ITERATIONS = 400
 
-  def transformations()(implicit cg: ComputationGraph): Seq[XorTransformation] = Seq(
+  val transformations: Seq[XorTransformation] = Seq(
     // index, input1, input2, output = input1 ^ input2
     XorTransformation(0, 0, 0, 0),
     XorTransformation(1, 0, 1, 1),
@@ -77,7 +77,7 @@ object ExternalLookupParameterExampleApp {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(yValue)
         Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.train()") { cg =>
-          implicit val computationGraph = cg
+          implicit val computationGraph: ComputationGraph = cg
 
           val yPrediction = mkPredictionGraph(xorModel, transformation)
           val y = Expression.input(yValue)
@@ -104,7 +104,8 @@ object ExternalLookupParameterExampleApp {
 
     println()
     val result = transformations.map { transformation =>
-      val yValue = Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.predict()") {
+      val yValue = Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.predict()") { cg =>
+        implicit val computationGraph: ComputationGraph = cg
         val yPrediction = mkPredictionGraph(xorModel, transformation)
         val yValue = yPrediction.value().toFloat()
         yValue

@@ -1,6 +1,6 @@
 package org.clulab.fatdynet.apps
 
-import org.clulab.dynet._
+import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser

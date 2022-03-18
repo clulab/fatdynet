@@ -1,4 +1,4 @@
-package org.clulab.fatdynet.examples.cmu
+package org.clulab.fatdynet.examples
 
 import edu.cmu.dynet.ComputationGraph
 import edu.cmu.dynet.Dim
@@ -29,7 +29,8 @@ object XorScala {
     val p_V = m.addParameters(Dim(1, HIDDEN_SIZE))
     val p_a = m.addParameters(Dim(1))
 
-    Synchronizer.withComputationGraph("XorScala.run") {
+    Synchronizer.withComputationGraph("XorScala.run") { cg =>
+      implicit val computationGraph: ComputationGraph = cg
       val W = Expression.parameter(p_W)
       val b = Expression.parameter(p_b)
       val V = Expression.parameter(p_V)
@@ -49,7 +50,7 @@ object XorScala {
 
       println()
       println("Computation graphviz structure:")
-      ComputationGraph.printGraphViz()
+      cg.printGraphViz()
       println()
       println("Training...")
 
@@ -61,8 +62,8 @@ object XorScala {
           x_values.update(0, if (x1) 1 else -1)
           x_values.update(1, if (x2) 1 else -1)
           y_value.set(if (x1 != x2) 1 else -1)
-          loss += ComputationGraph.forward(loss_expr).toFloat()
-          ComputationGraph.backward(loss_expr)
+          loss += cg.forward(loss_expr).toFloat()
+          cg.backward(loss_expr)
           sgd.update()
         }
         sgd.learningRate *= 0.998f

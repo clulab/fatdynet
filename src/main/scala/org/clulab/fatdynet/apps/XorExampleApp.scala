@@ -46,7 +46,7 @@ object XorExampleApp {
     XorTransformation(1, 1, 0)
   )
 
-  protected def mkPredictionGraph(xorModel: XorModel, xValues: FloatVector): Expression = {
+  protected def mkPredictionGraph(xorModel: XorModel, xValues: FloatVector)(implicit cg: ComputationGraph): Expression = {
     val x = Expression.input(Dim(xValues.length), xValues)
 
     val W = Expression.parameter(xorModel.w)
@@ -84,7 +84,9 @@ object XorExampleApp {
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
     println("train 10")
 
-    val results = Synchronizer.withComputationGraph("XorExampleApp.train()") {
+    val results = Synchronizer.withComputationGraph("XorExampleApp.train()") { cg =>
+      implicit val computationGraph = cg
+
       println("train 11")
       val yPrediction = mkPredictionGraph(xorModel, xValues)
       println("train 1")
@@ -155,7 +157,8 @@ object XorExampleApp {
 
   def predict(xorModel: XorModel): Seq[Float] = {
     val xValues = new FloatVector(INPUT_SIZE)
-    Synchronizer.withComputationGraph("XorExampleApp.predict()") {
+    Synchronizer.withComputationGraph("XorExampleApp.predict()") { cg =>
+      implicit val computationGraph = cg
       val yPrediction = mkPredictionGraph(xorModel, xValues)
 
       predict(xorModel, xValues, yPrediction)

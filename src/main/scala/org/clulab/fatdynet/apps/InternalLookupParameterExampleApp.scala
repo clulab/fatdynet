@@ -23,7 +23,7 @@ object InternalLookupParameterExampleApp {
     }
 
     // Testing
-    def transform(constParameter: Expression): Expression = {
+    def transform(constParameter: Expression)(implicit cg: ComputationGraph): Expression = {
       Expression.pick(constParameter, index, 1L)
     }
 
@@ -49,7 +49,7 @@ object InternalLookupParameterExampleApp {
     XorTransformation(3, 1, 1, 0)
   )
 
-  protected def mkPredictionGraph(xorModel: XorModel, xorTransformation: XorTransformation): Expression = {
+  protected def mkPredictionGraph(xorModel: XorModel, xorTransformation: XorTransformation)(implicit cg: ComputationGraph): Expression = {
     val W = Expression.parameter(xorModel.w)
     val b = Expression.parameter(xorModel.b)
     val V = Expression.parameter(xorModel.v)
@@ -83,8 +83,8 @@ object InternalLookupParameterExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(yValue)
-        Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.train()") { cg=>
-          implicit val computationGraph = cg
+        Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.train()") { cg =>
+          implicit val computationGraph: ComputationGraph = cg
 
           val yPrediction = mkPredictionGraph(xorModel, transformation)
           val y = Expression.input(yValue)
@@ -112,7 +112,7 @@ object InternalLookupParameterExampleApp {
     println()
     val result = transformations.map { transformation =>
       val yValue = Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.predict()") { cg =>
-        implicit val computationGraph = cg
+        implicit val computationGraph: ComputationGraph = cg
 
         val yPrediction = mkPredictionGraph(xorModel, transformation)
         val yValue = yPrediction.value().toFloat()

@@ -1,6 +1,6 @@
 package org.clulab.fatdynet.utils
 
-import org.clulab.dynet._
+import edu.cmu.dynet._
 
 object Transducer {
 

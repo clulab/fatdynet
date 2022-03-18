@@ -1,5 +1,6 @@
-package org.clulab.dynet.cmu
+package org.clulab.dynet
 
+import edu.cmu.dynet.ComputationGraph
 import edu.cmu.dynet.Expression
 import edu.cmu.dynet.ExpressionVector
 import org.clulab.fatdynet.FatdynetTest
@@ -12,6 +13,7 @@ class TestEmptyExpressionVector extends FatdynetTest {
 
   it should "not crash" in {
     val expressions = Seq.empty[Expression]
+    implicit val cg = ComputationGraph.renew(true)
     val expressionVector = new ExpressionVector(expressions)
 
     val thrown = the [AssertionError] thrownBy {

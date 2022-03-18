@@ -1,7 +1,7 @@
 package org.clulab.fatdynet.utils
 
 //import edu.cmu.dynet.internal
-import org.clulab.dynet.ComputationGraph
+import edu.cmu.dynet.ComputationGraph
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import java.util.concurrent.atomic.AtomicBoolean

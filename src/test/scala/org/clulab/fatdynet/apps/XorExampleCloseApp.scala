@@ -2,6 +2,7 @@ package org.clulab.fatdynet.apps
 
 // These components are made explicit so that one knows what to close().
 import edu.cmu.dynet
+import edu.cmu.dynet.ComputationGraph
 
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
@@ -56,7 +57,7 @@ object XorExampleCloseApp {
     XorTransformation(1, 1, 0)
   )
 
-  protected def mkPredictionGraph(xorModel: XorModel, xValues: dynet.FloatVector): dynet.Expression = {
+  protected def mkPredictionGraph(xorModel: XorModel, xValues: dynet.FloatVector)(implicit cg: ComputationGraph): dynet.Expression = {
     val x = dynet.Expression.input(dynet.Dim(xValues.length), xValues)
 
     val W = dynet.Expression.parameter(xorModel.w)
@@ -83,7 +84,8 @@ object XorExampleCloseApp {
       // Y will be the expected output value, which we _input_ from gold data.
       val yValue = new dynet.FloatPointer // because OUTPUT_SIZE is 1
 
-      val results = Synchronizer.withComputationGraph("XorExampleApp.train()") {
+      val results = Synchronizer.withComputationGraph("XorExampleApp.train()") { cg =>
+        implicit val computationGraph: ComputationGraph = cg
         val yPrediction = mkPredictionGraph(xorModel, xValues)
         // This is done after mkPredictionGraph so that the values are not made stale by it.
         val y = dynet.Expression.input(yValue)
@@ -138,7 +140,8 @@ object XorExampleCloseApp {
 
   def predict(xorModel: XorModel): Seq[Float] = {
     new dynet.FloatVector(INPUT_SIZE).autoClose { xValues =>
-      Synchronizer.withComputationGraph("XorExampleApp.predict()") {
+      Synchronizer.withComputationGraph("XorExampleApp.predict()") { cg =>
+        implicit val computationGraph: ComputationGraph = cg
         mkPredictionGraph(xorModel, xValues).autoClose { yPrediction =>
           predict(xorModel, xValues, yPrediction)
         }

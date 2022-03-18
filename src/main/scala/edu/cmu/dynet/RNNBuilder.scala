@@ -3,13 +3,15 @@ package edu.cmu.dynet
 abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
 
   var version: Long = ComputationGraph.version
+  var cgOpt: Option[ComputationGraph] = None
 
   def close(): Unit = _builder.delete()
 
   def state(): Int = _builder.state
-  def newGraph(update:Boolean = true): Unit = {
-    version = ComputationGraph.version
-    _builder.new_graph(ComputationGraph.cg, update)
+  def newGraph(update:Boolean = true)(implicit cg: ComputationGraph): Unit = {
+    version = ComputationGraph.version // TODO: Update this as well
+    cgOpt = Some(cg)
+    _builder.new_graph(cg.cg, update)
   }
 
   def startNewSequence(ev: ExpressionVector): Unit = _builder.start_new_sequence(ev.vector)
@@ -22,12 +24,12 @@ abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
 
   def addInput(x: Expression): Expression = {
     val expr = _builder.add_input(x.expr)
-    new Expression(expr)
+    new Expression(expr)(cgOpt.get)
   }
 
   def addInput(prev: Int, x: Expression): Expression = {
     val expr = _builder.add_input(prev, x.expr)
-    new Expression(expr)
+    new Expression(expr)(cgOpt.get)
   }
 
   def rewindOneStep(): Unit = _builder.rewind_one_step()
@@ -35,12 +37,12 @@ abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
   def setDropout(d: Float): Unit = _builder.set_dropout(d)
   def disableDropout(): Unit = _builder.disable_dropout()
 
-  def back(): Expression = new Expression(_builder.back)
-  def finalH(): ExpressionVector = new ExpressionVector(_builder.final_h())
-  def getH(i: Int): ExpressionVector = new ExpressionVector(_builder.get_h(i))
+  def back(): Expression = new Expression(_builder.back)(cgOpt.get)
+  def finalH(): ExpressionVector = new ExpressionVector(_builder.final_h())(cgOpt.get)
+  def getH(i: Int): ExpressionVector = new ExpressionVector(_builder.get_h(i))(cgOpt.get)
 
-  def finalS(): ExpressionVector = new ExpressionVector(_builder.final_s)
-  def getS(i: Int): ExpressionVector = new ExpressionVector(_builder.get_s(i))
+  def finalS(): ExpressionVector = new ExpressionVector(_builder.final_s)(cgOpt.get)
+  def getS(i: Int): ExpressionVector = new ExpressionVector(_builder.get_s(i))(cgOpt.get)
 
   def numH0Components(): Long = _builder.num_h0_components()
   def copy(params: RnnBuilder): Unit = _builder.copy(params._builder)
@@ -58,6 +60,6 @@ class SimpleRnnBuilder private[dynet](private[dynet] val builder: internal.Simpl
   def addAuxiliaryInput(x: Expression, aux: Expression): Expression = {
     x.ensureFresh()
     aux.ensureFresh()
-    new Expression(builder.add_auxiliary_input(x.expr, aux.expr))
+    new Expression(builder.add_auxiliary_input(x.expr, aux.expr))(cgOpt.get)
   }
 }
