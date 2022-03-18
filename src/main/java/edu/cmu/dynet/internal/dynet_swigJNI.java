@@ -1006,8 +1006,16 @@ public class dynet_swigJNI {
   public final static native int DynetParams_autobatch_get(long jarg1, DynetParams jarg1_);
   public final static native void DynetParams_profiling_set(long jarg1, DynetParams jarg1_, int jarg2);
   public final static native int DynetParams_profiling_get(long jarg1, DynetParams jarg1_);
+
+  public final static native void DynetParams_forward_only_set(long jarg1, DynetParams jarg1_, int jarg2);
+  public final static native int DynetParams_forward_only_get(long jarg1, DynetParams jarg1_);
+
   public final static native void DynetParams_shared_parameters_set(long jarg1, DynetParams jarg1_, boolean jarg2);
   public final static native boolean DynetParams_shared_parameters_get(long jarg1, DynetParams jarg1_);
+
+  public final static native void DynetParams_dynamic_set(long jarg1, DynetParams jarg1_, boolean jarg2);
+  public final static native boolean DynetParams_dynamic_get(long jarg1, DynetParams jarg1_);
+
   public final static native long new_DynetParams();
   public final static native void delete_DynetParams(long jarg1);
   public final static native void initialize__SWIG_0(long jarg1, DynetParams jarg1_);

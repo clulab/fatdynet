@@ -1,6 +1,12 @@
-package org.clulab.fatdynet.examples
+package org.clulab.fatdynet.examples.cmu
 
-import edu.cmu.dynet._
+import edu.cmu.dynet.ComputationGraph
+import edu.cmu.dynet.Dim
+import edu.cmu.dynet.Expression
+import edu.cmu.dynet.FloatPointer
+import edu.cmu.dynet.FloatVector
+import edu.cmu.dynet.ParameterCollection
+import edu.cmu.dynet.SimpleSGDTrainer
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Synchronizer
 

@@ -1,6 +1,6 @@
 package org.clulab.fatdynet.apps
 
-import edu.cmu.dynet._
+import org.clulab.dynet._
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
@@ -14,7 +14,7 @@ object ExternalLookupParameterExampleApp {
 
   case class XorModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, model: ParameterCollection)
 
-  case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int) {
+  case class XorTransformation(index: Int, input1: Int, input2: Int, output: Int)(implicit cg: ComputationGraph) {
 
     override def toString: String = getClass.getSimpleName + "((" + input1 + ", " + input2 + ") -> " + output + ")"
 
@@ -37,7 +37,7 @@ object ExternalLookupParameterExampleApp {
 
   val ITERATIONS = 400
 
-  val transformations: Seq[XorTransformation] = Seq(
+  def transformations()(implicit cg: ComputationGraph): Seq[XorTransformation] = Seq(
     // index, input1, input2, output = input1 ^ input2
     XorTransformation(0, 0, 0, 0),
     XorTransformation(1, 0, 1, 1),
@@ -45,7 +45,7 @@ object ExternalLookupParameterExampleApp {
     XorTransformation(3, 1, 1, 0)
   )
 
-  protected def mkPredictionGraph(xorModel: XorModel, xorTransformation: XorTransformation): Expression = {
+  protected def mkPredictionGraph(xorModel: XorModel, xorTransformation: XorTransformation)(implicit cg: ComputationGraph): Expression = {
     val W = Expression.parameter(xorModel.w)
     val b = Expression.parameter(xorModel.b)
     val V = Expression.parameter(xorModel.v)
@@ -76,13 +76,15 @@ object ExternalLookupParameterExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(yValue)
-        Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.train()") {
+        Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.train()") { cg =>
+          implicit val computationGraph = cg
+
           val yPrediction = mkPredictionGraph(xorModel, transformation)
           val y = Expression.input(yValue)
           val loss = Expression.squaredDistance(yPrediction, y)
           val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
 
-          ComputationGraph.backward(loss)
+          cg.backward(loss)
           trainer.update()
           lossValue
         }

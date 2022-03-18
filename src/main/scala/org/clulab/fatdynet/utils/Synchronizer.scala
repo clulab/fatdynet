@@ -1,6 +1,8 @@
 package org.clulab.fatdynet.utils
 
-import edu.cmu.dynet.ComputationGraph
+//import edu.cmu.dynet.internal
+import org.clulab.dynet.ComputationGraph
+import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -19,7 +21,7 @@ trait Synchronizer {
     synchronizing.set(false)
   }
 
-  def withComputationGraph[T](message: Any)(f: => T): T
+  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T
   def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
 }
 
@@ -89,11 +91,14 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     }
   }
 
-  def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: => T, getVersionOpt: () => Option[Long]): T = {
+  def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: ComputationGraph => T, getVersionOpt: () => Option[Long]): T = {
     val startVersion = getVersionOpt()
     val index = before(message, startVersion)
+
     try {
-      during(f)
+      ComputationGraph.renew(true).autoClose { cg =>
+        f(cg)
+      }
     }
     finally {
       val endVersion = getVersionOpt()
@@ -101,7 +106,20 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     }
   }
 
-  def withComputationGraph[T](message: Any)(f: => T): T = {
+  def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: => T, getVersionOpt: () => Option[Long]): T = {
+    val startVersion = getVersionOpt()
+    val index = before(message, startVersion)
+
+    try {
+      f
+    }
+    finally {
+      val endVersion = getVersionOpt()
+      after(message, index, newComputationGraph, startVersion, endVersion)
+    }
+  }
+
+  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
     // In parallel version, synchronize on Thread.currentThread or ComputationGraph.
     Synchronizer.synchronized {
       enter()
@@ -130,19 +148,16 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
 
 class ReleaseSynchronizer extends Synchronizer {
 
-  def withComputationGraph[T](message: Any)(f: => T): T = {
+  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
     Synchronizer.synchronized {
       enter()
       try {
-        f
+        ComputationGraph.renew(true).autoClose { cg =>
+          f(cg)
+        }
       }
       finally {
-        try {
-          ComputationGraph.renew()
-        }
-        finally {
-          exit()
-        }
+        exit()
       }
     }
   }
@@ -154,13 +169,7 @@ class ReleaseSynchronizer extends Synchronizer {
         f
       }
       finally {
-        try {
-          if (newComputationGraph)
-            ComputationGraph.renew()
-        }
-        finally {
-          exit()
-        }
+        exit()
       }
     }
   }
@@ -176,7 +185,7 @@ object Synchronizer extends Synchronizer {
   def newSynchronizationException(): SynchronizationException =
       new SynchronizationException("FatDynet is already being synchronized.")
 
-  def withComputationGraph[T](message: Any)(f: => T): T = synchronizer.withComputationGraph(message)(f)
+  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = synchronizer.withComputationGraph(message)(f)
 
   def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean = false)(f: => T): T = synchronizer.withoutComputationGraph(message, newComputationGraph)(f)
 }

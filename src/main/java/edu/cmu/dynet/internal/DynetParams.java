@@ -75,6 +75,14 @@ public class DynetParams {
     return dynet_swigJNI.DynetParams_profiling_get(swigCPtr, this);
   }
 
+  public void setForward_only(int value) {
+    dynet_swigJNI.DynetParams_forward_only_set(swigCPtr, this, value);
+  }
+
+  public int getForward_only() {
+    return dynet_swigJNI.DynetParams_forward_only_get(swigCPtr, this);
+  }
+
   public void setShared_parameters(boolean value) {
     dynet_swigJNI.DynetParams_shared_parameters_set(swigCPtr, this, value);
   }
@@ -83,8 +91,15 @@ public class DynetParams {
     return dynet_swigJNI.DynetParams_shared_parameters_get(swigCPtr, this);
   }
 
+  public void setDynamic(boolean value) {
+    dynet_swigJNI.DynetParams_dynamic_set(swigCPtr, this, value);
+  }
+
+  public boolean getDynamic() {
+    return dynet_swigJNI.DynetParams_dynamic_get(swigCPtr, this);
+  }
+
   public DynetParams() {
     this(dynet_swigJNI.new_DynetParams(), true);
   }
-
 }

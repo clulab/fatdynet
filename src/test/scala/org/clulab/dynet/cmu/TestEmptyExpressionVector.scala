@@ -1,4 +1,4 @@
-package org.clulab.dynet
+package org.clulab.dynet.cmu
 
 import edu.cmu.dynet.Expression
 import edu.cmu.dynet.ExpressionVector

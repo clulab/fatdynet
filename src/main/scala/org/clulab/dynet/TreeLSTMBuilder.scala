@@ -7,7 +7,7 @@ abstract class TreeLSTMBuilder[A<: internal.TreeLSTMBuilder] private[dynet](priv
 
   def addInput(id: Int, children: IntVector, x: Expression): Expression = {
     val expr = builder.add_input(id, children.vector, x.expr)
-    new Expression(expr)
+    new Expression(expr)(cgOpt.get)
   }
 
   def setNumElements(num: Int) = {

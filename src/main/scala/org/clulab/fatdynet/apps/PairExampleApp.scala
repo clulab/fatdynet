@@ -1,6 +1,6 @@
 package org.clulab.fatdynet.apps
 
-import edu.cmu.dynet._
+import org.clulab.dynet._
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
@@ -110,7 +110,7 @@ object PairExampleApp {
     PairTransformation(Array(1, 1, 1, 1, 1), 1)
   )
 
-  protected def mkPredictionGraph(pairModel: PairModel, xValues: Array[Float], builder: RnnBuilder): Expression = {
+  protected def mkPredictionGraph(pairModel: PairModel, xValues: Array[Float], builder: RnnBuilder)(implicit cg: ComputationGraph): Expression = {
     // The graph will grow and grow without this next line.
     // This is now handled by the Synchronizer.
     // ComputationGraph.renew()
@@ -147,7 +147,9 @@ object PairExampleApp {
       val lossValue = random.shuffle(transformations).map { transformation =>
       val xValues = new Array[Float](transformation.inputs.length)
         transformation.transform(xValues, yValue)
-        Synchronizer.withComputationGraph("PairExampleApp.train()") {
+        Synchronizer.withComputationGraph("PairExampleApp.train()") { cg =>
+          implicit val computationGraph = cg
+
           val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
           val y = Expression.input(transformation.output.toFloat)
 
@@ -158,7 +160,7 @@ object PairExampleApp {
           //        println("Computation graphviz structure:")
           //        ComputationGraph.printGraphViz()
 
-          ComputationGraph.backward(loss)
+          cg.backward(loss)
           trainer.update()
           lossValue
         }
@@ -181,7 +183,9 @@ object PairExampleApp {
       val xValues = new Array[Float](transformation.inputs.length)
       transformation.transform(xValues)
 
-      val yValue = Synchronizer.withComputationGraph("PairExampleApp.predict()") {
+      val yValue = Synchronizer.withComputationGraph("PairExampleApp.predict()") { cg =>
+        implicit val computationGraph = cg
+
         val yPrediction = mkPredictionGraph(pairModel, xValues, builder)
         val yValue = yPrediction.value().toFloat()
         yValue

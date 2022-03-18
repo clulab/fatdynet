@@ -41,6 +41,10 @@ public class ComputationGraph {
     singletonInstance = null;
   }
 
+  public void reset(boolean ignoreSingleton) {
+    if (ignoreSingleton) delete(); else reset();
+  }
+
   // DyNet only allows one ComputationGraph at a time. This means that if you construct them
   // manually you have to remember to delete each one before you construct a new one, or your
   // program will crash. `getNew` will handle that deletion for you.
@@ -53,6 +57,10 @@ public class ComputationGraph {
 
     singletonInstance = new ComputationGraph();
     return singletonInstance;
+  }
+
+  public static ComputationGraph getNew(boolean ignoreStatic) {
+    return ignoreStatic ? new ComputationGraph() : getNew();
   }
 
   private ComputationGraph() {

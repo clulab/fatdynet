@@ -1,5 +1,6 @@
 package org.clulab.dynet.examples
 
+import edu.cmu.dynet.internal
 import org.clulab.dynet._
 
 object XorScala {
@@ -12,7 +13,7 @@ object XorScala {
     println("Dynet initialized!")
     val m = new ParameterCollection
     val sgd = new SimpleSGDTrainer(m)
-    ComputationGraph.renew()
+    implicit var cg = ComputationGraph.renew()
 
     val p_W = m.addParameters(Dim(HIDDEN_SIZE, 2))
     val p_b = m.addParameters(Dim(HIDDEN_SIZE))
@@ -58,7 +59,7 @@ object XorScala {
       loss /= 4
       println("iter = " + iter + ", loss = " + loss)
     }
-    ComputationGraph.renew()
+    cg = ComputationGraph.renew()
     m.model.delete()
   }
 }

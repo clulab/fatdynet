@@ -83,13 +83,15 @@ object InternalLookupParameterExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(yValue)
-        Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.train()") {
+        Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.train()") { cg=>
+          implicit val computationGraph = cg
+
           val yPrediction = mkPredictionGraph(xorModel, transformation)
           val y = Expression.input(yValue)
           val loss = Expression.squaredDistance(yPrediction, y)
           val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
 
-          ComputationGraph.backward(loss)
+          cg.backward(loss)
           trainer.update()
           lossValue
         }
@@ -109,7 +111,9 @@ object InternalLookupParameterExampleApp {
 
     println()
     val result = transformations.map { transformation =>
-      val yValue = Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.predict()") {
+      val yValue = Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.predict()") { cg =>
+        implicit val computationGraph = cg
+
         val yPrediction = mkPredictionGraph(xorModel, transformation)
         val yValue = yPrediction.value().toFloat()
         yValue

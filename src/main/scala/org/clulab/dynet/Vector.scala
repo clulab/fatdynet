@@ -103,22 +103,23 @@ class FloatVector private[dynet] (private[dynet] val vector: internal.FloatVecto
 }
 
 object ExpressionVector {
-  implicit def Seq2ExpressionVector(x: Seq[Expression]): ExpressionVector =
-    new ExpressionVector(x)
+  implicit def Seq2ExpressionVector(x: Seq[Expression])(implicit cg: ComputationGraph): ExpressionVector =
+    new ExpressionVector(x)(cg)
 }
 
-class ExpressionVector private[dynet] (
-  private[dynet] val version: Long, private[dynet] val vector: internal.ExpressionVector)
-    extends scala.collection.mutable.IndexedSeq[Expression] {
-  private[dynet] def this(vector: internal.ExpressionVector) = {
-    this(ComputationGraph.version, vector)
+class ExpressionVector private[dynet](private[dynet] val version: Long, private[dynet] val vector: internal.ExpressionVector)
+    (implicit cg: ComputationGraph) extends scala.collection.mutable.IndexedSeq[Expression] {
+
+  private[dynet] def this(vector: internal.ExpressionVector)(implicit cg: ComputationGraph) = {
+    this(ComputationGraph.version, vector)(cg)
   }
 
-  def this(size: Long) = { this(new internal.ExpressionVector(size)) }
-  def this(values: Seq[Expression] = Seq.empty) = {
+  def this(size: Long)(implicit cg: ComputationGraph) = { this(new internal.ExpressionVector(size))(cg) }
+
+  def this(values: Seq[Expression] = Seq.empty)(implicit cg: ComputationGraph) = {
     // This previous code was shorter but unnecessarily slow.
     // this(new internal.ExpressionVector(values.map(_.expr).asJavaCollection))
-    this(new internal.ExpressionVector(values.length))
+    this(new internal.ExpressionVector(values.length))(cg)
     var i = 0 // optimization
     for (value <- values) {
       vector.set(i, value.expr)

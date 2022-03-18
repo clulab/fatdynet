@@ -1,6 +1,6 @@
-package org.clulab.fatdynet.apps
+package org.clulab.fatdynet.apps.clulab
 
-import edu.cmu.dynet.ComputationGraph
+import org.clulab.dynet.ComputationGraph
 import org.clulab.fatdynet.utils.Utils
 
 object TestMemApp extends App {

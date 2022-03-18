@@ -1,6 +1,6 @@
 package org.clulab.fatdynet
 
-import edu.cmu.dynet._
+import org.clulab.dynet._
 
 import org.clulab.fatdynet.design.Artifact
 import org.clulab.fatdynet.design.Design

@@ -1,7 +1,7 @@
 package org.clulab.fatdynet.test
 
 import org.clulab.fatdynet.FatdynetTest
-import org.clulab.fatdynet.examples.XorScala
+import org.clulab.fatdynet.examples.cmu.XorScala
 import org.clulab.fatdynet.utils.Platform
 
 class TestXorScalaRun extends FatdynetTest {

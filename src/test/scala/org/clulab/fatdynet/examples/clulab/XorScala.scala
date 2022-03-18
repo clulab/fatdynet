@@ -1,0 +1,88 @@
+package org.clulab.fatdynet.examples.clulab
+
+import org.clulab.dynet.ComputationGraph
+import org.clulab.dynet.Dim
+import org.clulab.dynet.Expression
+import org.clulab.dynet.FloatPointer
+import org.clulab.dynet.FloatVector
+import org.clulab.dynet.ParameterCollection
+import org.clulab.dynet.SimpleSGDTrainer
+import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
+
+object XorScala {
+  val HIDDEN_SIZE = 8
+  val ITERATIONS = 30
+  val RANDOM_SEED = 2522620396L
+
+  def run(): (Float, Float) = {
+    println("Running XOR example")
+    Initializer.initialize(Map(
+      Initializer.RANDOM_SEED -> RANDOM_SEED,
+      Initializer.DYNAMIC_MEM -> true,
+      Initializer.FORWARD_ONLY -> 1
+    ))
+    println("Dynet initialized!")
+    val m = new ParameterCollection
+    val sgd = new SimpleSGDTrainer(m)
+    var mostRecentLoss = 0F
+    var totalLoss = 0F
+
+    val p_W = m.addParameters(Dim(HIDDEN_SIZE, 2))
+    val p_b = m.addParameters(Dim(HIDDEN_SIZE))
+    val p_V = m.addParameters(Dim(1, HIDDEN_SIZE))
+    val p_a = m.addParameters(Dim(1))
+
+    Synchronizer.withComputationGraph("XorScala.run") { cg =>
+      implicit val computationGraph = cg
+
+      val W = Expression.parameter(p_W)
+      val b = Expression.parameter(p_b)
+      val V = Expression.parameter(p_V)
+      val a = Expression.parameter(p_a)
+
+      val x_values = new FloatVector(2)
+      val x = Expression.input(Dim(2), x_values)
+
+      // Need a pointer representation of scalars so updates are tracked
+      val y_value = new FloatPointer
+      y_value.set(0)
+      val y = Expression.input(y_value)
+
+      val h = Expression.tanh(W * x + b)
+      val y_pred = V * h + a
+      val loss_expr = Expression.squaredDistance(y_pred, y)
+
+      println()
+      println("Computation graphviz structure:")
+      cg.printGraphViz()
+      println()
+      println("Training...")
+
+      for (iter <- 0 until ITERATIONS) {
+        var loss: Float = 0
+        for (mi <- 0 to 3) {
+          val x1: Boolean = mi % 2 > 0
+          val x2: Boolean = (mi / 2) % 2 > 0
+          x_values.update(0, if (x1) 1 else -1)
+          x_values.update(1, if (x2) 1 else -1)
+          y_value.set(if (x1 != x2) 1 else -1)
+          loss += cg.forward(loss_expr).toFloat()
+          cg.backward(loss_expr)
+          sgd.update()
+        }
+        sgd.learningRate *= 0.998f
+        loss /= 4
+        println("iter = " + iter + ", loss = " + loss)
+        mostRecentLoss = loss
+        totalLoss += loss
+      }
+    }
+    println("--total--, loss = " + totalLoss)
+    (mostRecentLoss, totalLoss)
+  }
+
+  def main(args: Array[String]): Unit = {
+    run()
+  }
+}
