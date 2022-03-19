@@ -12,6 +12,7 @@ import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
 
 class TestTransducer extends FatdynetTest {
+  Initializer.cluInitialize()
 
   /**
     * TODO
@@ -65,49 +66,43 @@ class TestTransducer extends FatdynetTest {
         if (canTransduce) {
           val rounds = 10
 
-          ComputationGraph.renew(true).autoClose { oldComputationGraph =>
-            implicit val oldCg: ComputationGraph = oldComputationGraph
+          ComputationGraph.cluRenew().autoClose { computationGraph =>
+            implicit val cg: ComputationGraph = computationGraph
 
-            ComputationGraph.renew(true).autoClose { newComputationGraph =>
-              implicit val newCg: ComputationGraph = newComputationGraph
+            // The vars are used to facilitate garbage collection.
+            // Note that the expression is associated with the oldCg and it is reused.
+            var input: Expression = Expression.randomNormal(Dim(inputDim))(cg)
+            var inputs = Array(input, input, input)
 
-              // The vars are used to facilitate garbage collection.
-              var oldInput: Expression = Expression.randomNormal(Dim(inputDim))(oldCg)
-              var oldInputs = Array(oldInput, oldInput, oldInput)
-              val oldFloats = new Array[Float](rounds)
+            val oldFloats = new Array[Float](rounds)
+            val newFloats = new Array[Float](rounds)
 
-              // The vars are used to facilitate garbage collection.
-              var newInput: Expression = Expression.randomNormal(Dim(inputDim))(newCg)
-              var newInputs = Array(newInput, newInput, newInput)
-              val newFloats = new Array[Float](rounds)
+            oldRnnBuilder.newGraph()(cg)
+            newRnnBuilder.newGraph()(cg)
 
-              0.until(rounds).foreach { i =>
-                val oldTransduced = Transducer.transduce(oldRnnBuilder, oldInputs).last
-                val oldSum = Expression.sumElems(oldTransduced)(oldCg)
-                val oldFloat = oldSum.value().toFloat()
-                oldFloats(i) = oldFloat
+            0.until(rounds).foreach { i =>
+              val oldTransduced = Transducer.transduce(oldRnnBuilder, inputs).last
+              val oldSum = Expression.sumElems(oldTransduced)(cg)
+              val oldFloat = oldSum.value().toFloat()
+              oldFloats(i) = oldFloat
 
-                val newTransduced = Transducer.transduce(newRnnBuilder, newInputs).last
-                val newSum = Expression.sumElems(newTransduced)(newCg)
-                val newFloat = newSum.value().toFloat()
-                newFloats(i) = newFloat
+              val newTransduced = Transducer.transduce(newRnnBuilder, inputs).last
+              val newSum = Expression.sumElems(newTransduced)(cg)
+              val newFloat = newSum.value().toFloat()
+              newFloats(i) = newFloat
 
-                oldFloat should be (newFloat)
-              }
-              newInputs = null
-              newInput = null
-
-              oldInputs = null
-              oldInput = null
-
-              // oldFloats.foreach { each => print(each); print(" ") }
-              // println
-              // newFloats.foreach { each => print(each); print(" ") }
-              // println
-              // It should have gotten the same answer each round.
-              Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
-              Array.fill(rounds) { newFloats(0) } should be (newFloats)
+              oldFloat should be (newFloat)
             }
+            input = null
+            inputs = null
+
+            // oldFloats.foreach { each => print(each); print(" ") }
+            // println
+            // newFloats.foreach { each => print(each); print(" ") }
+            // println
+            // It should have gotten the same answer each round.
+            Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
+            Array.fill(rounds) { newFloats(0) } should be (newFloats)
           }
         }
         new File(filename).delete

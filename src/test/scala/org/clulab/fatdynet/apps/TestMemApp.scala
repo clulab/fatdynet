@@ -1,11 +1,13 @@
-package org.clulab.fatdynet.apps.cmu
+package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet.ComputationGraph
+import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Utils
 
 object TestMemApp extends App {
   // Use a debug build of DyNet under Windows and also make
   // sure that environment variable MALLOC_TRACE is set.
+  Initializer.cluInitialize()
 
   // This is set to leave a memory leak on purpose.  It includes a
   // secret message left in the memory.
