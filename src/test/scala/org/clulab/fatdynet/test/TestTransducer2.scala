@@ -16,21 +16,16 @@ class TestTransducer2 extends FatdynetTest {
 
   combinations.par.foreach { case (layers, inputDim, hiddenDim) =>
     println(s"Testing layers = $layers, inputDim = $inputDim, hiddenDim = $hiddenDim")
-    implicit val cg: ComputationGraph = ComputationGraph.cluRenew() // computationGraph
+    implicit val cg: ComputationGraph = ComputationGraph.cluRenew()
 
     val model = new ParameterCollection
-    val rnnBuilder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
+//    val rnnBuilder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
 
-    var input1: Expression = Expression.randomNormal(Dim(inputDim))(cg)
-    var input2: Expression = Expression.randomNormal(Dim(inputDim))(cg)
-    var input3: Expression = Expression.randomNormal(Dim(inputDim))(cg)
-    var inputs = Array(input1, input2, input3)
-
+    val input: Expression = Expression.randomNormal(Dim(inputDim))(cg)
     val floats = new Array[Float](rounds)
-    rnnBuilder.newGraph()(cg)
+//    rnnBuilder.newGraph()(cg)
     0.until(rounds).foreach { i =>
-//      val oldTransduced = Transducer.transduce(rnnBuilder, inputs).last
-      val oldSum = Expression.sumElems(input1)(cg) // oldTransduced)(cg)
+      val oldSum = Expression.sumElems(input)(cg)
       val oldFloat = oldSum.value().toFloat()
       floats(i) = oldFloat
     }
