@@ -71,25 +71,19 @@ class TestTransducer extends FatdynetTest {
 
             // The vars are used to facilitate garbage collection.
             // Note that the expression is associated with the oldCg and it is reused.
-            var input1: Expression = Expression.randomNormal(Dim(inputDim))(cg)
-            var input2: Expression = Expression.randomNormal(Dim(inputDim))(cg)
-            var input3: Expression = Expression.randomNormal(Dim(inputDim))(cg)
-            var inputs = Array(input1, input2, input3)
+            var input: Expression = Expression.randomNormal(Dim(inputDim))(cg)
+            var inputs = Array(input, input, input)
 
-            cg.checkpoint()
             val oldFloats = new Array[Float](rounds)
+            val newFloats = new Array[Float](rounds)
             oldRnnBuilder.newGraph()(cg)
+            newRnnBuilder.newGraph()(cg)
             0.until(rounds).foreach { i =>
               val oldTransduced = Transducer.transduce(oldRnnBuilder, inputs).last
               val oldSum = Expression.sumElems(oldTransduced)(cg)
               val oldFloat = oldSum.value().toFloat()
               oldFloats(i) = oldFloat
-            }
 
-            cg.revert()
-            val newFloats = new Array[Float](rounds)
-            newRnnBuilder.newGraph()(cg)
-            0.until(rounds).foreach { i =>
               val newTransduced = Transducer.transduce(newRnnBuilder, inputs).last
               val newSum = Expression.sumElems(newTransduced)(cg)
               val newFloat = newSum.value().toFloat()
@@ -103,16 +97,9 @@ class TestTransducer extends FatdynetTest {
               oldFloats(i) should be(newFloats(i))
             }
 
-            input1 = null
-            input2 = null
-            input3 = null
+            input = null
             inputs = null
 
-            // oldFloats.foreach { each => print(each); print(" ") }
-            // println
-            // newFloats.foreach { each => print(each); print(" ") }
-            // println
-            // It should have gotten the same answer each round.
             Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
             Array.fill(rounds) { newFloats(0) } should be (newFloats)
           }
