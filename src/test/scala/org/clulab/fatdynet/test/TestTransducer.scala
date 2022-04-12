@@ -12,7 +12,8 @@ import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
 
 class TestTransducer extends FatdynetTest {
-  Initializer.cluInitialize()
+  // forward-only is required for the ForwardOnlyExecutionEngine which uses the DynamicCPUMemoryPool.
+  Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L, "forward-only" -> 1))
 
   /**
     * TODO
@@ -76,8 +77,10 @@ class TestTransducer extends FatdynetTest {
 
             val oldFloats = new Array[Float](rounds)
             val newFloats = new Array[Float](rounds)
+
             oldRnnBuilder.newGraph()(cg)
             newRnnBuilder.newGraph()(cg)
+
             0.until(rounds).foreach { i =>
               val oldTransduced = Transducer.transduce(oldRnnBuilder, inputs).last
               val oldSum = Expression.sumElems(oldTransduced)(cg)
@@ -88,18 +91,17 @@ class TestTransducer extends FatdynetTest {
               val newSum = Expression.sumElems(newTransduced)(cg)
               val newFloat = newSum.value().toFloat()
               newFloats(i) = newFloat
-            }
 
-            0.until(rounds).foreach { i =>
-              println(s"old = ${oldFloats(i)}, new = ${newFloats(i)}")
+              oldFloat should be (newFloat)
             }
-            0.until(rounds).foreach { i =>
-              oldFloats(i) should be(newFloats(i))
-            }
-
             input = null
             inputs = null
 
+            // oldFloats.foreach { each => print(each); print(" ") }
+            // println
+            // newFloats.foreach { each => print(each); print(" ") }
+            // println
+            // It should have gotten the same answer each round.
             Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
             Array.fill(rounds) { newFloats(0) } should be (newFloats)
           }
@@ -170,9 +172,10 @@ class TestTransducer extends FatdynetTest {
     def build(model: ParameterCollection): RnnBuilder = new GruBuilder(layers, inputDim, hiddenDim, model)
   }
 
-  Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+  val combinations = for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6)
+    yield (layers, inputDim, hiddenDim)
 
-  for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6) {
+  combinations.foreach { case (layers, inputDim, hiddenDim) =>
     new FastLstmTransducerTester(layers, inputDim, hiddenDim).test()
     new CompactVanillaLstmTransducerTester(layers, inputDim, hiddenDim).test()
     new CoupledLstmTransducerTester(layers, inputDim, hiddenDim).test()

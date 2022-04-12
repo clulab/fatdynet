@@ -9,7 +9,7 @@ class Expression private[dynet](
   // garbage collector runs. By explicitly grabbing references to them, we can prevent this
   // premature garbage collection.
   val reference: AnyRef = null
-)(implicit cg: ComputationGraph) {
+)(implicit val cg: ComputationGraph) {
 
   def close(): Unit = expr.delete()
 
@@ -23,9 +23,9 @@ class Expression private[dynet](
   def dim(): Dim = new Dim(expr.dim)
 
   /** Make sure that this expression is the latest version */
-  private[dynet] def ensureFresh(): Unit = {
-    // TODO: Something different
-    //if (version != ComputationGraph.version) throw new RuntimeException("stale expression")
+  private[dynet] def ensureFresh(cg: ComputationGraph): Unit = {
+    if (!this.cg.eq(cg))
+      throw new RuntimeException("stale expression")
   }
 
   // Sugar for doing expression arithmetic
@@ -108,8 +108,8 @@ object Expression {
   private type BinaryTransform = (internal.Expression, internal.Expression) => internal.Expression
   private def binary(e1: Expression, e2: Expression, combiner: BinaryTransform)(implicit cg: ComputationGraph) = {
     // TODO: Check that the computation graph of cg, e1, and e2 are all the same
-    e1.ensureFresh()
-    e2.ensureFresh()
+    e1.ensureFresh(cg)
+    e2.ensureFresh(cg)
     val expr = combiner(e1.expr, e2.expr)
     // Specify e1 and e2 as references so they can't get prematurely garbage collected.
     new Expression(expr, Seq(e1, e2))
@@ -117,8 +117,8 @@ object Expression {
 
   private type UnaryTransform = internal.Expression => internal.Expression
   private def unary(e: Expression, transformer: UnaryTransform)(implicit cg: ComputationGraph) = {
-    // TODO: Check that the computation graph of cg and e are the same
-    e.ensureFresh()
+    // Check that the computation graph of cg and e are the same.
+    e.ensureFresh(cg)
     // Specify e as reference so it can't get prematurely garbage collected.
     new Expression(transformer(e.expr), e)
   }
