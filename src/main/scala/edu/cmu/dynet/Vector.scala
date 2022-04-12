@@ -133,7 +133,7 @@ class ExpressionVector private[dynet](private[dynet] val version: Long, private[
   }
 
   def add(v: Expression): Unit = {
-    v.ensureFresh()
+    v.ensureFresh(cg)
     vector.add(v.expr)
   }
 
@@ -141,7 +141,7 @@ class ExpressionVector private[dynet](private[dynet] val version: Long, private[
   override def apply(idx: Int): Expression = new Expression(vector.get(idx), this)
   override def length: Int = vector.size.toInt
   override def update(idx: Int, elem: Expression): Unit = {
-    elem.ensureFresh()
+    elem.ensureFresh(cg)
     vector.set(idx, elem.expr)
   }
 }

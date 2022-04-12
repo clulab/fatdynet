@@ -58,8 +58,8 @@ class SimpleRnnBuilder private[dynet](private[dynet] val builder: internal.Simpl
   }
 
   def addAuxiliaryInput(x: Expression, aux: Expression): Expression = {
-    x.ensureFresh()
-    aux.ensureFresh()
+    x.ensureFresh(cgOpt.get)
+    aux.ensureFresh(cgOpt.get)
     new Expression(builder.add_auxiliary_input(x.expr, aux.expr))(cgOpt.get)
   }
 }

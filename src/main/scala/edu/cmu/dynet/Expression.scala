@@ -15,7 +15,7 @@ class Expression private[dynet](
 
   /** Get the tensor value of this expression */
   def value(): Tensor = {
-    ensureFresh()
+    ensureFresh(cg)
     new Tensor(expr.value)
   }
 
@@ -319,15 +319,15 @@ object Expression {
 
   def contract3d1d(x: Expression, y: Expression)(implicit cg: ComputationGraph): Expression = binary(x, y, dn.contract3d_1d)(cg)
   def contract3d1d1d(x: Expression, y: Expression, z: Expression)(implicit cg: ComputationGraph): Expression = {
-    Seq(x, y, z).foreach(_.ensureFresh())
+    Seq(x, y, z).foreach(_.ensureFresh(cg))
     new Expression(dn.contract3d_1d_1d(x.expr, y.expr, z.expr), Seq(x, y, z))(cg)
   }
   def contract3d1d1d(x: Expression, y: Expression, z: Expression, b: Expression)(implicit cg: ComputationGraph): Expression = {
-    Seq(x, y, z, b).foreach(_.ensureFresh())
+    Seq(x, y, z, b).foreach(_.ensureFresh(cg))
     new Expression(dn.contract3d_1d_1d(x.expr, y.expr, z.expr, b.expr), Seq(x, y, z, b))(cg)
   }
   def contract3d1d(x: Expression, y: Expression, b: Expression)(implicit cg: ComputationGraph): Expression = {
-    Seq(x, y, b).foreach(_.ensureFresh())
+    Seq(x, y, b).foreach(_.ensureFresh(cg))
     new Expression(dn.contract3d_1d(x.expr, y.expr, b.expr), Seq(x, y, b))(cg)
   }
 
@@ -340,7 +340,7 @@ object Expression {
   /* NORMALIZATION OPERATIONS */
 
   def layerNorm(x: Expression, g: Expression, b: Expression)(implicit cg: ComputationGraph): Expression = {
-    Seq(x, g, b).foreach(_.ensureFresh())
+    Seq(x, g, b).foreach(_.ensureFresh(cg))
     new Expression(dn.layer_norm(x.expr, g.expr, b.expr), Seq(x, g, b))(cg)
   }
   def weightNorm(w: Expression, g: Expression)(implicit cg: ComputationGraph): Expression = binary(w, g, dn.weight_norm)(cg)
