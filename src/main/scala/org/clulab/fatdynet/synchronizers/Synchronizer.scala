@@ -1,17 +1,21 @@
-package org.clulab.fatdynet.utils
+package org.clulab.fatdynet.synchronizers
 
-//import edu.cmu.dynet.internal
 import edu.cmu.dynet.ComputationGraph
-import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.clulab.fatdynet.utils.SynchronizationException
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+// Synchronization prevents two different threads from entering the critical section
+// at the same time.  It does not prevent the same thread from entering a critical
+// section twice.  This happens when there is unintentional recursion, for example.
+// The enter and exit methods are supposed to detect that situation.
 trait Synchronizer {
   protected val synchronizing = new AtomicBoolean(false)
 
   // Allow public query of the read-only version.
   def isSynchronized: Boolean = synchronizing.get
 
+  // Should this be a function with a try and finally instead?
   def enter(): Unit = {
     if (synchronizing.getAndSet(true))
       throw Synchronizer.newSynchronizationException()
@@ -20,13 +24,11 @@ trait Synchronizer {
   def exit(): Unit = {
     synchronizing.set(false)
   }
-
-  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
 }
 
-class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
+trait DebugSynchronizer {
   protected var count = 0
+  protected val verbose: Boolean = false
 
   def log(index: Int, stage: String, startVersionOpt: Option[Long], message: Any): Unit = {
     val threadId: Long = Thread.currentThread.getId
@@ -35,7 +37,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     println(s"Synchronizer\t$index\t$stage\t$threadId\t$version\t${message.toString}")
   }
 
-  def before(message: Any, startVersionOpt: Option[Long]): Int = {
+  def before(message: Any, newComputationGraph: Boolean, startVersionOpt: Option[Long]): Int = {
     try {
       val index = count
       if (verbose) log(index, "before", startVersionOpt, message)
@@ -64,6 +66,8 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
   def after(message: Any, index: Int, newComputationGraph: Boolean, startVersionOpt: Option[Long], endVersionOpt: Option[Long]): Unit = {
     try {
       if (verbose) log(index, "after", startVersionOpt, message)
+      if (startVersionOpt != endVersionOpt)
+        println("Oh, no!")
       require(startVersionOpt == endVersionOpt, "ComputationGraph version should not change")
 
       // Make sure there is a ComputationGraph now as long as we're synchronized and
@@ -81,7 +85,7 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
       // classOf[ComputationGraph] does not compile, so the Java version is used.
       // ComputationGraph.getClass
       // However, it is more important to start in a known state.
-      if (newComputationGraph: Boolean)
+      if (newComputationGraph)
         ComputationGraph.renew()
     }
     catch {
@@ -91,96 +95,59 @@ class DebugSynchronizer(verbose: Boolean) extends Synchronizer {
     }
   }
 
-  def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: ComputationGraph => T, getVersionOpt: () => Option[Long]): T = {
-    val startVersion = getVersionOpt()
-    val index = before(message, startVersion)
-
-    try {
-      ComputationGraph.renew(true).autoClose { cg =>
-        f(cg)
-      }
-    }
-    finally {
-      val endVersion = getVersionOpt()
-      after(message, index, newComputationGraph, startVersion, endVersion)
-    }
-  }
-
   def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: => T, getVersionOpt: () => Option[Long]): T = {
     val startVersion = getVersionOpt()
-    val index = before(message, startVersion)
+    val index = before(message, newComputationGraph, startVersion)
 
     try {
-      f
+      during(f)
     }
     finally {
       val endVersion = getVersionOpt()
       after(message, index, newComputationGraph, startVersion, endVersion)
     }
   }
-
-  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
-    // In parallel version, synchronize on Thread.currentThread or ComputationGraph.
-    Synchronizer.synchronized {
-      enter()
-      try {
-        doSynchronized(message, true, f, () => Some(ComputationGraph.version))
-      }
-      finally {
-        exit()
-      }
-    }
-  }
-
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
-    // Synchronization here should be global.  There should be no active ComputationGraphs.
-    Synchronizer.synchronized {
-      enter()
-      try {
-        doSynchronized(message, newComputationGraph, f, () => None)
-      }
-      finally {
-        exit()
-      }
-    }
-  }
 }
 
-class ReleaseSynchronizer extends Synchronizer {
+trait ReleaseSynchronizer
 
-  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
-    Synchronizer.synchronized {
-      enter()
-      try {
-        ComputationGraph.renew(true).autoClose { cg =>
-          f(cg)
-        }
-      }
-      finally {
-        exit()
-      }
-    }
-  }
-
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
-    Synchronizer.synchronized {
-      enter()
-      try {
-        f
-      }
-      finally {
-        exit()
-      }
-    }
-  }
+// In the implicit version, the f does not use a ComputationGraph.
+// It will be taken from the globally defined value by things that need it.
+trait ImplicitSynchronizer {
+  def withComputationGraph[T](message: Any)(f: => T): T
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
 }
 
+// In the explicit version, the f does indeed take a ComputationGraph.
+// That cg can be inserted into the context as an implicit value or be
+// passed around explitly as an argument.  Adding it to the context takes
+// care of some compatibility issues in transitioning from one to the other.
+trait ExplicitSynchronizer {
+  def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T
+  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
+}
+
+
+//Debug/Release
+//Implicit/Explicit
+//Default/Custom
+//Single/Multiple
+
+//runtime
+// reuse, renew
+
+// For the internal, Java representation
+// reset(boolean ignoreSingleton) is new
+// getNew(boolean ignoreStatis) is new
+
+// Should initializer decide that kind of Synchronizer is being used?
+// Make some way to initialize this?  If necessary, via the initializer?
 object Synchronizer extends Synchronizer {
   var debug: Boolean = true
   var verbose: Boolean = false
-  val synchronizer: Synchronizer =
-      if (debug) new DebugSynchronizer(verbose)
-      else new ReleaseSynchronizer()
+  val synchronizer: ExplicitSynchronizer =
+      if (debug) new DebugExplicitDefaultSynchronizer(verbose)
+      else new ReleaseExplicitDefaultSynchronizer()
 
   def newSynchronizationException(): SynchronizationException =
       new SynchronizationException("FatDynet is already being synchronized.")

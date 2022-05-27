@@ -13,55 +13,55 @@ class TestSynchronization extends Test {
 
   it should "work in serial" in {
     new ParRange(0.until(count)).foreach { _ =>
-      Synchronizer.synchronize()
+      LocalSynchronizer.synchronize()
     }
   }
 
   it should "work in parallel" in {
     new ParRange(0.until(count)).foreach { _ =>
-      Synchronizer.synchronize()
+      LocalSynchronizer.synchronize()
     }
   }
 
   it should "work with lazy vals" in {
-    Synchronizer.synchronize(LazyInitializer.unsynchronizingLazyVal)
+    LocalSynchronizer.synchronize(LazyInitializer.unsynchronizingLazyVal)
   }
 
   it should "catch a problem with lazy vals" in {
     assertThrows[SynchronizationException] {
-      Synchronizer.synchronize(LazyInitializer.synchronizingLazyVal)
+      LocalSynchronizer.synchronize(LazyInitializer.synchronizingLazyVal)
     }
   }
 
   it should "work with companion objects" in {
-    Synchronizer.synchronize(UnsynchronizingLazyObject)
+    LocalSynchronizer.synchronize(UnsynchronizingLazyObject)
   }
 
   it should "catch a problem with companion objects" in {
     assertThrows[ExceptionInInitializerError] {
-      Synchronizer.synchronize(SynchronizingLazyObject)
+      LocalSynchronizer.synchronize(SynchronizingLazyObject)
     }
   }
 
   it should "work with an exception handler" in {
     try {
-      Synchronizer.synchronize {
+      LocalSynchronizer.synchronize {
         throw new Exception()
       }
     }
     catch {
-      case _: Exception => Synchronizer.synchronize() // try again
+      case _: Exception => LocalSynchronizer.synchronize() // try again
     }
   }
 
   it should "catch a problem with exception handlers" in {
     assertThrows[SynchronizationException] {
-      Synchronizer.synchronize {
+      LocalSynchronizer.synchronize {
         try {
           throw new Exception()
         }
         catch {
-          case _: Exception => Synchronizer.synchronize() // try again
+          case _: Exception => LocalSynchronizer.synchronize() // try again
         }
       }
     }
@@ -100,7 +100,7 @@ class TestSynchronization extends Test {
     }
 
     new ParRange(0.until(2)).foreach { _ =>
-      Synchronizer.synchronize {
+      LocalSynchronizer.synchronize {
         block()
       }
     }
@@ -142,7 +142,7 @@ object LazyInitializer {
 
   lazy val synchronizingLazyVal: Int = {
     println("Started synchronizing lazy val initialization...")
-    Synchronizer.synchronize()
+    LocalSynchronizer.synchronize()
     val result = 42
     println("Finished synchronizing lazy val initialization...")
     result
@@ -156,16 +156,16 @@ object UnsynchronizingLazyObject {
 
 object SynchronizingLazyObject {
   println("Started SynchronizingLazyObject initialization...")
-  Synchronizer.synchronize()
+  LocalSynchronizer.synchronize()
   println("Finished SynchronizingLazyObject initialization...")
 }
 
-object Synchronizer {
+object LocalSynchronizer {
 
   val synchronizing = new AtomicBoolean(false)
 
   def synchronize(f: => Unit = ()): Unit = {
-    Synchronizer.synchronized {
+    LocalSynchronizer.synchronized {
       val wasSynchronizing = synchronizing.getAndSet(true)
 
       println("Started synchronizing...")
