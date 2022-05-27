@@ -67,9 +67,7 @@ class TestTransducer extends FatdynetTest {
         if (canTransduce) {
           val rounds = 10
 
-          ComputationGraph.cluRenew().autoClose { computationGraph =>
-            implicit val cg: ComputationGraph = computationGraph
-
+          ComputationGraph.cluRenew().autoClose { implicit cg =>
             // The vars are used to facilitate garbage collection.
             // Note that the expression is associated with the oldCg and it is reused.
             var input: Expression = Expression.randomNormal(Dim(inputDim))(cg)

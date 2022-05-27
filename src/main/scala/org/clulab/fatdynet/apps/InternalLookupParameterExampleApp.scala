@@ -2,10 +2,10 @@ package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
+import org.clulab.fatdynet.synchronizers.Synchronizer
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
-import org.clulab.fatdynet.utils.Synchronizer
 import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
@@ -83,9 +83,7 @@ object InternalLookupParameterExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(yValue)
-        Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.train()") { cg =>
-          implicit val computationGraph: ComputationGraph = cg
-
+        Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.train()") { implicit cg =>
           val yPrediction = mkPredictionGraph(xorModel, transformation)
           val y = Expression.input(yValue)
           val loss = Expression.squaredDistance(yPrediction, y)
@@ -111,9 +109,7 @@ object InternalLookupParameterExampleApp {
 
     println()
     val result = transformations.map { transformation =>
-      val yValue = Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.predict()") { cg =>
-        implicit val computationGraph: ComputationGraph = cg
-
+      val yValue = Synchronizer.withComputationGraph("InternalLookupParameterExampleApp.predict()") { implicit cg =>
         val yPrediction = mkPredictionGraph(xorModel, transformation)
         val yValue = yPrediction.value().toFloat()
         yValue

@@ -2,10 +2,10 @@ package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
+import org.clulab.fatdynet.synchronizers.Synchronizer
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
-import org.clulab.fatdynet.utils.Synchronizer
 import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
@@ -84,9 +84,7 @@ object XorExampleApp {
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
     println("train 10")
 
-    val results = Synchronizer.withComputationGraph("XorExampleApp.train()") { cg =>
-      implicit val computationGraph: ComputationGraph = cg
-
+    val results = Synchronizer.withComputationGraph("XorExampleApp.train()") { implicit cg =>
       println("train 11")
       val yPrediction = mkPredictionGraph(xorModel, xValues)
       println("train 12")
@@ -157,8 +155,7 @@ object XorExampleApp {
 
   def predict(xorModel: XorModel): Seq[Float] = {
     val xValues = new FloatVector(INPUT_SIZE)
-    Synchronizer.withComputationGraph("XorExampleApp.predict()") { cg =>
-      implicit val computationGraph: ComputationGraph = cg
+    Synchronizer.withComputationGraph("XorExampleApp.predict()") { implicit cg =>
       val yPrediction = mkPredictionGraph(xorModel, xValues)
 
       predict(xorModel, xValues, yPrediction)

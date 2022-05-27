@@ -7,8 +7,8 @@ import edu.cmu.dynet.FloatPointer
 import edu.cmu.dynet.FloatVector
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet.SimpleSGDTrainer
+import org.clulab.fatdynet.synchronizers.Synchronizer
 import org.clulab.fatdynet.utils.Initializer
-import org.clulab.fatdynet.utils.Synchronizer
 
 object XorScala {
   val HIDDEN_SIZE = 8
@@ -29,8 +29,7 @@ object XorScala {
     val p_V = m.addParameters(Dim(1, HIDDEN_SIZE))
     val p_a = m.addParameters(Dim(1))
 
-    Synchronizer.withComputationGraph("XorScala.run") { cg =>
-      implicit val computationGraph: ComputationGraph = cg
+    Synchronizer.withComputationGraph("XorScala.run") { implicit cg =>
       val W = Expression.parameter(p_W)
       val b = Expression.parameter(p_b)
       val V = Expression.parameter(p_V)

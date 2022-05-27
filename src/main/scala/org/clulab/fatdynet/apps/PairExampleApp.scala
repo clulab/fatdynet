@@ -2,10 +2,10 @@ package org.clulab.fatdynet.apps
 
 import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
+import org.clulab.fatdynet.synchronizers.Synchronizer
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
-import org.clulab.fatdynet.utils.Synchronizer
 import org.clulab.fatdynet.utils.Transducer
 import org.clulab.fatdynet.utils.Utils
 
@@ -147,9 +147,7 @@ object PairExampleApp {
       val lossValue = random.shuffle(transformations).map { transformation =>
       val xValues = new Array[Float](transformation.inputs.length)
         transformation.transform(xValues, yValue)
-        Synchronizer.withComputationGraph("PairExampleApp.train()") { cg =>
-          implicit val computationGraph = cg
-
+        Synchronizer.withComputationGraph("PairExampleApp.train()") { implicit cg =>
           val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
           val y = Expression.input(transformation.output.toFloat)
 
@@ -183,9 +181,7 @@ object PairExampleApp {
       val xValues = new Array[Float](transformation.inputs.length)
       transformation.transform(xValues)
 
-      val yValue = Synchronizer.withComputationGraph("PairExampleApp.predict()") { cg =>
-        implicit val computationGraph = cg
-
+      val yValue = Synchronizer.withComputationGraph("PairExampleApp.predict()") { implicit cg =>
         val yPrediction = mkPredictionGraph(pairModel, xValues, builder)
         val yValue = yPrediction.value().toFloat()
         yValue

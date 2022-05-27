@@ -2,6 +2,7 @@ package org.clulab.fatdynet.utils
 
 import edu.cmu.dynet._
 import edu.cmu.dynet.internal.dynet_swig.reset_rng
+import org.clulab.fatdynet.synchronizers.Synchronizer
 
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
