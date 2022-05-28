@@ -13,7 +13,7 @@ class DebugExplicitMultipleSynchronizer(override val verbose: Boolean) extends D
   def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
     ComputationGraph.renew(true).autoClose { cg =>
       val startVersionOpt = None
-      val index = before(message, startVersionOpt)
+      val index = before(message, startVersionOpt, Some(cg))
 
       try {
         f(cg)
@@ -32,7 +32,7 @@ class DebugExplicitMultipleSynchronizer(override val verbose: Boolean) extends D
       enter()
       try {
         val startVersionOpt = None
-        val index = before(message, startVersionOpt)
+        val index = before(message, startVersionOpt, None)
 
         try {
           f

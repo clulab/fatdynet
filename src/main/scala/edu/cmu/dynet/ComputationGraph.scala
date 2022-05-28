@@ -102,7 +102,8 @@ object ComputationGraph {
   def revert(): Unit = cgOpt.get.revert()
 
   def reset(): Unit = {
-    cgOpt.foreach(_.reset())
+    // This is false because it would be the global one, so don't ignore the singleton.
+    cgOpt.foreach(_.cg.reset(false))
     cgOpt = None
   }
 

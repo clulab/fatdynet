@@ -58,7 +58,7 @@ object Expression {
     f: ComputationGraph => internal.Expression,
     reference: AnyRef = null
   )(implicit cg: ComputationGraph): Expression = {
-    val version = ComputationGraph.version
+    // val version = ComputationGraph.version
     val expr = f(cg)
     new Expression(expr, reference)
   }

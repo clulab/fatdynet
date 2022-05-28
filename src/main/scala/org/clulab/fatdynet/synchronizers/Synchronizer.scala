@@ -4,6 +4,7 @@ import edu.cmu.dynet.ComputationGraph
 import org.clulab.fatdynet.utils.SynchronizationException
 
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 
 // Synchronization prevents two different threads from entering the critical section
 // at the same time.  It does not prevent the same thread from entering a critical
@@ -27,21 +28,20 @@ trait Synchronizer {
 }
 
 trait DebugSynchronizer {
-  protected var count = 0
+  protected var count = new AtomicInteger(0)
   protected val verbose: Boolean = false
 
-  def log(index: Int, stage: String, startVersionOpt: Option[Long], message: Any): Unit = {
+  def log(index: Int, stage: String, startVersionOpt: Option[Long], cgOpt: Option[ComputationGraph], message: Any): Unit = {
     val threadId: Long = Thread.currentThread.getId
     val version = startVersionOpt.map(_.toString).getOrElse("?")
-    println(s"Synchronizer\tindex\tstage\tthreadId\tversion\tmessage")
-    println(s"Synchronizer\t$index\t$stage\t$threadId\t$version\t${message.toString}")
+//    println(s"Synchronizer\tindex\tstage\tthreadId\tversion\tcgOpt\tmessage")
+    println(s"Synchronizer\t$index\t$stage\t$threadId\t$version\t$cgOpt\t${message.toString}")
   }
 
-  def before(message: Any, startVersionOpt: Option[Long]): Int = {
+  def before(message: Any, startVersionOpt: Option[Long], cgOpt: Option[ComputationGraph]): Int = {
     try {
-      val index = count
-      if (verbose) log(index, "before", startVersionOpt, message)
-      count += 1 // Something else will see a different count now.
+      val index = count.getAndIncrement()
+      if (verbose) log(index, "before", startVersionOpt, cgOpt, message)
       index
     }
     catch {
@@ -65,7 +65,7 @@ trait DebugSynchronizer {
 
   def after(message: Any, index: Int, startVersionOpt: Option[Long], endVersionOpt: Option[Long]): Unit = {
     try {
-      if (verbose) log(index, "after", startVersionOpt, message)
+      if (verbose) log(index, "after", startVersionOpt, None, message)
       if (startVersionOpt != endVersionOpt)
         println("Oh, no!")
       require(startVersionOpt == endVersionOpt, "ComputationGraph version should not change")
@@ -120,7 +120,7 @@ trait ExplicitSynchronizer {
 // Make some way to initialize this?  If necessary, via the initializer?
 object Synchronizer {
   var debug: Boolean = true
-  var verbose: Boolean = false
+  var verbose: Boolean = true
   var ignoreStatic: Boolean = true
   var single: Boolean = false
   val synchronizer: ExplicitSynchronizer =

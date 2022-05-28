@@ -15,7 +15,7 @@ class DebugExplicitSingleSynchronizer(ignoreStatic: Boolean, override val verbos
       try {
         val cg = ComputationGraph.renew(ignoreStatic)
         val startVersionOpt = Some(ComputationGraph.version)
-        val index = before(message, startVersionOpt)
+        val index = before(message, startVersionOpt, Some(cg))
 
         try {
           f(cg)
@@ -38,7 +38,7 @@ class DebugExplicitSingleSynchronizer(ignoreStatic: Boolean, override val verbos
       enter()
       try {
         val startVersionOpt = None
-        val index = before(message, startVersionOpt)
+        val index = before(message, startVersionOpt, None)
 
         try {
           f

@@ -14,7 +14,7 @@ class DebugImplicitDefaultSynchronizer(override val verbose: Boolean) extends De
         ComputationGraph.renew()
 
         val startVersionOpt = Some(ComputationGraph.version)
-        val index = before(message, startVersionOpt)
+        val index = before(message, startVersionOpt, None)
 
         try {
           f
@@ -37,7 +37,7 @@ class DebugImplicitDefaultSynchronizer(override val verbose: Boolean) extends De
       enter()
       try {
         val startVersionOpt = None
-        val index = before(message, startVersionOpt)
+        val index = before(message, startVersionOpt, None)
 
         try {
           f
