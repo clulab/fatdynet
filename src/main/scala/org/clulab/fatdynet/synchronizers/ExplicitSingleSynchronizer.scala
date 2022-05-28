@@ -7,11 +7,9 @@ import org.clulab.fatdynet.utils.Closer.AutoCloser
 // has been made explicit and is forwarded as an argument to a function provided.
 // Because there is still only one ComputationGraph being used, synchronization is also global
 // and provided by Synchronizer.synchronized.
-class DebugExplicitDefaultSynchronizer(override val verbose: Boolean) extends DebugSynchronizer with ExplicitSynchronizer with Synchronizer {
-  val ignoreStatic = false
+class DebugExplicitSingleSynchronizer(ignoreStatic: Boolean, override val verbose: Boolean) extends DebugSynchronizer with ExplicitSynchronizer with Synchronizer {
 
   def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
-    // In parallel version, synchronize on Thread.currentThread or ComputationGraph.
     Synchronizer.synchronized {
       enter()
       try {
@@ -58,8 +56,7 @@ class DebugExplicitDefaultSynchronizer(override val verbose: Boolean) extends De
   }
 }
 
-class ReleaseExplicitDefaultSynchronizer extends ReleaseSynchronizer with ExplicitSynchronizer with Synchronizer {
-  val ignoreStatic = false
+class ReleaseExplicitSingleSynchronizer(ignoreStatic: Boolean) extends ReleaseSynchronizer with ExplicitSynchronizer with Synchronizer {
 
   def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
     Synchronizer.synchronized {

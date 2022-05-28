@@ -112,15 +112,6 @@ trait ExplicitSynchronizer {
   def withoutComputationGraph[T](message: Any)(f: => T): T
 }
 
-
-//Debug/Release
-//Implicit/Explicit
-//Default/Custom
-//Single/Multiple
-
-//runtime
-// reuse, renew
-
 // For the internal, Java representation
 // reset(boolean ignoreSingleton) is new
 // getNew(boolean ignoreStatis) is new
@@ -130,9 +121,15 @@ trait ExplicitSynchronizer {
 object Synchronizer {
   var debug: Boolean = true
   var verbose: Boolean = false
+  var ignoreStatic: Boolean = true
+  var single: Boolean = false
   val synchronizer: ExplicitSynchronizer =
-      if (debug) new DebugExplicitDefaultSynchronizer(verbose)
-      else new ReleaseExplicitDefaultSynchronizer()
+      if (single)
+        if (debug) new DebugExplicitSingleSynchronizer(verbose, ignoreStatic)
+        else new ReleaseExplicitSingleSynchronizer(ignoreStatic)
+      else
+        if (debug) new DebugExplicitMultipleSynchronizer(verbose)
+        else new ReleaseExplicitMultipleSynchronizer()
 
   def newSynchronizationException(): SynchronizationException =
       new SynchronizationException("FatDynet is already being synchronized.")
