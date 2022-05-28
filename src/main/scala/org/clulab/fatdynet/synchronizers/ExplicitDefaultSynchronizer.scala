@@ -10,29 +10,23 @@ import org.clulab.fatdynet.utils.Closer.AutoCloser
 class DebugExplicitDefaultSynchronizer(override val verbose: Boolean) extends DebugSynchronizer with ExplicitSynchronizer with Synchronizer {
   val ignoreStatic = false
 
-  def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: ComputationGraph => T, getVersionOpt: () => Option[Long]): T = {
-    // This renew() may change the version.
-    val cg = ComputationGraph.renew(ignoreStatic)
-    val startVersion = getVersionOpt()
-    val index = before(message, newComputationGraph, startVersion)
-
-    try {
-      cg.autoClose { cg =>
-        f(cg)
-      }
-    }
-    finally {
-      val endVersion = getVersionOpt()
-      after(message, index, newComputationGraph, startVersion, endVersion)
-    }
-  }
-
   def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = {
     // In parallel version, synchronize on Thread.currentThread or ComputationGraph.
     Synchronizer.synchronized {
       enter()
       try {
-        doSynchronized(message, true, f, () => Some(ComputationGraph.version))
+        val cg = ComputationGraph.renew(ignoreStatic)
+        val startVersionOpt = Some(ComputationGraph.version)
+        val index = before(message, startVersionOpt)
+
+        try {
+          f(cg)
+        }
+        finally {
+          val endVersion = Some(ComputationGraph.version)
+
+          after(message, index, startVersionOpt, endVersion)
+        }
       }
       finally {
         exit()
@@ -40,12 +34,22 @@ class DebugExplicitDefaultSynchronizer(override val verbose: Boolean) extends De
     }
   }
 
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
+  def withoutComputationGraph[T](message: Any)(f: => T): T = {
     // Synchronization here should be global.  There should be no active ComputationGraphs.
     Synchronizer.synchronized {
       enter()
       try {
-        doSynchronized(message, newComputationGraph, f, () => None)
+        val startVersionOpt = None
+        val index = before(message, startVersionOpt)
+
+        try {
+          f
+        }
+        finally {
+          val endVersionOpt = None
+
+          after(message, index, startVersionOpt, endVersionOpt)
+        }
       }
       finally {
         exit()
@@ -71,7 +75,7 @@ class ReleaseExplicitDefaultSynchronizer extends ReleaseSynchronizer with Explic
     }
   }
 
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
+  def withoutComputationGraph[T](message: Any)(f: => T): T = {
     Synchronizer.synchronized {
       enter()
       try {

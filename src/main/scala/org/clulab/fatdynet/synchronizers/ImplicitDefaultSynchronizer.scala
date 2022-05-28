@@ -11,7 +11,19 @@ class DebugImplicitDefaultSynchronizer(override val verbose: Boolean) extends De
     Synchronizer.synchronized {
       enter()
       try {
-        doSynchronized(message, true, f, () => Some(ComputationGraph.version))
+        ComputationGraph.renew()
+
+        val startVersionOpt = Some(ComputationGraph.version)
+        val index = before(message, startVersionOpt)
+
+        try {
+          f
+        }
+        finally {
+          val endVersion = Some(ComputationGraph.version)
+
+          after(message, index, startVersionOpt, endVersion)
+        }
       }
       finally {
         exit()
@@ -19,12 +31,22 @@ class DebugImplicitDefaultSynchronizer(override val verbose: Boolean) extends De
     }
   }
 
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
+  def withoutComputationGraph[T](message: Any)(f: => T): T = {
     // Synchronization here should be global.  There should be no active ComputationGraphs.
     Synchronizer.synchronized {
       enter()
       try {
-        doSynchronized(message, newComputationGraph, f, () => None)
+        val startVersionOpt = None
+        val index = before(message, startVersionOpt)
+
+        try {
+          f
+        }
+        finally {
+          val endVersionOpt = None
+
+          after(message, index, startVersionOpt, endVersionOpt)
+        }
       }
       finally {
         exit()
@@ -39,33 +61,24 @@ class ReleaseImplicitDefaultSynchronizer extends ReleaseSynchronizer with Implic
     Synchronizer.synchronized {
       enter()
       try {
+        ComputationGraph.renew()
         f
       }
       finally {
-        try {
-          ComputationGraph.renew()
-        }
-        finally {
-          exit()
-        }
+        exit()
       }
     }
   }
 
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T = {
+  def withoutComputationGraph[T](message: Any)(f: => T): T = {
     Synchronizer.synchronized {
       enter()
       try {
+        // The ComputationGraph is not touched here.
         f
       }
       finally {
-        try {
-          if (newComputationGraph)
-            ComputationGraph.renew()
-        }
-        finally {
-          exit()
-        }
+        exit()
       }
     }
   }

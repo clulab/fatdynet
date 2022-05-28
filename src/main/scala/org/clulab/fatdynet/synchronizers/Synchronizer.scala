@@ -37,7 +37,7 @@ trait DebugSynchronizer {
     println(s"Synchronizer\t$index\t$stage\t$threadId\t$version\t${message.toString}")
   }
 
-  def before(message: Any, newComputationGraph: Boolean, startVersionOpt: Option[Long]): Int = {
+  def before(message: Any, startVersionOpt: Option[Long]): Int = {
     try {
       val index = count
       if (verbose) log(index, "before", startVersionOpt, message)
@@ -63,7 +63,7 @@ trait DebugSynchronizer {
     }
   }
 
-  def after(message: Any, index: Int, newComputationGraph: Boolean, startVersionOpt: Option[Long], endVersionOpt: Option[Long]): Unit = {
+  def after(message: Any, index: Int, startVersionOpt: Option[Long], endVersionOpt: Option[Long]): Unit = {
     try {
       if (verbose) log(index, "after", startVersionOpt, message)
       if (startVersionOpt != endVersionOpt)
@@ -85,26 +85,11 @@ trait DebugSynchronizer {
       // classOf[ComputationGraph] does not compile, so the Java version is used.
       // ComputationGraph.getClass
       // However, it is more important to start in a known state.
-      if (newComputationGraph)
-        ComputationGraph.renew()
     }
     catch {
       case throwable: Throwable =>
         if (verbose) throwable.printStackTrace()
         throw throwable
-    }
-  }
-
-  def doSynchronized[T](message: Any, newComputationGraph: Boolean, f: => T, getVersionOpt: () => Option[Long]): T = {
-    val startVersion = getVersionOpt()
-    val index = before(message, newComputationGraph, startVersion)
-
-    try {
-      during(f)
-    }
-    finally {
-      val endVersion = getVersionOpt()
-      after(message, index, newComputationGraph, startVersion, endVersion)
     }
   }
 }
@@ -115,7 +100,7 @@ trait ReleaseSynchronizer
 // It will be taken from the globally defined value by things that need it.
 trait ImplicitSynchronizer {
   def withComputationGraph[T](message: Any)(f: => T): T
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
+  def withoutComputationGraph[T](message: Any)(f: => T): T
 }
 
 // In the explicit version, the f does indeed take a ComputationGraph.
@@ -124,7 +109,7 @@ trait ImplicitSynchronizer {
 // care of some compatibility issues in transitioning from one to the other.
 trait ExplicitSynchronizer {
   def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean)(f: => T): T
+  def withoutComputationGraph[T](message: Any)(f: => T): T
 }
 
 
@@ -142,7 +127,7 @@ trait ExplicitSynchronizer {
 
 // Should initializer decide that kind of Synchronizer is being used?
 // Make some way to initialize this?  If necessary, via the initializer?
-object Synchronizer extends Synchronizer {
+object Synchronizer {
   var debug: Boolean = true
   var verbose: Boolean = false
   val synchronizer: ExplicitSynchronizer =
@@ -152,7 +137,9 @@ object Synchronizer extends Synchronizer {
   def newSynchronizationException(): SynchronizationException =
       new SynchronizationException("FatDynet is already being synchronized.")
 
+//  def withComputationGraph[T](message: Any)(f: => T): T = synchronizer.withComputationGraph(message)(f)
+
   def withComputationGraph[T](message: Any)(f: ComputationGraph => T): T = synchronizer.withComputationGraph(message)(f)
 
-  def withoutComputationGraph[T](message: Any, newComputationGraph: Boolean = false)(f: => T): T = synchronizer.withoutComputationGraph(message, newComputationGraph)(f)
+  def withoutComputationGraph[T](message: Any)(f: => T): T = synchronizer.withoutComputationGraph(message)(f)
 }
