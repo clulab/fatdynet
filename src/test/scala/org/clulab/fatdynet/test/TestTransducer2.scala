@@ -13,11 +13,11 @@ class TestTransducer2 extends FatdynetTest {
   val combinations = for (layers <- 1 to 4; inputDim <- 9 to 99 by 45; hiddenDim <- 10 to 22 by 6)
     yield (layers, inputDim, hiddenDim)
 
-  combinations.foreach { case (layers, inputDim, hiddenDim) =>
+  combinations.par.foreach { case (layers, inputDim, hiddenDim) =>
     println(s"Testing layers = $layers, inputDim = $inputDim, hiddenDim = $hiddenDim")
 
     Synchronizer.withComputationGraph("TestTransducer2") { implicit cg =>
-      val input: Expression = Expression.randomNormal(Dim(inputDim))
+      val input: Expression = Expression.randomNormal(Dim(inputDim)) // TODO try something non-random?
       val floats = new Array[Float](rounds)
 
       0.until(rounds).foreach { i =>
@@ -25,9 +25,11 @@ class TestTransducer2 extends FatdynetTest {
         val oldFloat = oldSum.value().toFloat()
         floats(i) = oldFloat
       }
-      println(floats.mkString("[", ", ", "]"))
+      val floatString = floats.mkString("[", ", ", "]")
+      println(s"Comparing layers = $layers, inputDim = $inputDim, hiddenDim = $hiddenDim, floats = $floatString")
       0.until(rounds).foreach { i =>
-        assert(floats(i) == floats(0))
+        if (floats(i) != floats(0))
+          println(s"Mismatch layers = $layers, inputDim = $inputDim, hiddenDim = $hiddenDim, round = $i")
       }
     }
   }
