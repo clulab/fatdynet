@@ -6,14 +6,16 @@ import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design.Design
 import org.clulab.fatdynet.parser.VanillaLstmParser
+import org.clulab.fatdynet.synchronizers.Synchronizer
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
 
-class TestTransducer extends FatdynetTest {
-  // forward-only is required for the ForwardOnlyExecutionEngine which uses the DynamicCPUMemoryPool.
-  Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L, "forward-only" -> 1))
+import scala.util.Random
+
+class TestParallelTransducer extends FatdynetTest {
+  Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   /**
     * TODO
@@ -41,9 +43,10 @@ class TestTransducer extends FatdynetTest {
     val filename: String = "Test" + testname + ".txt"
 
     def test(): Unit = {
-      behavior of testname
+//      behavior of testname
 
-      it should "serialize the builder properly" in {
+//      it should "serialize the builder properly" in {
+      {
         val oldModel = new ParameterCollection
         val oldRnnBuilder = build(oldModel)
         val modelName = "/model"
@@ -66,43 +69,53 @@ class TestTransducer extends FatdynetTest {
 
         if (canTransduce) {
           val rounds = 10
+          val values = 0.until(inputDim).map { _ => Random.nextFloat }
 
-          ComputationGraph.cluRenew().autoClose { implicit cg =>
-            // The vars are used to facilitate garbage collection.
-            // Note that the expression is associated with the oldCg and it is reused.
-            var input: Expression = Expression.randomNormal(Dim(inputDim))(cg)
-            var inputs = Array(input, input, input)
+          def mkFloats(rnnBuilder: RnnBuilder): Array[Float] = {
+            Synchronizer.withComputationGraph("TestTransducer") { implicit cg =>
+              // The vars are used to facilitate garbage collection.
+              // Note that the expression is associated with the oldCg and it is reused.
+              var input: Expression = {
+                // Expression.randomNormal(Dim(inputDim))(cg)
+                val floatVector: FloatVector = new FloatVector(values)
 
-            val oldFloats = new Array[Float](rounds)
-            val newFloats = new Array[Float](rounds)
+                Expression.input(Dim(inputDim), floatVector)
+              }
+              var inputs = Array(input, input, input)
+              val floats = new Array[Float](rounds)
 
-            oldRnnBuilder.newGraph()(cg)
-            newRnnBuilder.newGraph()(cg)
+              rnnBuilder.newGraph()(cg)
 
-            0.until(rounds).foreach { i =>
-              val oldTransduced = Transducer.transduce(oldRnnBuilder, inputs).last
-              val oldSum = Expression.sumElems(oldTransduced)(cg)
-              val oldFloat = oldSum.value().toFloat()
-              oldFloats(i) = oldFloat
-
-              val newTransduced = Transducer.transduce(newRnnBuilder, inputs).last
-              val newSum = Expression.sumElems(newTransduced)(cg)
-              val newFloat = newSum.value().toFloat()
-              newFloats(i) = newFloat
-
-              oldFloat should be (newFloat)
+              0.until(rounds).foreach { i =>
+                val transduced = Transducer.transduce(rnnBuilder, inputs).last
+                val sum = Expression.sumElems(transduced)(cg)
+                val float = sum.value().toFloat()
+                floats(i) = float
+              }
+              input = null
+              inputs = null
+              floats
             }
-            input = null
-            inputs = null
-
-            // oldFloats.foreach { each => print(each); print(" ") }
-            // println
-            // newFloats.foreach { each => print(each); print(" ") }
-            // println
-            // It should have gotten the same answer each round.
-            Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
-            Array.fill(rounds) { newFloats(0) } should be (newFloats)
           }
+
+          // Could do these at the same time
+          val oldFloats = Synchronizer.withComputationGraph("TestTransducer") { implicit cg =>
+            mkFloats(oldRnnBuilder)
+          }
+          val newFloats = Synchronizer.withComputationGraph("TestTransducer") { implicit cg =>
+            mkFloats(newRnnBuilder)
+          }
+
+          oldFloats.foreach { each => print(each); print(" ") }
+          println
+          newFloats.foreach { each => print(each); print(" ") }
+          println
+          oldFloats.zip(newFloats).foreach { case (oldFloat, newFloat) =>
+            oldFloat should be (newFloat)
+          }
+          // It should have gotten the same answer each round.
+          Array.fill(rounds) { oldFloats(0) } should be (oldFloats)
+          Array.fill(rounds) { newFloats(0) } should be (newFloats)
         }
         new File(filename).delete
       }
