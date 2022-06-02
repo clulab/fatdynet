@@ -37,12 +37,8 @@ public class ComputationGraph {
 
   public synchronized void reset() {
     delete();
-    // Make sure this is updated as well!
-    singletonInstance = null;
-  }
-
-  public void reset(boolean ignoreSingleton) {
-    if (ignoreSingleton) delete(); else reset();
+    if (this == singletonInstance)
+      singletonInstance = null;
   }
 
   // DyNet only allows one ComputationGraph at a time. This means that if you construct them

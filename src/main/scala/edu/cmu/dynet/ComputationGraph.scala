@@ -32,7 +32,7 @@ class ComputationGraph private[dynet](private[dynet] val cg: internal.Computatio
   def checkpoint(): Unit = cg.checkpoint()
   def revert(): Unit = cg.revert()
 
-  def reset(): Unit = cg.reset(true)
+  def reset(): Unit = cg.reset()
 
   def close(): Unit = reset()
 
@@ -44,6 +44,8 @@ class ComputationGraph private[dynet](private[dynet] val cg: internal.Computatio
   def backward(last: Expression): Unit = cg.backward(last.expr)
 
   def printGraphViz(): Unit = cg.print_graphviz()
+  def dump(filename: String = "", showValues: Boolean = true, showGradients: Boolean = false, nanCheckOnly: Boolean = false): Unit =
+      cg.dump(filename, showValues, showGradients, nanCheckOnly)
 }
 
 /** The ComputationGraph object contains the singleton DyNet computation graph instance. Any C++
@@ -103,7 +105,7 @@ object ComputationGraph {
 
   def reset(): Unit = {
     // This is false because it would be the global one, so don't ignore the singleton.
-    cgOpt.foreach(_.cg.reset(false))
+    cgOpt.foreach(_.cg.reset())
     cgOpt = None
   }
 
@@ -117,4 +119,6 @@ object ComputationGraph {
   def backward(last: Expression): Unit = cgOpt.get.backward(last)
 
   def printGraphViz(): Unit = cgOpt.get.printGraphViz()
+  def dump(filename: String = "", showValues: Boolean = true, showGradients: Boolean = false, nanCheckOnly: Boolean = false): Unit =
+    cgOpt.get.dump(filename, showValues, showGradients, nanCheckOnly)
 }

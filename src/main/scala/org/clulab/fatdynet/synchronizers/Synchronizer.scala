@@ -120,12 +120,12 @@ trait ExplicitSynchronizer {
 // Make some way to initialize this?  If necessary, via the initializer?
 object Synchronizer {
   var debug: Boolean = true
-  var verbose: Boolean = true
+  var verbose: Boolean = false
   var ignoreStatic: Boolean = true
   var single: Boolean = false
   val synchronizer: ExplicitSynchronizer =
       if (single)
-        if (debug) new DebugExplicitSingleSynchronizer(verbose, ignoreStatic)
+        if (debug) new DebugExplicitSingleSynchronizer(ignoreStatic, verbose)
         else new ReleaseExplicitSingleSynchronizer(ignoreStatic)
       else
         if (debug) new DebugExplicitMultipleSynchronizer(verbose)
