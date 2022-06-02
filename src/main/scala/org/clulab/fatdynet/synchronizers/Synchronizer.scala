@@ -122,14 +122,21 @@ object Synchronizer {
   var debug: Boolean = true
   var verbose: Boolean = false
   var ignoreStatic: Boolean = true
-  var single: Boolean = false
-  val synchronizer: ExplicitSynchronizer =
+  var single: Boolean = true
+
+  def canTrain: Boolean = single && !ignoreStatic
+
+  def newSynchronizer(debug: Boolean, verbose: Boolean, ignoreStatic: Boolean, single: Boolean): ExplicitSynchronizer =
       if (single)
         if (debug) new DebugExplicitSingleSynchronizer(ignoreStatic, verbose)
         else new ReleaseExplicitSingleSynchronizer(ignoreStatic)
       else
         if (debug) new DebugExplicitMultipleSynchronizer(verbose)
         else new ReleaseExplicitMultipleSynchronizer()
+
+  var synchronizer = newSynchronizer(debug, verbose, ignoreStatic, single)
+
+  def update(): Unit = synchronizer = newSynchronizer(debug, verbose, ignoreStatic, single)
 
   def newSynchronizationException(): SynchronizationException =
       new SynchronizationException("FatDynet is already being synchronized.")

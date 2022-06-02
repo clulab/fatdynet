@@ -169,7 +169,8 @@ object XorExampleCloseApp {
   def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"
 
-    Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+    // Backward is involved here, so cliInitialize should not be used.
+    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val (xorModel1, initialResults) = train
     val expectedResults = xorModel1.autoClose { xorModel1 =>

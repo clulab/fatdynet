@@ -40,23 +40,30 @@ object Initializer {
     args + (DYNAMIC_MEM -> true) + (FORWARD_ONLY -> 1)
   )
 
+  def isMulti(args: Map[String, Any]): Boolean = {
+    args.getOrElse(DYNAMIC_MEM, false) == true &&
+    args.getOrElse(FORWARD_ONLY, 0) == 1
+  }
+
   // Returns whether had previously been initialized or not.
-  def initialize(args: Map[String, Any] = Map.empty): Boolean = Synchronizer.withoutComputationGraph("Initializer.initialize") {
-    val oldInitialized = initialized.get()
+  def initialize(args: Map[String, Any] = Map.empty): Boolean = {
+    Synchronizer.withoutComputationGraph("Initializer.initialize") {
+      val oldInitialized = initialized.get()
 
-    if (!oldInitialized) {
-      Initialize.initialize(args)
-      initialized.set(true)
-    }
-    else if (args.contains(RANDOM_SEED)) {
-      // The initialization would have been ignored,
-      // so the random seed will be set explicitly.
-      val seed = args(RANDOM_SEED).asInstanceOf[Long]
+      if (!oldInitialized) {
+        Initialize.initialize(args)
+        initialized.set(true)
+      }
+      else if (args.contains(RANDOM_SEED)) {
+        // The initialization would have been ignored,
+        // so the random seed will be set explicitly.
+        val seed = args(RANDOM_SEED).asInstanceOf[Long]
 
-      reset_rng(seed)
-      // Imitate normal initialization output.
-      System.err.println(s"[dynet] random seed: $seed")
+        reset_rng(seed)
+        // Imitate normal initialization output.
+        System.err.println(s"[dynet] random seed: $seed")
+      }
+      oldInitialized
     }
-    oldInitialized
   }
 }

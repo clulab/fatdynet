@@ -2,6 +2,7 @@ package org.clulab.fatdynet.test
 
 import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.examples.XorScala
+import org.clulab.fatdynet.synchronizers.Synchronizer
 import org.clulab.fatdynet.utils.Platform
 
 class TestXorScalaRerun extends FatdynetTest {
@@ -52,8 +53,10 @@ class TestXorScalaRerun extends FatdynetTest {
     }
   }
 
-  run(0, true) // See if can reset even before.
-  run(1)
-  run(2)
+  if (Synchronizer.canTrain) {
+    run(0, true) // See if can reset even before.
+    run(1)
+    run(2)
+  }
 }
 

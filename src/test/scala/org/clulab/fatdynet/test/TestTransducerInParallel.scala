@@ -121,7 +121,7 @@ class TestTransducerInParallel extends FatdynetTest {
               println("This should be an empty CG.")
 //              cg.dump()
               if (index == 1)
-                Thread.sleep(5000)
+                Thread.sleep(1000)
               val result = mkFloats(rnnBuilder, cg)
               result
             }

@@ -222,7 +222,8 @@ object PairExampleApp {
   def run(args: Array[String]): Unit = {
     val filename = "PairModel.dat"
 
-    Initializer.cluInitialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
+    // Backward is involved here, so cliInitialize should not be used.
+    Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val (pairModel1, initialResults) = train
     val expectedResults = predict(pairModel1, pairModel1.rnnBuilder)
