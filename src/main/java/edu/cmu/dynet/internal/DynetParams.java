@@ -102,4 +102,5 @@ public class DynetParams {
   public DynetParams() {
     this(dynet_swigJNI.new_DynetParams(), true);
   }
+
 }

@@ -35,32 +35,16 @@ public class ComputationGraph {
     }
   }
 
-  public synchronized void reset() {
+  public void reset() {
     delete();
-    // Make sure this is updated as well!
-    singletonInstance = null;
-  }
-
-  public void reset(boolean ignoreSingleton) {
-    if (ignoreSingleton) delete(); else reset();
   }
 
   // DyNet only allows one ComputationGraph at a time. This means that if you construct them
   // manually you have to remember to delete each one before you construct a new one, or your
   // program will crash. `getNew` will handle that deletion for you.
-  private static ComputationGraph singletonInstance = null;
 
-  public synchronized static ComputationGraph getNew() {
-    if (singletonInstance != null) {
-      singletonInstance.delete();
-    }
-
-    singletonInstance = new ComputationGraph();
-    return singletonInstance;
-  }
-
-  public static ComputationGraph getNew(boolean ignoreStatic) {
-    return ignoreStatic ? new ComputationGraph() : getNew();
+  public static ComputationGraph getNew() {
+    return new ComputationGraph();
   }
 
   private ComputationGraph() {
@@ -151,8 +135,20 @@ public class ComputationGraph {
     dynet_swigJNI.ComputationGraph_backward(swigCPtr, this, Expression.getCPtr(last), last);
   }
 
+  public boolean has_nan() {
+    return dynet_swigJNI.ComputationGraph_has_nan(swigCPtr, this);
+  }
+
   public void print_graphviz() {
     dynet_swigJNI.ComputationGraph_print_graphviz(swigCPtr, this);
+  }
+
+  public void print_graphviz_to_file(String filename) {
+    dynet_swigJNI.ComputationGraph_print_graphviz_to_file(swigCPtr, this, filename);
+  }
+
+  public void dump(String filename, boolean show_values, boolean show_gradients, boolean nan_check_only) {
+    dynet_swigJNI.ComputationGraph_dump(swigCPtr, this, filename, show_values, show_gradients, nan_check_only);
   }
 
   public void setNodes(SWIGTYPE_p_std__vectorT_dynet__Node_p_t value) {

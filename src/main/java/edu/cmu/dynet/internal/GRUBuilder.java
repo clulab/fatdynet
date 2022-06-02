@@ -75,4 +75,8 @@ public class GRUBuilder extends RNNBuilder {
     return new ParameterCollection(dynet_swigJNI.GRUBuilder_get_parameter_collection(swigCPtr, this), false);
   }
 
+  public GRUBuilder(GRUBuilder other) {
+    this(dynet_swigJNI.new_GRUBuilder__SWIG_2(GRUBuilder.getCPtr(other), other), true);
+  }
+
 }
