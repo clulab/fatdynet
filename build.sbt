@@ -9,10 +9,10 @@ val scala31  = "3.1.3"   // up to 3.1.3
 val scala32  = "3.2.1"   // up to 3.2.2
 val scala33  = "3.3.0"   // up to 3.3.0
 
-val scala3   = scala30
+val scala3   = scala31
 
 ThisBuild / crossScalaVersions := Seq(scala212, scala211, scala213, scala3)
-ThisBuild / scalaVersion := scala3
+ThisBuild / scalaVersion := scala212
 
 Compile / mainClass := Some("org.clulab.fatdynet.apps.XorScalaApp")
 
