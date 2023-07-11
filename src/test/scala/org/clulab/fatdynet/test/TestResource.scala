@@ -1,14 +1,16 @@
 package org.clulab.fatdynet.test
 
-import java.util.zip.ZipFile
+import org.clulab.fatdynet.FatdynetTest
+import org.clulab.fatdynet.utils.Closer.AutoCloser
+import org.scalatest._
 
-import org.clulab.dynet.Test
+import java.util.zip.ZipFile
 import org.clulab.fatdynet.utils.BaseTextModelLoader
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import scala.io.Source
 
-class TestResource extends Test {
+class TestResource extends FatdynetTest {
 
   behavior of "Resource"
 

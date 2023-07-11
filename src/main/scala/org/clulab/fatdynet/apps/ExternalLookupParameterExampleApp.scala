@@ -5,6 +5,8 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
+import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
 
@@ -23,7 +25,7 @@ object ExternalLookupParameterExampleApp {
 
     // Training
     def transform(outputValue: FloatPointer): Unit = {
-      outputValue.set(output)
+      outputValue.set(output.toFloat)
     }
   }
 
@@ -44,8 +46,6 @@ object ExternalLookupParameterExampleApp {
   )
 
   protected def mkPredictionGraph(xorModel: XorModel, xorTransformation: XorTransformation): Expression = {
-    ComputationGraph.renew()
-
     val W = Expression.parameter(xorModel.w)
     val b = Expression.parameter(xorModel.b)
     val V = Expression.parameter(xorModel.v)
@@ -76,15 +76,16 @@ object ExternalLookupParameterExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
         transformation.transform(yValue)
+        Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.train()") {
+          val yPrediction = mkPredictionGraph(xorModel, transformation)
+          val y = Expression.input(yValue)
+          val loss = Expression.squaredDistance(yPrediction, y)
+          val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
 
-        val yPrediction = mkPredictionGraph(xorModel, transformation)
-        val y = Expression.input(yValue)
-        val loss = Expression.squaredDistance(yPrediction, y)
-        val lossValue = loss.value().toFloat() // ComputationGraph.forward(loss).toFloat
-
-        ComputationGraph.backward(loss)
-        trainer.update()
-        lossValue
+          ComputationGraph.backward(loss)
+          trainer.update()
+          lossValue
+        }
       }.sum / transformations.length
 
       println(s"index = $iteration, loss = $lossValue")
@@ -99,10 +100,13 @@ object ExternalLookupParameterExampleApp {
   protected def predict(xorModel: XorModel): Seq[Float] = {
     var count = 0
 
-    println
+    println()
     val result = transformations.map { transformation =>
-      val yPrediction = mkPredictionGraph(xorModel, transformation)
-      val yValue = yPrediction.value().toFloat()
+      val yValue = Synchronizer.withComputationGraph("ExternalLookupParameterExampleApp.predict()") {
+        val yPrediction = mkPredictionGraph(xorModel, transformation)
+        val yValue = yPrediction.value().toFloat()
+        yValue
+      }
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -135,7 +139,7 @@ object ExternalLookupParameterExampleApp {
     XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
   }
 
-  def main(args: Array[String]) {
+  def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"
 
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
@@ -149,5 +153,11 @@ object ExternalLookupParameterExampleApp {
 
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)
+  }
+
+  def main(args: Array[String]): Unit = {
+    Utils.startup()
+    run(args)
+    Utils.shutdown()
   }
 }

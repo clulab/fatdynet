@@ -1,17 +1,16 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet.Dim
 import edu.cmu.dynet.ParameterCollection
-import org.clulab.dynet.Test
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
 
-class TestRepoDelete extends Test {
+class TestRepoDelete extends FatdynetTest {
 
   behavior of "Repo"
 

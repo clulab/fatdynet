@@ -18,11 +18,9 @@ import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
 
 class CloseableModelLoader(filename: String) extends ModelLoader(filename) {
-  def close(): Unit = done()
 }
 
 class CloseableZipModelLoader(filename: String, zipname: String) extends ZipModelLoader(filename, zipname) {
-  def close(): Unit = done()
 }
 
 case class ResourceInfo(resourceName: String, resourceFilename: String, nativeResourceFilename: String, isZipped: Boolean)

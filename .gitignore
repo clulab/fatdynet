@@ -8,6 +8,10 @@ core/*.iml
 .DS_Store
 Makefile
 
+# VSCode
+.metals/
+.VSCode/
+
 # sbt specific
 dist/*
 target/
@@ -15,6 +19,8 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
+.bsp/
+null/
 
 # Scala-IDE specific
 .scala_dependencies

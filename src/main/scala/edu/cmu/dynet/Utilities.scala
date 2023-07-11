@@ -14,7 +14,7 @@ object Utilities {
   /** Sample from a discrete distribution */
   def sample(v: FloatVector): Int = {
     // random pick
-    val p = scala.util.Random.nextFloat
+    val p = scala.util.Random.nextFloat()
 
     // Seq(0f, p(0), p(0) + p(1), .... )
     val cumulative = v.scanLeft(0f)(_ + _)

@@ -4,6 +4,8 @@ abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) exte
 
   var version: Long = ComputationGraph.version
 
+  def close(): Unit = _builder.delete()
+
   def state(): Int = _builder.state
   def newGraph(update:Boolean = true): Unit = {
     version = ComputationGraph.version
@@ -51,10 +53,10 @@ abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) exte
 }
 
 class SimpleRnnBuilder private[dynet](private[dynet] val builder: internal.SimpleRNNBuilder)
-    extends RnnBuilder(builder) with Cloneable {
-  def this() { this(new internal.SimpleRNNBuilder()) }
+    extends RnnBuilder(builder) {
+  def this() = { this(new internal.SimpleRNNBuilder()) }
 
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, supportLags: Boolean = false) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, supportLags: Boolean = false) = {
     this(new internal.SimpleRNNBuilder(layers, inputDim, hiddenDim, model.model, supportLags))
   }
 

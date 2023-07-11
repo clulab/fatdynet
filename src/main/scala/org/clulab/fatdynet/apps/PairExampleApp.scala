@@ -5,7 +5,9 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
 import org.clulab.fatdynet.utils.Transducer
+import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
 
@@ -18,14 +20,14 @@ case class PairTransformation(inputs: Array[Int], output: Int) {
   // Testing
   def transform(inputValues: Array[Float]): Unit = {
     inputs.indices.foreach { index =>
-      inputValues(index) = inputs(index)
+      inputValues(index) = inputs(index).toFloat
     }
   }
 
   // Training
   def transform(inputValues: Array[Float], outputValue: FloatPointer): Unit = {
     transform(inputValues)
-    outputValue.set(output)
+    outputValue.set(output.toFloat)
   }
 }
 
@@ -108,9 +110,10 @@ object PairExampleApp {
     PairTransformation(Array(1, 1, 1, 1, 1), 1)
   )
 
-  protected def mkPredictionGraph(pairModel: PairModel, xValues: Seq[Float], builder: RnnBuilder): Expression = {
+  protected def mkPredictionGraph(pairModel: PairModel, xValues: Array[Float], builder: RnnBuilder): Expression = {
     // The graph will grow and grow without this next line.
-    ComputationGraph.renew()
+    // This is now handled by the Synchronizer.
+    // ComputationGraph.renew()
     // Use the new graph.
     builder.newGraph()
 
@@ -143,22 +146,22 @@ object PairExampleApp {
     for (iteration <- 0 until ITERATIONS) {
       val lossValue = random.shuffle(transformations).map { transformation =>
       val xValues = new Array[Float](transformation.inputs.length)
-
         transformation.transform(xValues, yValue)
+        Synchronizer.withComputationGraph("PairExampleApp.train()") {
+          val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
+          val y = Expression.input(transformation.output.toFloat)
 
-        val yPrediction = mkPredictionGraph(pairModel, xValues, rnnBuilder)
-        val y = Expression.input(transformation.output)
+          val loss = Expression.squaredDistance(yPrediction, y)
+          val lossValue = loss.value().toFloat()
 
-        val loss = Expression.squaredDistance(yPrediction, y)
-        val lossValue = loss.value().toFloat()
+          //        println()
+          //        println("Computation graphviz structure:")
+          //        ComputationGraph.printGraphViz()
 
-//        println()
-//        println("Computation graphviz structure:")
-//        ComputationGraph.printGraphViz()
-
-        ComputationGraph.backward(loss)
-        trainer.update()
-        lossValue
+          ComputationGraph.backward(loss)
+          trainer.update()
+          lossValue
+        }
       }.sum
 
       println(s"index = $iteration, loss = $lossValue")
@@ -173,14 +176,16 @@ object PairExampleApp {
   def predict(pairModel: PairModel, builder: RnnBuilder): Seq[Float] = {
     var count = 0
 
-    println
+    println()
     val result = transformations.map { transformation =>
       val xValues = new Array[Float](transformation.inputs.length)
-
       transformation.transform(xValues)
 
-      val yPrediction = mkPredictionGraph(pairModel, xValues, builder)
-      val yValue = yPrediction.value().toFloat()
+      val yValue = Synchronizer.withComputationGraph("PairExampleApp.predict()") {
+        val yPrediction = mkPredictionGraph(pairModel, xValues, builder)
+        val yValue = yPrediction.value().toFloat()
+        yValue
+      }
       val correct = transformation.output == yValue.round
 
       if (correct)
@@ -214,7 +219,7 @@ object PairExampleApp {
     PairModel(WParameter, bParameter, VParameter, aParameter, rnnBuilder, model.getParameterCollection)
   }
 
-  def main(args: Array[String]) {
+  def run(args: Array[String]): Unit = {
     val filename = "PairModel.dat"
 
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
@@ -228,5 +233,11 @@ object PairExampleApp {
 
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)
+  }
+
+  def main(args: Array[String]): Unit = {
+    Utils.startup()
+    run(args)
+    Utils.shutdown()
   }
 }

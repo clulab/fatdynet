@@ -1,9 +1,8 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet._
-import org.clulab.dynet.Test
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
@@ -12,7 +11,7 @@ import org.clulab.fatdynet.utils.Initializer
 
 import scala.io.Source
 
-class TestModels extends Test {
+class TestModels extends FatdynetTest {
   Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
 
   def equals(lefts: Seq[Float], rights: Seq[Float]): Boolean = {
@@ -31,7 +30,7 @@ class TestModels extends Test {
   def equalsLPS(lefts: Seq[LookupParameterStorage], rights: Seq[LookupParameterStorage]): Boolean = {
     lefts.size == rights.size &&
         // These values cannot be accessed!
-        lefts.zip(rights).forall { case (left, right) => left.size == right.size }
+        lefts.zip(rights).forall { case (left, right) => left.size() == right.size() }
   }
 
   def asString(operation: ModelSaver => Unit): String = {
@@ -68,13 +67,13 @@ class TestModels extends Test {
   }
 
   def equals(left: Parameter, right: Parameter, name: String): Boolean = {
-    left.dim == right.dim &&
+    left.dim() == right.dim() &&
         equals(left.values().toSeq(), right.values().toSeq()) &&
         asString(left, name) == asString(right, name)
   }
 
   def equals(left: LookupParameter, right: LookupParameter, name: String): Boolean = {
-    left.dim == right.dim &&
+    left.dim() == right.dim() &&
         asString(left, name) == asString(right, name)
   }
 

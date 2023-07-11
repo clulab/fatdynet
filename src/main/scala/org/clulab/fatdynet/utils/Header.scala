@@ -6,7 +6,7 @@ import java.io.IOException
 class Header(val line: String, val lineNo: Int) {
   val Array(objectType, objectName, dimension, len, _) = line.split(' ')
   // Skip leading { and trailing }
-  val dims: Array[Int] = dimension.substring(1, dimension.length - 1).split(',').map(_.toInt)
+  val dims: Seq[Int] = dimension.substring(1, dimension.length - 1).split(',').map(_.toInt).toSeq
   val length: Long = {
     val size = len.toLong
     val length = dims.foldLeft(16L){ (product, next) => product * next } + 1

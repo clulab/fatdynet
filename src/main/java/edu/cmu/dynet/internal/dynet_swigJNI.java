@@ -12,40 +12,115 @@ package edu.cmu.dynet.internal;
 
 public class dynet_swigJNI {
 
-    static {
-        try {
-            File tempFile = File.createTempFile("dynet", ".dll");
-            String libname = System.mapLibraryName("dynet_swig");
 
-            if (libname.endsWith("dylib")) {
-              libname = libname.replace(".dylib", ".jnilib");
-            }
-
-            // Load the dylib from the JAR-ed resource file, and write it to the temp file.
-            InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(libname);
-            OutputStream os = new FileOutputStream(tempFile);
-
-            byte buf[] = new byte[8192];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                os.write(buf, 0, len);
-            }
-
-            os.flush();
-            InputStream lock = new FileInputStream(tempFile);
-            os.close();
-
-            // Load the library from the tempfile.
-            System.load(tempFile.getPath());
-            lock.close();
-
-            // And delete the tempfile.
-            tempFile.delete();
-        } catch (IOException io) {
-            System.out.println(io);
-        }
+  static boolean loadFromFile(String pathname) {
+    try {
+      System.load(pathname);
+      System.err.println("[dynet] Loading DyNet from " + pathname + "...");
+      return true;
     }
+    catch (UnsatisfiedLinkError exception) {
+      return false;
+    }
+  }
 
+  static boolean loadFromFile(String dir, String libname) {
+    String pathname = dir + File.separator + libname;
+    return loadFromFile(pathname);
+  }
+
+  static String replaceSuffix(String text, String prev, String next) {
+    if (text.endsWith(prev))
+      return text.substring(0, text.length() - prev.length()) + next;
+    else
+      return text;
+  }
+
+  static Boolean isMac() {
+    return System.getProperty("os.name").startsWith("Mac ");
+  }
+
+  static Boolean isApple() {
+    return System.getProperty("os.arch").equals("aarch64");
+  }
+
+  static {
+    String filename = "dynet_swig";
+    String libname = System.mapLibraryName(filename);
+    // The Mac reports a libname ending with .dylib, but Java needs .jnilib instead.
+    String jniname = replaceSuffix(libname, ".dylib", ".jnilib");
+    String resourcename = !isMac() ? jniname : (isApple() ? "apple-" + jniname: "intel-" + jniname);
+
+    boolean loaded = false;
+    if (!loaded) {
+      String location = System.getProperty("user.dir");
+      System.err.println("[dynet] Checking " + location + " for " + jniname + "...");
+      loaded = loadFromFile(System.getProperty("user.dir"), jniname); // Try current directory first.
+    }
+    if (!loaded) {
+      String location = System.getProperty("user.home");
+      System.err.println("[dynet] Checking " + location + " for " + jniname + "...");
+      loaded = loadFromFile(location, jniname); // Try home directory next.
+    }
+    if (!loaded) {
+      try {
+        // Attempt to load from the resource via the tmp directory.
+        int index = jniname.indexOf('.');
+        String prefix = jniname.substring(0, index);
+        String suffix = jniname.substring(index);
+        File tempFile = File.createTempFile(prefix + "-", suffix);
+        System.err.println("[dynet] Extracting resource " + resourcename + " to " + tempFile.getAbsolutePath() + "...");
+
+        // Load the jnilib from the JAR-ed resource file, and write it to the temp file.
+        // We've anticipated the name and used it for the resource, but that could go wrong.
+        InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(resourcename);
+        OutputStream os = new FileOutputStream(tempFile);
+
+        byte buf[] = new byte[8192];
+        int len;
+        while ((len = is.read(buf)) > 0) {
+          os.write(buf, 0, len);
+        }
+
+        os.flush();
+        InputStream lock = new FileInputStream(tempFile);
+        os.close();
+
+        loaded = loadFromFile(tempFile.getAbsolutePath());
+        lock.close();
+
+        tempFile.delete();
+
+        if (!loaded)
+          throw new RuntimeException("DyNet could not be loaded!");
+      }
+      catch (Exception exception) {
+        exception.printStackTrace(System.err);
+      }
+    }
+  }
+
+  public final static native void throwRuntimeError();
+  public final static native void throwSubRuntimeError();
+  public final static native void throwLogicError();
+  public final static native void throwSubLogicError();
+  public final static native void throwException();
+  public final static native void throwSubException();
+  public final static native void throwUnknown();
+  public final static native void raiseSignal(int jarg1);
+  public final static native void readNullPtr();
+  public final static native void writeNullPtr();
+  public final static native int mtrace();
+  public final static native int muntrace();
+  public final static native long new_MemDebug();
+  public final static native void delete_MemDebug(long jarg1);
+  public final static native void MemDebug_debug(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_leak_malloc(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_leak_new(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_leak_mm_malloc(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_set_break(long jarg1, MemDebug jarg1_, int jarg2);
+  public final static native long new_Trace();
+  public final static native void delete_Trace(long jarg1);
   public final static native long new_uintp();
   public final static native long copy_uintp(long jarg1);
   public final static native void delete_uintp(long jarg1);

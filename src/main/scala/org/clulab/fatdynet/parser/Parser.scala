@@ -14,7 +14,7 @@ abstract class Parser(val name: String) {
   def finish(): Design
 }
 
-abstract class ParamParser(name: String, val dims: Array[Int], index: Option[Int]) extends Parser(name)
+abstract class ParamParser(name: String, val dims: Seq[Int], index: Option[Int]) extends Parser(name)
 
 object ParamParser {
   val nameRegex = "^(.*)"
@@ -34,7 +34,7 @@ object ParamParser {
   }
 }
 
-class ParameterParser(name: String, dims: Array[Int], index: Option[Int]) extends ParamParser(name, dims, index) {
+class ParameterParser(name: String, dims: Seq[Int], index: Option[Int]) extends ParamParser(name, dims, index) {
 
   override def parse(header: Header): Boolean = false // Only single line possible
 
@@ -56,7 +56,7 @@ object ParameterParser {
   }
 }
 
-class LookupParameterParser(name: String, dims: Array[Int], index: Option[Int]) extends ParamParser(name, dims, index) {
+class LookupParameterParser(name: String, dims: Seq[Int], index: Option[Int]) extends ParamParser(name, dims, index) {
 
   override def parse(header: Header): Boolean = false // Only single line possible
 

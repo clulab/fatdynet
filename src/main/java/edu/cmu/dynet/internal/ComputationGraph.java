@@ -46,7 +46,7 @@ public class ComputationGraph {
   // program will crash. `getNew` will handle that deletion for you.
   private static ComputationGraph singletonInstance = null;
 
-  public static ComputationGraph getNew() {
+  public synchronized static ComputationGraph getNew() {
     if (singletonInstance != null) {
       singletonInstance.delete();
     }

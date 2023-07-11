@@ -1,9 +1,9 @@
 package org.clulab.fatdynet.test
 
-import org.clulab.dynet.Test
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.examples.XorScala
 
-class TestXorScalaMain extends Test {
+class TestXorScalaMain extends FatdynetTest {
 
   behavior of "XorScala"
 

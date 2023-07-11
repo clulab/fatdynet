@@ -5,6 +5,8 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+import org.clulab.fatdynet.utils.Synchronizer
+import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
 
@@ -16,14 +18,14 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
   // Testing
   def transform(inputValues: FloatVector): Unit = {
-    inputValues.update(0, input1)
-    inputValues.update(1, input2)
+    inputValues.update(0, input1.toFloat)
+    inputValues.update(1, input2.toFloat)
   }
 
   // Training
   def transform(inputValues: FloatVector, outputValue: FloatPointer): Unit = {
     transform(inputValues)
-    outputValue.set(output)
+    outputValue.set(output.toFloat)
   }
 }
 
@@ -45,8 +47,6 @@ class XorExample {
   )
 
   protected def mkPredictionGraph(xorModel: XorModel, xValues: FloatVector): Expression = {
-    ComputationGraph.renew()
-
     val x = Expression.input(Dim(xValues.length), xValues)
 
     val W = Expression.parameter(xorModel.w)
@@ -59,45 +59,74 @@ class XorExample {
   }
 
   def train: (XorModel, Seq[Float]) = {
+    println("train 1")
     val model = new ParameterCollection
+    println("train ")
     val trainer = new SimpleSGDTrainer(model) // i.e., stochastic gradient descent trainer
+    println("train 3")
 
     val WParameter = model.addParameters(Dim(HIDDEN_SIZE, INPUT_SIZE))
+    println("train 4")
     val bParameter = model.addParameters(Dim(HIDDEN_SIZE))
+    println("train 5")
     val VParameter = model.addParameters(Dim(OUTPUT_SIZE, HIDDEN_SIZE))
+    println("train 6")
     val aParameter = model.addParameters(Dim(OUTPUT_SIZE))
+    println("train 7")
     val xorModel = XorModel(WParameter, bParameter, VParameter, aParameter, model)
+    println("train 8")
 
     // Xs will be the input values; the corresponding expression is created later in mkPredictionGraph.
     val xValues = new FloatVector(INPUT_SIZE)
+    println("train 9")
+
     // Y will be the expected output value, which we _input_ from gold data.
     val yValue = new FloatPointer // because OUTPUT_SIZE is 1
+    println("train 10")
 
-    val yPrediction = mkPredictionGraph(xorModel, xValues)
-    // This is done after mkPredictionGraph so that the values are not made stale by it.
-    val y = Expression.input(yValue)
-    val loss = Expression.squaredDistance(yPrediction, y)
+    val results = Synchronizer.withComputationGraph("XorExampleApp.train()") {
+      println("train 11")
+      val yPrediction = mkPredictionGraph(xorModel, xValues)
+      println("train 1")
+      // This is done after mkPredictionGraph so that the values are not made stale by it.
+      val y = Expression.input(yValue)
+      println("train 13")
+      val loss = Expression.squaredDistance(yPrediction, y)
+      println("train 14")
 
-    //    println()
-    //    println("Computation graphviz structure:")
-    //    ComputationGraph.printGraphViz()
+      //    println()
+      //    println("Computation graphviz structure:")
+      //    ComputationGraph.printGraphViz()
 
-    for (iteration <- 0 until ITERATIONS) {
-      val lossValue = random.shuffle(transformations).map { transformation =>
-        transformation.transform(xValues, yValue)
+      for (iteration <- 0 until ITERATIONS) {
+        println("train 15")
+        val lossValue = random.shuffle(transformations).map { transformation =>
+          println("train 16")
+          transformation.transform(xValues, yValue)
+          println("train 17")
 
-        val lossValue = ComputationGraph.forward(loss).toFloat()
+          val lossValue = ComputationGraph.forward(loss).toFloat()
+          println("train 18")
 
-        ComputationGraph.backward(loss)
-        trainer.update()
-        lossValue
-      }.sum / transformations.length
+          ComputationGraph.backward(loss)
+          println("train 19")
+          trainer.update()
+          println("train 20")
+          lossValue
+        }.sum / transformations.length
 
-      println(s"index = $iteration, loss = $lossValue")
-      trainer.learningRate *= 0.999f
+        println("train 21")
+        println(s"index = $iteration, loss = $lossValue")
+        println("train 22")
+        trainer.learningRate *= 0.999f
+        println("train 23")
+      }
+      println("train 4")
+      val results = predict(xorModel, xValues, yPrediction)
+      println("train 25")
+      results
     }
-
-    val results = predict(xorModel, xValues, yPrediction)
+    println("train 26")
 
     (xorModel, results)
   }
@@ -105,7 +134,7 @@ class XorExample {
   protected def predict(xorModel: XorModel, xValues: FloatVector, yPrediction: Expression): Seq[Float] = {
     var count = 0
 
-    println
+    println()
     val result = transformations.map { transformation =>
       transformation.transform(xValues)
       // This is necessary in this version of the program, possibly because the values
@@ -126,9 +155,11 @@ class XorExample {
 
   def predict(xorModel: XorModel): Seq[Float] = {
     val xValues = new FloatVector(INPUT_SIZE)
-    val yPrediction = mkPredictionGraph(xorModel, xValues)
+    Synchronizer.withComputationGraph("XorExampleApp.predict()") {
+      val yPrediction = mkPredictionGraph(xorModel, xValues)
 
-    predict(xorModel, xValues, yPrediction)
+      predict(xorModel, xValues, yPrediction)
+    }
   }
 
   def save(filename: String, xorModel: XorModel): Unit = {
@@ -151,22 +182,34 @@ class XorExample {
   }
 }
 
-object XorExampleApp {
-
-  def main(args: Array[String]) {
+  def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"
 
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
-    val xorExample = new XorExample()
-    val (xorModel1, initialResults) = xorExample.train
-    val expectedResults = xorExample.predict(xorModel1)
-    xorExample.save(filename, xorModel1)
+    println("run One")
+    val (xorModel1, initialResults) = train
+    println("run Two")
+    val expectedResults = predict(xorModel1)
+    println("run Three")
+    save(filename, xorModel1)
 
-    val xorModel2 = xorExample.load(filename)
-    val actualResults = xorExample.predict(xorModel2)
+    println("run Four")
+    val xorModel2 = load(filename)
+    println("run Five")
+    val actualResults = predict(xorModel2)
+    println("run Six")
 
     assert(initialResults == expectedResults)
     assert(expectedResults == actualResults)
+  }
+
+  def main(args: Array[String]): Unit = {
+    // Use this version only if nothing else will run afterwards.
+    // Utils.shutdown(true) will trash DyNet.  Call run() instead,
+    // if further operations will be performed.
+    Utils.startup()
+    run(args)
+    Utils.shutdown(true)
   }
 }
