@@ -6,7 +6,6 @@ import org.scalatest._
 
 import java.util.zip.ZipFile
 import org.clulab.fatdynet.utils.BaseTextModelLoader
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import scala.io.Source
 

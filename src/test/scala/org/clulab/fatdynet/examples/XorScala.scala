@@ -7,9 +7,9 @@ import org.clulab.fatdynet.utils.Synchronizer
 object XorScala {
   val HIDDEN_SIZE = 8
   val ITERATIONS = 30
-  val RANDOM_SEED = 411865951L
+  val RANDOM_SEED = 2522620396L
 
-  def run(): (Float, Float, Float) = {
+  def run(): (Float, Float) = {
     println("Running XOR example")
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> RANDOM_SEED))
     println("Dynet initialized!")
@@ -67,21 +67,7 @@ object XorScala {
       }
     }
     println("--total--, loss = " + totalLoss)
-
-    val staticLoss = {
-      var loss: Float = 0
-      for (mi <- 0 to 3) {
-        val x1: Boolean = mi % 2 > 0
-        val x2: Boolean = (mi / 2) % 2 > 0
-        x_values.update(0, if (x1) 1 else -1)
-        x_values.update(1, if (x2) 1 else -1)
-        y_value.set(if (x1 != x2) 1 else -1)
-        loss += ComputationGraph.forward(loss_expr).toFloat
-      }
-      loss
-    }
-
-    (mostRecentLoss, totalLoss, staticLoss)
+    (mostRecentLoss, totalLoss)
   }
 
   def main(args: Array[String]): Unit = {

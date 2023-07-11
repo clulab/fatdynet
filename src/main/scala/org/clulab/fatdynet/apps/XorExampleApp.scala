@@ -29,10 +29,10 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
   }
 }
 
-class XorExample {
+object XorExampleApp {
   protected val random: Random = new Random(1234L)
 
-  val INPUT_SIZE = 2
+  val  INPUT_SIZE = 2
   val HIDDEN_SIZE = 2
   val OUTPUT_SIZE = 1
 
@@ -180,7 +180,6 @@ class XorExample {
 
     XorModel(WParameter, bParameter, VParameter, aParameter, model.getParameterCollection)
   }
-}
 
   def run(args: Array[String]): Unit = {
     val filename = "XorModel.dat"

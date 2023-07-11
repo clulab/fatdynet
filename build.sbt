@@ -31,16 +31,4 @@ libraryDependencies ++= {
   ) ++ parallelLibraries
 }
 
-    val staticTests = tests.filter(!_.name.contains(".TestDynamic"))
-    val staticGroup = new Group("static", staticTests, newRunPolicy)
-
-    val dynamicTests = tests.filter(_.name.contains(".TestDynamic"))
-    val dynamicGroup = new Group("dynamic", dynamicTests, newRunPolicy)
-
-    Seq(dynamicGroup, staticGroup)
-  }
-
-  testGrouping in Test := groupDynamic((definedTests in Test).value)
-}
-
 lazy val root = (project in file("."))

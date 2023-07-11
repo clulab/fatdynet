@@ -17,8 +17,6 @@ object Initializer {
   val SHARED_PARAMETERS = "shared-parameters"
   val AUTOBATCH = "autobatch"
   val PROFILING = "profiling"
-  val DYNAMIC_MEM = "dynamic-mem"
-  val FORWARD_ONLY = "forward-only"
 
   protected val initialized: AtomicBoolean = new AtomicBoolean(false)
 

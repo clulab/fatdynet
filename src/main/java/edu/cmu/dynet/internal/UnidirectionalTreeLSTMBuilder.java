@@ -82,8 +82,4 @@ public class UnidirectionalTreeLSTMBuilder extends TreeLSTMBuilder {
     return (cPtr == 0) ? null : new ExpressionVector(cPtr, false);
   }
 
-  public UnidirectionalTreeLSTMBuilder(UnidirectionalTreeLSTMBuilder other) {
-    this(dynet_swigJNI.new_UnidirectionalTreeLSTMBuilder__SWIG_2(UnidirectionalTreeLSTMBuilder.getCPtr(other), other), true);
-  }
-
 }

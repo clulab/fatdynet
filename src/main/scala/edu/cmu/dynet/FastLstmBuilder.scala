@@ -1,7 +1,7 @@
 package edu.cmu.dynet
 
 class FastLstmBuilder private[dynet](private[dynet] val builder: internal.FastLSTMBuilder)
-  extends RnnBuilder(builder) with Cloneable {
+  extends RnnBuilder(builder) {
 
   def this() = { this(new internal.FastLSTMBuilder()) }
 
@@ -9,5 +9,4 @@ class FastLstmBuilder private[dynet](private[dynet] val builder: internal.FastLS
     this(new internal.FastLSTMBuilder(layers, inputDim, hiddenDim, model.model))
   }
 
-  override def clone: FastLstmBuilder = new FastLstmBuilder(new internal.FastLSTMBuilder(builder))
 }

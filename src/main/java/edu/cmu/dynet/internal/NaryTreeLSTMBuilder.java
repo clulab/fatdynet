@@ -36,7 +36,7 @@ public class NaryTreeLSTMBuilder extends TreeLSTMBuilder {
   }
 
   public NaryTreeLSTMBuilder(long N, long layers, long input_dim, long hidden_dim, ParameterCollection model) {
-    this(dynet_swigJNI.new_NaryTreeLSTMBuilder__SWIG_0(N, layers, input_dim, hidden_dim, ParameterCollection.getCPtr(model), model), true);
+    this(dynet_swigJNI.new_NaryTreeLSTMBuilder(N, layers, input_dim, hidden_dim, ParameterCollection.getCPtr(model), model), true);
   }
 
   public void set_num_elements(int num) {
@@ -95,10 +95,6 @@ public class NaryTreeLSTMBuilder extends TreeLSTMBuilder {
 
   public long getN() {
     return dynet_swigJNI.NaryTreeLSTMBuilder_N_get(swigCPtr, this);
-  }
-
-  public NaryTreeLSTMBuilder(NaryTreeLSTMBuilder other) {
-    this(dynet_swigJNI.new_NaryTreeLSTMBuilder__SWIG_1(NaryTreeLSTMBuilder.getCPtr(other), other), true);
   }
 
 }
