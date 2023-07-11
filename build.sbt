@@ -6,7 +6,7 @@ val scala212 = "2.12.17" // up to 2.12.18
 val scala213 = "2.13.10" // up to 2.13.11
 val scala30  = "3.0.2"   // up to 3.0.2
 val scala31  = "3.1.3"   // up to 3.1.3
-val scala32  = "3.2.1"   // up to 3.2.2
+val scala32  = "3.2.2"   // up to 3.2.2
 val scala33  = "3.3.0"   // up to 3.3.0
 
 val scala3   = scala31
