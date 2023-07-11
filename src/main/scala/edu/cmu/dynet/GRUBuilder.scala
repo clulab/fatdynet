@@ -4,17 +4,15 @@ package edu.cmu.dynet
   * [[edu.cmu.dynet.RnnBuilder]].
   */
 class GruBuilder private[dynet](private[dynet] val builder: internal.GRUBuilder)
-    extends RnnBuilder(builder) with Cloneable {
+    extends RnnBuilder(builder) {
 
   /** Create a new, empty GruBuilder. */
-  def this() { this(new internal.GRUBuilder()) }
+  def this() = { this(new internal.GRUBuilder()) }
 
   /** Create a GruBuilder with the specified parameters.
     */
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection) = {
     this(new internal.GRUBuilder(layers, inputDim, hiddenDim, model.model))
   }
-
-  override def clone: GruBuilder = new GruBuilder(new internal.GRUBuilder(builder))
 }
 

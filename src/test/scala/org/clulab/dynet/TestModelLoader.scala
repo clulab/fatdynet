@@ -7,27 +7,28 @@ import org.clulab.dynet.models.hot.scala.{HotModel => Model}
 import org.clulab.fatdynet.utils.CloseableModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.CloseableZipModelLoader
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+
+import scala.util.Using
 
 // This version tests the Scala interfaces.
 class TestModelLoader extends TestLoader {
 
   def save(filename: String, model: Model, key: String): Unit = {
-    new CloseableModelSaver(filename).autoClose { saver =>
+    Using.resource(new CloseableModelSaver(filename)) { saver =>
       saver.addModel(model.parameters, key)
     }
   }
 
   def save(filename: String, modelA: Model, keyA: String, modelB: Model, keyB: String): Unit = {
-    new CloseableModelSaver(filename).autoClose { saver =>
+    Using.resource(new CloseableModelSaver(filename)) { saver =>
       saver.addModel(modelA.parameters, keyA)
       saver.addModel(modelB.parameters, keyB)
     }
   }
 
   def loadRaw(filename: String, key: String): Model = {
-    new CloseableModelLoader(filename).autoClose { loader =>
+    Using.resource(new CloseableModelLoader(filename)) { loader =>
       val model = Model()
       loader.populateModel(model.parameters, key)
 
@@ -36,7 +37,7 @@ class TestModelLoader extends TestLoader {
   }
 
   def loadZip(filename: String, zipname: String, key: String): Model = {
-    new CloseableZipModelLoader(filename, zipname).autoClose { loader =>
+    Using.resource(new CloseableZipModelLoader(filename, zipname)) { loader =>
       val model = Model()
 
       loader.populateModel(model.parameters, key)

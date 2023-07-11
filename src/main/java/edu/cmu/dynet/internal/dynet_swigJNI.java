@@ -12,40 +12,115 @@ package edu.cmu.dynet.internal;
 
 public class dynet_swigJNI {
 
-    static {
-        try {
-            File tempFile = File.createTempFile("dynet", ".dll");
-            String libname = System.mapLibraryName("dynet_swig");
 
-            if (libname.endsWith("dylib")) {
-              libname = libname.replace(".dylib", ".jnilib");
-            }
-
-            // Load the dylib from the JAR-ed resource file, and write it to the temp file.
-            InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(libname);
-            OutputStream os = new FileOutputStream(tempFile);
-
-            byte buf[] = new byte[8192];
-            int len;
-            while ((len = is.read(buf)) > 0) {
-                os.write(buf, 0, len);
-            }
-
-            os.flush();
-            InputStream lock = new FileInputStream(tempFile);
-            os.close();
-
-            // Load the library from the tempfile.
-            System.load(tempFile.getPath());
-            lock.close();
-
-            // And delete the tempfile.
-            tempFile.delete();
-        } catch (IOException io) {
-            System.out.println(io);
-        }
+  static boolean loadFromFile(String pathname) {
+    try {
+      System.load(pathname);
+      System.err.println("[dynet] Loading DyNet from " + pathname + "...");
+      return true;
     }
+    catch (UnsatisfiedLinkError exception) {
+      return false;
+    }
+  }
 
+  static boolean loadFromFile(String dir, String libname) {
+    String pathname = dir + File.separator + libname;
+    return loadFromFile(pathname);
+  }
+
+  static String replaceSuffix(String text, String prev, String next) {
+    if (text.endsWith(prev))
+      return text.substring(0, text.length() - prev.length()) + next;
+    else
+      return text;
+  }
+
+  static Boolean isMac() {
+    return System.getProperty("os.name").startsWith("Mac ");
+  }
+
+  static Boolean isApple() {
+    return System.getProperty("os.arch").equals("aarch64");
+  }
+
+  static {
+    String filename = "dynet_swig";
+    String libname = System.mapLibraryName(filename);
+    // The Mac reports a libname ending with .dylib, but Java needs .jnilib instead.
+    String jniname = replaceSuffix(libname, ".dylib", ".jnilib");
+    String resourcename = !isMac() ? jniname : (isApple() ? "apple-" + jniname: "intel-" + jniname);
+
+    boolean loaded = false;
+    if (!loaded) {
+      String location = System.getProperty("user.dir");
+      System.err.println("[dynet] Checking " + location + " for " + jniname + "...");
+      loaded = loadFromFile(System.getProperty("user.dir"), jniname); // Try current directory first.
+    }
+    if (!loaded) {
+      String location = System.getProperty("user.home");
+      System.err.println("[dynet] Checking " + location + " for " + jniname + "...");
+      loaded = loadFromFile(location, jniname); // Try home directory next.
+    }
+    if (!loaded) {
+      try {
+        // Attempt to load from the resource via the tmp directory.
+        int index = jniname.indexOf('.');
+        String prefix = jniname.substring(0, index);
+        String suffix = jniname.substring(index);
+        File tempFile = File.createTempFile(prefix + "-", suffix);
+        System.err.println("[dynet] Extracting resource " + resourcename + " to " + tempFile.getAbsolutePath() + "...");
+
+        // Load the jnilib from the JAR-ed resource file, and write it to the temp file.
+        // We've anticipated the name and used it for the resource, but that could go wrong.
+        InputStream is = dynet_swigJNI.class.getClassLoader().getResourceAsStream(resourcename);
+        OutputStream os = new FileOutputStream(tempFile);
+
+        byte buf[] = new byte[8192];
+        int len;
+        while ((len = is.read(buf)) > 0) {
+          os.write(buf, 0, len);
+        }
+
+        os.flush();
+        InputStream lock = new FileInputStream(tempFile);
+        os.close();
+
+        loaded = loadFromFile(tempFile.getAbsolutePath());
+        lock.close();
+
+        tempFile.delete();
+
+        if (!loaded)
+          throw new RuntimeException("DyNet could not be loaded!");
+      }
+      catch (Exception exception) {
+        exception.printStackTrace(System.err);
+      }
+    }
+  }
+
+  public final static native void throwRuntimeError();
+  public final static native void throwSubRuntimeError();
+  public final static native void throwLogicError();
+  public final static native void throwSubLogicError();
+  public final static native void throwException();
+  public final static native void throwSubException();
+  public final static native void throwUnknown();
+  public final static native void raiseSignal(int jarg1);
+  public final static native void readNullPtr();
+  public final static native void writeNullPtr();
+  public final static native int mtrace();
+  public final static native int muntrace();
+  public final static native long new_MemDebug();
+  public final static native void delete_MemDebug(long jarg1);
+  public final static native void MemDebug_debug(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_leak_malloc(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_leak_new(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_leak_mm_malloc(long jarg1, MemDebug jarg1_);
+  public final static native void MemDebug_set_break(long jarg1, MemDebug jarg1_, int jarg2);
+  public final static native long new_Trace();
+  public final static native void delete_Trace(long jarg1);
   public final static native long new_uintp();
   public final static native long copy_uintp(long jarg1);
   public final static native void delete_uintp(long jarg1);
@@ -682,7 +757,6 @@ public class dynet_swigJNI {
   public final static native void SimpleRNNBuilder_copy(long jarg1, SimpleRNNBuilder jarg1_, long jarg2, RNNBuilder jarg2_);
   public final static native long SimpleRNNBuilder_num_h0_components(long jarg1, SimpleRNNBuilder jarg1_);
   public final static native long SimpleRNNBuilder_get_parameter_collection(long jarg1, SimpleRNNBuilder jarg1_);
-  public final static native long new_SimpleRNNBuilder__SWIG_3(long jarg1, SimpleRNNBuilder jarg1_);
   public final static native void delete_SimpleRNNBuilder(long jarg1);
   public final static native long new_CoupledLSTMBuilder__SWIG_0();
   public final static native long new_CoupledLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);
@@ -729,7 +803,6 @@ public class dynet_swigJNI {
   public final static native float CoupledLSTMBuilder_dropout_rate_h_get(long jarg1, CoupledLSTMBuilder jarg1_);
   public final static native void CoupledLSTMBuilder_dropout_rate_c_set(long jarg1, CoupledLSTMBuilder jarg1_, float jarg2);
   public final static native float CoupledLSTMBuilder_dropout_rate_c_get(long jarg1, CoupledLSTMBuilder jarg1_);
-  public final static native long new_CoupledLSTMBuilder__SWIG_2(long jarg1, CoupledLSTMBuilder jarg1_);
   public final static native void delete_CoupledLSTMBuilder(long jarg1);
   public final static native long new_VanillaLSTMBuilder__SWIG_0();
   public final static native long new_VanillaLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_, boolean jarg5, float jarg6);
@@ -784,7 +857,6 @@ public class dynet_swigJNI {
   public final static native float VanillaLSTMBuilder_forget_bias_get(long jarg1, VanillaLSTMBuilder jarg1_);
   public final static native void VanillaLSTMBuilder_dropout_masks_valid_set(long jarg1, VanillaLSTMBuilder jarg1_, boolean jarg2);
   public final static native boolean VanillaLSTMBuilder_dropout_masks_valid_get(long jarg1, VanillaLSTMBuilder jarg1_);
-  public final static native long new_VanillaLSTMBuilder__SWIG_4(long jarg1, VanillaLSTMBuilder jarg1_);
   public final static native void delete_VanillaLSTMBuilder(long jarg1);
   public final static native long new_CompactVanillaLSTMBuilder__SWIG_0();
   public final static native long new_CompactVanillaLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);
@@ -832,7 +904,6 @@ public class dynet_swigJNI {
   public final static native float CompactVanillaLSTMBuilder_weightnoise_std_get(long jarg1, CompactVanillaLSTMBuilder jarg1_);
   public final static native void CompactVanillaLSTMBuilder_dropout_masks_valid_set(long jarg1, CompactVanillaLSTMBuilder jarg1_, boolean jarg2);
   public final static native boolean CompactVanillaLSTMBuilder_dropout_masks_valid_get(long jarg1, CompactVanillaLSTMBuilder jarg1_);
-  public final static native long new_CompactVanillaLSTMBuilder__SWIG_2(long jarg1, CompactVanillaLSTMBuilder jarg1_);
   public final static native void delete_CompactVanillaLSTMBuilder(long jarg1);
   public final static native long new_GRUBuilder__SWIG_0();
   public final static native long new_GRUBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);
@@ -844,7 +915,6 @@ public class dynet_swigJNI {
   public final static native long GRUBuilder_num_h0_components(long jarg1, GRUBuilder jarg1_);
   public final static native void GRUBuilder_copy(long jarg1, GRUBuilder jarg1_, long jarg2, RNNBuilder jarg2_);
   public final static native long GRUBuilder_get_parameter_collection(long jarg1, GRUBuilder jarg1_);
-  public final static native long new_GRUBuilder__SWIG_2(long jarg1, GRUBuilder jarg1_);
   public final static native void delete_GRUBuilder(long jarg1);
   public final static native long new_FastLSTMBuilder__SWIG_0();
   public final static native long new_FastLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);
@@ -874,7 +944,6 @@ public class dynet_swigJNI {
   public final static native long FastLSTMBuilder_c0_get(long jarg1, FastLSTMBuilder jarg1_);
   public final static native void FastLSTMBuilder_layers_set(long jarg1, FastLSTMBuilder jarg1_, long jarg2);
   public final static native long FastLSTMBuilder_layers_get(long jarg1, FastLSTMBuilder jarg1_);
-  public final static native long new_FastLSTMBuilder__SWIG_2(long jarg1, FastLSTMBuilder jarg1_);
   public final static native void delete_FastLSTMBuilder(long jarg1);
   public final static native void TreeLSTMBuilder_set_num_elements(long jarg1, TreeLSTMBuilder jarg1_, int jarg2);
   public final static native long TreeLSTMBuilder_add_input(long jarg1, TreeLSTMBuilder jarg1_, int jarg2, long jarg3, IntVector jarg3_, long jarg4, Expression jarg4_);
@@ -885,7 +954,7 @@ public class dynet_swigJNI {
   public final static native long TreeLSTMBuilder_num_h0_components(long jarg1, TreeLSTMBuilder jarg1_);
   public final static native void TreeLSTMBuilder_copy(long jarg1, TreeLSTMBuilder jarg1_, long jarg2, RNNBuilder jarg2_);
   public final static native void delete_TreeLSTMBuilder(long jarg1);
-  public final static native long new_NaryTreeLSTMBuilder__SWIG_0(long jarg1, long jarg2, long jarg3, long jarg4, long jarg5, ParameterCollection jarg5_);
+  public final static native long new_NaryTreeLSTMBuilder(long jarg1, long jarg2, long jarg3, long jarg4, long jarg5, ParameterCollection jarg5_);
   public final static native void NaryTreeLSTMBuilder_set_num_elements(long jarg1, NaryTreeLSTMBuilder jarg1_, int jarg2);
   public final static native long NaryTreeLSTMBuilder_add_input(long jarg1, NaryTreeLSTMBuilder jarg1_, int jarg2, long jarg3, IntVector jarg3_, long jarg4, Expression jarg4_);
   public final static native void NaryTreeLSTMBuilder_copy(long jarg1, NaryTreeLSTMBuilder jarg1_, long jarg2, RNNBuilder jarg2_);
@@ -900,7 +969,6 @@ public class dynet_swigJNI {
   public final static native long NaryTreeLSTMBuilder_layers_get(long jarg1, NaryTreeLSTMBuilder jarg1_);
   public final static native void NaryTreeLSTMBuilder_N_set(long jarg1, NaryTreeLSTMBuilder jarg1_, long jarg2);
   public final static native long NaryTreeLSTMBuilder_N_get(long jarg1, NaryTreeLSTMBuilder jarg1_);
-  public final static native long new_NaryTreeLSTMBuilder__SWIG_1(long jarg1, NaryTreeLSTMBuilder jarg1_);
   public final static native void delete_NaryTreeLSTMBuilder(long jarg1);
   public final static native long new_UnidirectionalTreeLSTMBuilder__SWIG_0();
   public final static native long new_UnidirectionalTreeLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);
@@ -913,7 +981,6 @@ public class dynet_swigJNI {
   public final static native long UnidirectionalTreeLSTMBuilder_node_builder_get(long jarg1, UnidirectionalTreeLSTMBuilder jarg1_);
   public final static native void UnidirectionalTreeLSTMBuilder_h_set(long jarg1, UnidirectionalTreeLSTMBuilder jarg1_, long jarg2, ExpressionVector jarg2_);
   public final static native long UnidirectionalTreeLSTMBuilder_h_get(long jarg1, UnidirectionalTreeLSTMBuilder jarg1_);
-  public final static native long new_UnidirectionalTreeLSTMBuilder__SWIG_2(long jarg1, UnidirectionalTreeLSTMBuilder jarg1_);
   public final static native void delete_UnidirectionalTreeLSTMBuilder(long jarg1);
   public final static native long new_BidirectionalTreeLSTMBuilder__SWIG_0();
   public final static native long new_BidirectionalTreeLSTMBuilder__SWIG_1(long jarg1, long jarg2, long jarg3, long jarg4, ParameterCollection jarg4_);
@@ -928,7 +995,6 @@ public class dynet_swigJNI {
   public final static native long BidirectionalTreeLSTMBuilder_h_get(long jarg1, BidirectionalTreeLSTMBuilder jarg1_);
   public final static native void BidirectionalTreeLSTMBuilder_local_model_set(long jarg1, BidirectionalTreeLSTMBuilder jarg1_, long jarg2, ParameterCollection jarg2_);
   public final static native long BidirectionalTreeLSTMBuilder_local_model_get(long jarg1, BidirectionalTreeLSTMBuilder jarg1_);
-  public final static native long new_BidirectionalTreeLSTMBuilder__SWIG_2(long jarg1, BidirectionalTreeLSTMBuilder jarg1_);
   public final static native void delete_BidirectionalTreeLSTMBuilder(long jarg1);
   public final static native void DynetParams_random_seed_set(long jarg1, DynetParams jarg1_, long jarg2);
   public final static native long DynetParams_random_seed_get(long jarg1, DynetParams jarg1_);
@@ -940,12 +1006,8 @@ public class dynet_swigJNI {
   public final static native int DynetParams_autobatch_get(long jarg1, DynetParams jarg1_);
   public final static native void DynetParams_profiling_set(long jarg1, DynetParams jarg1_, int jarg2);
   public final static native int DynetParams_profiling_get(long jarg1, DynetParams jarg1_);
-  public final static native void DynetParams_forward_only_set(long jarg1, DynetParams jarg1_, int jarg2);
-  public final static native int DynetParams_forward_only_get(long jarg1, DynetParams jarg1_);
   public final static native void DynetParams_shared_parameters_set(long jarg1, DynetParams jarg1_, boolean jarg2);
   public final static native boolean DynetParams_shared_parameters_get(long jarg1, DynetParams jarg1_);
-  public final static native void DynetParams_dynamic_set(long jarg1, DynetParams jarg1_, boolean jarg2);
-  public final static native boolean DynetParams_dynamic_get(long jarg1, DynetParams jarg1_);
   public final static native long new_DynetParams();
   public final static native void delete_DynetParams(long jarg1);
   public final static native void initialize__SWIG_0(long jarg1, DynetParams jarg1_);

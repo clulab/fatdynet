@@ -223,8 +223,4 @@ public class CoupledLSTMBuilder extends RNNBuilder {
     return dynet_swigJNI.CoupledLSTMBuilder_dropout_rate_c_get(swigCPtr, this);
   }
 
-  public CoupledLSTMBuilder(CoupledLSTMBuilder other) {
-    this(dynet_swigJNI.new_CoupledLSTMBuilder__SWIG_2(CoupledLSTMBuilder.getCPtr(other), other), true);
-  }
-
 }

@@ -1,18 +1,14 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet._
-import org.clulab.dynet.Test
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Initializer
 
 import scala.io.Source
 
-class TestCrash extends Test {
-  Initializer.initialize(Map(
-    Initializer.RANDOM_SEED -> 2522620396L,
-    Initializer.DYNET_MEM -> "2048"
-  ))
+class TestCrash extends FatdynetTest {
+  Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
 
   def asString(lookupParameter: LookupParameter, name: String): Unit = {
     val tmpFile = File.createTempFile("model-", ".fatdynet")
@@ -29,7 +25,7 @@ class TestCrash extends Test {
   def makeParameter = {
     val oldParameterCollection = new ParameterCollection()
     val oldParameter = oldParameterCollection.addParameters(Dim(51))
-    val oldParametersList = oldParameterCollection.parametersList
+    val oldParametersList = oldParameterCollection.parametersList()
   }
 
   def makeLookupParameter = {
@@ -38,6 +34,10 @@ class TestCrash extends Test {
     // Must do this twice
     asString(oldLookupParameters, "/name")
     asString(oldLookupParameters, "/name")
+  }
+
+  it should "do something" in {
+    // This activates beforeAll and afterAll.
   }
 
   // Must be in this order

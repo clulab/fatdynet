@@ -6,7 +6,6 @@ import edu.cmu.dynet._
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
 import org.clulab.fatdynet.utils.BaseTextLoader
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Header
 import org.clulab.fatdynet.utils.HeaderIterator
 import org.clulab.fatdynet.utils.RawTextLoader
@@ -14,6 +13,7 @@ import org.clulab.fatdynet.utils.ZipTextLoader
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
+import scala.util.Using
 
 class Repo(val textLoader: BaseTextLoader) {
 
@@ -55,7 +55,7 @@ class Repo(val textLoader: BaseTextLoader) {
 
     def getHeadersSlowly(source: Source): Iterator[Header] = {
       source
-          .getLines
+          .getLines()
           .zipWithIndex
           .filter { case (line, _) => line.startsWith("#") }
           .map { case (line, lineNo) => new Header(line, lineNo) }
@@ -81,7 +81,7 @@ class Repo(val textLoader: BaseTextLoader) {
       case exception: Exception => throw new ParseException(exception)
     }
 
-    designs
+    designs.toSeq // Scala 2.13 added toSeq.
   }
 
   protected def reorderDesigns(designs: Seq[Design]): Seq[Design] = {
@@ -117,7 +117,7 @@ class Repo(val textLoader: BaseTextLoader) {
     val parameterCollection = new ParameterCollection
     val artifact = design.build(parameterCollection)
 
-    textLoader.newTextModelLoader().autoClose { modelLoader =>
+    Using.resource(textLoader.newTextModelLoader()) { modelLoader =>
       artifact.populate(modelLoader, parameterCollection)
     }
     new Model(design.name, parameterCollection, Seq(artifact), Seq(design))
@@ -131,7 +131,7 @@ class Repo(val textLoader: BaseTextLoader) {
         design.build(parameterCollection)
     }
 
-    textLoader.newTextModelLoader().autoClose { modelLoader =>
+    Using.resource(textLoader.newTextModelLoader()) { modelLoader =>
         if (artifacts.size > 1)
           // They must have been thrown together into a parameter collection
           modelLoader.populateModel(parameterCollection, name)
@@ -147,7 +147,7 @@ class Repo(val textLoader: BaseTextLoader) {
 object Repo {
   type ParserFactory = Header => Option[Parser]
 
-  val parserFactories: Array[ParserFactory] = Array(
+  val parserFactories: Seq[ParserFactory] = Seq(
     CompactVanillaLstmParser.mkParser,
     CoupledLstmParser.mkParser,
     FastLstmParser.mkParser,

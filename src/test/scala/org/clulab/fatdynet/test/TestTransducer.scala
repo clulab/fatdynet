@@ -1,18 +1,18 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet._
-import org.clulab.dynet.Test
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design.Design
 import org.clulab.fatdynet.parser.VanillaLstmParser
 import org.clulab.fatdynet.utils.CloseableModelSaver
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
 
-class TestTransducer extends Test {
+import scala.util.Using
+
+class TestTransducer extends FatdynetTest {
 
   /**
     * TODO
@@ -38,13 +38,15 @@ class TestTransducer extends Test {
     def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns()
 
     val filename: String = "Test" + testname + ".txt"
-    val input: Expression = Expression.randomNormal(Dim(inputDim))
-    val inputs = Array(input, input, input)
 
     def test(): Unit = {
       behavior of testname
 
       it should "serialize the builder properly" in {
+        // The vars are used to facilitate garbage collection.
+        var input: Expression = Expression.randomNormal(Dim(inputDim))
+        var inputs = Array(input, input, input)
+
         val oldModel = new ParameterCollection
         val oldRnnBuilder = build(oldModel)
         val modelName = "/model"
@@ -54,7 +56,7 @@ class TestTransducer extends Test {
           * dynet seems to get mixed up when loading the model then and will throw
           * an exception.
           */
-        new CloseableModelSaver(filename).autoClose { saver =>
+        Using.resource(new CloseableModelSaver(filename)) { saver =>
           saver.addModel(oldModel, modelName)
         }
 
@@ -93,6 +95,9 @@ class TestTransducer extends Test {
           Array.fill(rounds) { newFloats(0) } should be (newFloats)
         }
         new File(filename).delete
+        // These are placed here to facilitate garbage collection.
+        inputs = null
+        input = null
       }
     }
   }
@@ -125,7 +130,7 @@ class TestTransducer extends Test {
       extends TransducerTester(layers, inputDim, hiddenDim, "VanillaLstmLoader" + "_" + lnLSTM) {
 
     // These should fail because they are hidden by LstmParserTester.
-    override def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns(Array(VanillaLstmParser.mkParser _))
+    override def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns(Seq(VanillaLstmParser.mkParser _))
 
     def build(model: ParameterCollection): RnnBuilder = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model)
   }

@@ -9,12 +9,13 @@ import org.clulab.fatdynet.utils.CloseableModelLoader
 import org.clulab.fatdynet.utils.CloseableZipModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Zipper
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
+
+import scala.util.Using
 
 object ZipApp {
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val filename = "model.rnn"
@@ -30,7 +31,7 @@ object ZipApp {
     }
 
     // Save the model into a "raw" file.
-    new CloseableModelSaver(filename).autoClose { modelSaver =>
+    Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
       modelSaver.addLookupParameter(lookupParameter, key)
     }
 
@@ -38,7 +39,7 @@ object ZipApp {
     Zipper.zip(filename, zipname)
 
     // Read it back from the raw file in the dynet way.
-    val rawLookupParameter1 = new CloseableModelLoader(filename).autoClose { modelLoader =>
+    val rawLookupParameter1 = Using.resource(new CloseableModelLoader(filename)) { modelLoader =>
      // This requires you to know the dimension details and key in advance.
       val parameterCollection = new ParameterCollection()
       val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))
@@ -48,7 +49,7 @@ object ZipApp {
     }
 
     // Read it back from the zip file in the dynet way.
-    val zipLookupParameter1 = new CloseableZipModelLoader(filename, zipname).autoClose { modelLoader =>
+    val zipLookupParameter1 = Using.resource(new CloseableZipModelLoader(filename, zipname)) { modelLoader =>
       // This requires you to know the dimension details and key in advance.
       val parameterCollection = new ParameterCollection()
       val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))

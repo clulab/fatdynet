@@ -6,7 +6,7 @@ object XorScala {
   val HIDDEN_SIZE = 8
   val ITERATIONS = 30
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]): Unit = {
     println("Running XOR example")
     Initialize.initialize()
     println("Dynet initialized!")
@@ -36,9 +36,9 @@ object XorScala {
     val y_pred = V * h + a
     val loss_expr = Expression.squaredDistance(y_pred, y)
 
-    println()
-    println("Computation graphviz structure:")
-    ComputationGraph.printGraphViz()
+//    println()
+//    println("Computation graphviz structure:")
+//    ComputationGraph.printGraphViz()
     println()
     println("Training...")
 
@@ -50,7 +50,7 @@ object XorScala {
         x_values.update(0, if (x1) 1 else -1)
         x_values.update(1, if (x2) 1 else -1)
         y_value.set(if (x1 != x2) 1 else -1)
-        loss += ComputationGraph.forward(loss_expr).toFloat
+        loss += ComputationGraph.forward(loss_expr).toFloat()
         ComputationGraph.backward(loss_expr)
         sgd.update()
       }
@@ -58,5 +58,7 @@ object XorScala {
       loss /= 4
       println("iter = " + iter + ", loss = " + loss)
     }
+    ComputationGraph.renew()
+    m.model.delete()
   }
 }

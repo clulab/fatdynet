@@ -257,8 +257,4 @@ public class VanillaLSTMBuilder extends RNNBuilder {
     return dynet_swigJNI.VanillaLSTMBuilder_dropout_masks_valid_get(swigCPtr, this);
   }
 
-  public VanillaLSTMBuilder(VanillaLSTMBuilder other) {
-    this(dynet_swigJNI.new_VanillaLSTMBuilder__SWIG_4(VanillaLSTMBuilder.getCPtr(other), other), true);
-  }
-
 }

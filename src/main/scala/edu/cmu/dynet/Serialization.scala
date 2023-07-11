@@ -3,7 +3,9 @@ package edu.cmu.dynet
 /** New serialization, much less featureful than old serialization. */
 
 class ModelSaver private[dynet](saver: internal.TextFileSaver) {
-  def this(filename: String) { this(new internal.TextFileSaver(filename))}
+  def this(filename: String) = { this(new internal.TextFileSaver(filename))}
+
+  def close(): Unit = saver.delete()
 
   def addModel(model: ParameterCollection, key: String = ""): Unit = saver.save(model.model, key)
   def addParameter(p: Parameter, key: String = ""): Unit = saver.save(p.parameter, key)
@@ -13,7 +15,9 @@ class ModelSaver private[dynet](saver: internal.TextFileSaver) {
 }
 
 class ModelLoader private[dynet](loader: internal.TextFileLoader) {
-  def this(filename: String) { this(new internal.TextFileLoader(filename))}
+  def this(filename: String) = { this(new internal.TextFileLoader(filename))}
+
+  def close(): Unit = loader.delete()
 
   def populateModel(model: ParameterCollection, key: String = ""): Unit = loader.populate(model.model, key)
   def populateParameter(p: Parameter, key: String = ""): Unit = loader.populate(p.parameter, key)

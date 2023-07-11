@@ -1,16 +1,16 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
 import edu.cmu.dynet._
-import org.clulab.dynet.Test
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
+
+import scala.util.Using
 
 /**
   * TODO
@@ -27,7 +27,7 @@ import org.clulab.fatdynet.utils.Zipper
   * Figure out how to do input on tree LSTMs.
   */
 
-class TestRepo extends Test {
+class TestRepo extends FatdynetTest {
   Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
   abstract class ParserTester(val name: String) {
@@ -52,7 +52,7 @@ class TestRepo extends Test {
         for (_ <- 0 until count)
           build(oldModel)
 
-        new CloseableModelSaver(filename).autoClose { saver =>
+        Using.resource(new CloseableModelSaver(filename)) { saver =>
           saver.addModel(oldModel, modelName)
         }
 
@@ -174,7 +174,7 @@ class TestRepo extends Test {
       extends RnnParserTester(layers, inputDim, hiddenDim, "VanillaLstmLoader" + "_" + lnLSTM) {
 
     // These should fail because they are hidden by LstmParserTester.
-    override def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns(Array(VanillaLstmParser.mkParser _))
+    override def getDesigns(repo: Repo): Seq[Design] = repo.getDesigns(Seq(VanillaLstmParser.mkParser _))
 
     def build(model: ParameterCollection): Unit = new VanillaLstmBuilder(layers, inputDim, hiddenDim, model, lnLSTM)
 

@@ -154,8 +154,4 @@ public class FastLSTMBuilder extends RNNBuilder {
     return dynet_swigJNI.FastLSTMBuilder_layers_get(swigCPtr, this);
   }
 
-  public FastLSTMBuilder(FastLSTMBuilder other) {
-    this(dynet_swigJNI.new_FastLSTMBuilder__SWIG_2(FastLSTMBuilder.getCPtr(other), other), true);
-  }
-
 }

@@ -59,9 +59,9 @@ public class XorExample {
     Expression loss_expr = squared_distance(y_pred, y);
 
     // Print graph structure (can be fed to graphviz)
-    System.out.println();
-    System.out.println("Computation graphviz structure:");
-    cg.print_graphviz();
+//    System.out.println();
+//    System.out.println("Computation graphviz structure:");
+//    cg.print_graphviz();
 
     // Train the parameters
     System.out.println();

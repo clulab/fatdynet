@@ -1,8 +1,10 @@
 package edu.cmu.dynet
 
-abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) extends Cloneable {
+abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) {
 
   var version: Long = ComputationGraph.version
+
+  def close(): Unit = _builder.delete()
 
   def state(): Int = _builder.state
   def newGraph(update:Boolean = true): Unit = {
@@ -43,22 +45,15 @@ abstract class RnnBuilder(private[dynet] val _builder: internal.RNNBuilder) exte
   def numH0Components(): Long = _builder.num_h0_components()
   def copy(params: RnnBuilder): Unit = _builder.copy(params._builder)
   // save and load
-
-  // This is included for the method signature so that casting from Object/AnyRef is not required.
-  // It seems to need to be defined in order to deal with the protected version in the superclass.
-  // All subclasses should override it so that the exception is not thrown.
-  override def clone: RnnBuilder = ???
 }
 
 class SimpleRnnBuilder private[dynet](private[dynet] val builder: internal.SimpleRNNBuilder)
-    extends RnnBuilder(builder) with Cloneable {
-  def this() { this(new internal.SimpleRNNBuilder()) }
+    extends RnnBuilder(builder) {
+  def this() = { this(new internal.SimpleRNNBuilder()) }
 
-  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, supportLags: Boolean = false) {
+  def this(layers: Long, inputDim: Long, hiddenDim: Long, model: ParameterCollection, supportLags: Boolean = false) = {
     this(new internal.SimpleRNNBuilder(layers, inputDim, hiddenDim, model.model, supportLags))
   }
-
-  override def clone: SimpleRnnBuilder = new SimpleRnnBuilder(new internal.SimpleRNNBuilder(builder))
 
   def addAuxiliaryInput(x: Expression, aux: Expression): Expression = {
     x.ensureFresh()

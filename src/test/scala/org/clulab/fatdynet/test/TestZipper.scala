@@ -1,11 +1,10 @@
 package org.clulab.fatdynet.test
 
 import java.io.File
-
-import org.clulab.dynet.Test
+import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.utils.Zipper
 
-class TestZipper extends Test {
+class TestZipper extends FatdynetTest {
 
   behavior of "Zipper"
 

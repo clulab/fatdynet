@@ -1,15 +1,19 @@
 package edu.cmu.dynet
 
 /** The underlying storage for a model parameter. You will never need to construct this yourself,
-  * but can get it back from [[edu.cmu.dynet.ParameterCollection.parametersList()]].
+  * but can get it back from [[edu.cmu.dynet.ParameterCollection.parametersList]].
   */
 class ParameterStorage private[dynet](private[dynet] val storage: internal.ParameterStorage) {
+  def close(): Unit = storage.delete()
+
   def size(): Long = storage.size()
   def dim: Dim = new Dim(storage.getDim)
   def values: Tensor = new Tensor(storage.getValues)
 }
 
 class LookupParameterStorage private[dynet](private[dynet] val storage: internal.LookupParameterStorage) {
+  def close(): Unit = storage.delete()
+
   def size(): Long = storage.size()
 }
 
@@ -17,6 +21,8 @@ class LookupParameterStorage private[dynet](private[dynet] val storage: internal
   */
 class Parameter private[dynet] (private[dynet] val parameter: internal.Parameter) {
   //def this(model: ParameterCollection, index: Long) { this(new internal.Parameter(model.model, index)) }
+
+  def close(): Unit = parameter.delete()
 
   def zero(): Unit = parameter.zero()
 
@@ -30,6 +36,8 @@ class Parameter private[dynet] (private[dynet] val parameter: internal.Parameter
 class LookupParameter private[dynet] (private[dynet] val lookupParameter: internal.LookupParameter) {
 
   //def this(model: ParameterCollection, index: Long) { this(new internal.LookupParameter(model.model, index))}
+
+  def close(): Unit = lookupParameter.delete()
 
   def initialize(index: Long, values: FloatVector) = {
     lookupParameter.initialize(index, values.vector)
@@ -48,6 +56,8 @@ class LookupParameter private[dynet] (private[dynet] val lookupParameter: intern
   */
 class ParameterInit private[dynet] (
   private[dynet] val parameterInit: internal.ParameterInit) {
+  def close(): Unit = parameterInit.delete()
+
   def initializeParams(values: Tensor): Unit = parameterInit.initialize_params(values.tensor)
 }
 

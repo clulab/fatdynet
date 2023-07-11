@@ -2,7 +2,9 @@ package edu.cmu.dynet
 
 class ParameterCollection private[dynet] (private[dynet] val model: internal.ParameterCollection) {
 
-  def this() { this( new internal.ParameterCollection ) }
+  def this() = { this( new internal.ParameterCollection ) }
+
+  def close(): Unit = model.delete()
 
   def gradientL2Norm(): Float = model.gradient_l2_norm()
   def resetGradient(): Unit = model.reset_gradient()
