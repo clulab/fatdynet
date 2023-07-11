@@ -1,9 +1,9 @@
 package org.clulab.dynet
 
 import org.clulab.fatdynet.FatdynetTest
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 
 import scala.io.Source
+import scala.util.Using
 
 class TestLoader extends FatdynetTest {
   val RNN_STATE_SIZE = 50
@@ -21,7 +21,7 @@ class TestLoader extends FatdynetTest {
   val embeddingDim = 300
 
   def textFromFile(filename: String): String = {
-    Source.fromFile(filename).autoClose { source =>
+    Using.resource(Source.fromFile(filename)) { source =>
       source.mkString
     }
   }

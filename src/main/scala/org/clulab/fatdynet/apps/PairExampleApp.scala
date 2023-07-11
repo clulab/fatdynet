@@ -3,13 +3,13 @@ package org.clulab.fatdynet.apps
 import edu.cmu.dynet._
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Synchronizer
 import org.clulab.fatdynet.utils.Transducer
 import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
+import scala.util.Using
 
 case class PairModel(w: Parameter, b: Parameter, v: Parameter, a: Parameter, rnnBuilder: RnnBuilder, model: ParameterCollection)
 
@@ -200,7 +200,7 @@ object PairExampleApp {
   }
 
   def save(filename: String, pairModel: PairModel): Unit = {
-    new CloseableModelSaver(filename).autoClose { saver =>
+    Using.resource(new CloseableModelSaver(filename)) { saver =>
       saver.addModel(pairModel.model, "/model")
     }
   }

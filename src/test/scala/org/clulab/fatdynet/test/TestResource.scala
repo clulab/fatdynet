@@ -1,13 +1,13 @@
 package org.clulab.fatdynet.test
 
 import org.clulab.fatdynet.FatdynetTest
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.scalatest._
 
 import java.util.zip.ZipFile
 import org.clulab.fatdynet.utils.BaseTextModelLoader
 
 import scala.io.Source
+import scala.util.Using
 
 class TestResource extends FatdynetTest {
 
@@ -32,7 +32,7 @@ class TestResource extends FatdynetTest {
         }
         else
           Source.fromFile(resourceInfo.resourceFilename)
-    val contents = source.autoClose(_.mkString)
+    val contents = Using.resource(source)(_.mkString)
 
 //    println(contents)
     contents should not be empty

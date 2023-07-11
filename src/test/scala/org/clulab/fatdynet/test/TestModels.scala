@@ -5,11 +5,11 @@ import edu.cmu.dynet._
 import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Deleter.AutoDeleter
 import org.clulab.fatdynet.utils.Initializer
 
 import scala.io.Source
+import scala.util.Using
 
 class TestModels extends FatdynetTest {
   Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L, Initializer.DYNET_MEM -> "2048"))
@@ -38,11 +38,11 @@ class TestModels extends FatdynetTest {
     val filename = tmpFile.getCanonicalPath
 
     new AutoDeleter(tmpFile).autoDelete { file =>
-      new CloseableModelSaver(filename).autoClose { modelSaver =>
+      Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
         operation(modelSaver)
       }
 
-      Source.fromFile(filename).autoClose { source =>
+      Using.resource(Source.fromFile(filename)) { source =>
         source.mkString
       }
     }
@@ -94,7 +94,7 @@ class TestModels extends FatdynetTest {
       val oldParameterCollection = new ParameterCollection()
       val oldParameter = oldParameterCollection.addParameters(Dim(51))
 
-      new CloseableModelSaver(filename).autoClose { modelSaver =>
+      Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
         modelSaver.addParameter(oldParameter, name)
       }
 
@@ -122,7 +122,7 @@ class TestModels extends FatdynetTest {
       val oldParameterCollection = new ParameterCollection()
       val oldLookupParameter = oldParameterCollection.addLookupParameters(51, Dim(52))
 
-      new CloseableModelSaver(filename).autoClose { modelSaver =>
+      Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
         modelSaver.addLookupParameter(oldLookupParameter, name)
       }
 
@@ -150,7 +150,7 @@ class TestModels extends FatdynetTest {
       val oldParameterCollection = new ParameterCollection()
       val oldRnnBuilder = new SimpleRnnBuilder(layers = 2, inputDim = 3, hiddenDim = 4, oldParameterCollection)
 
-      new CloseableModelSaver(filename).autoClose { modelSaver =>
+      Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
         modelSaver.addModel(oldParameterCollection, name)
       }
 
@@ -198,7 +198,7 @@ class TestModels extends FatdynetTest {
       val oldLookupParameters = oldParameterCollection.addLookupParameters(W2I_SIZE, Dim(EMBEDDING_SIZE))
       val oldCharLookupParameters = oldParameterCollection.addLookupParameters(C2I_SIZE, Dim(CHAR_EMBEDDING_SIZE))
 
-      new CloseableModelSaver(filename).autoClose { modelSaver =>
+      Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
         modelSaver.addModel(oldParameterCollection, name)
       }
 
@@ -248,7 +248,7 @@ class TestModels extends FatdynetTest {
       // This was moved to bottom for bitwise comparison.
       val old_w2v_wemb = oldParameterCollection.addLookupParameters(W2I_SIZE, Dim(EMBEDDING_SIZE))
 
-      new CloseableModelSaver(filename).autoClose { modelSaver =>
+      Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
         modelSaver.addModel(oldParameterCollection, name)
       }
 

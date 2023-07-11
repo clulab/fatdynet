@@ -9,9 +9,10 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.CloseableZipModelLoader
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
+
+import scala.util.Using
 
 class TestUnicode extends FatdynetTest {
 
@@ -23,7 +24,7 @@ class TestUnicode extends FatdynetTest {
   }
 
   def save(filename: String, lookupParameter: LookupParameter, key: String): Unit = {
-    new CloseableModelSaver(filename).autoClose { saver =>
+    Using.resource(new CloseableModelSaver(filename)) { saver =>
       saver.addLookupParameter(lookupParameter, key)
     }
   }
@@ -32,7 +33,7 @@ class TestUnicode extends FatdynetTest {
     val parameterCollection = new ParameterCollection()
     val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))
 
-    new CloseableModelLoader(filename).autoClose { loader =>
+    Using.resource(new CloseableModelLoader(filename)) { loader =>
       loader.populateLookupParameter(lookupParameter, key)
       lookupParameter
     }
@@ -42,7 +43,7 @@ class TestUnicode extends FatdynetTest {
     val parameterCollection = new ParameterCollection()
     val lookupParameter = parameterCollection.addLookupParameters(10, Dim(10))
 
-    new CloseableZipModelLoader(filename, zipname).autoClose { loader =>
+    Using.resource(new CloseableZipModelLoader(filename, zipname)) { loader =>
       loader.populateLookupParameter(lookupParameter, key)
       lookupParameter
     }

@@ -6,10 +6,11 @@ import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design._
 import org.clulab.fatdynet.parser._
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
+
+import scala.util.Using
 
 /**
   * TODO
@@ -51,7 +52,7 @@ class TestRepo extends FatdynetTest {
         for (_ <- 0 until count)
           build(oldModel)
 
-        new CloseableModelSaver(filename).autoClose { saver =>
+        Using.resource(new CloseableModelSaver(filename)) { saver =>
           saver.addModel(oldModel, modelName)
         }
 

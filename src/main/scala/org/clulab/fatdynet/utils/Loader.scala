@@ -6,8 +6,6 @@ import edu.cmu.dynet.Parameter
 import edu.cmu.dynet.ParameterCollection
 import edu.cmu.dynet.ZipModelLoader
 
-import org.clulab.fatdynet.utils.Closer.AutoCloser
-
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
@@ -16,11 +14,12 @@ import java.net.JarURLConnection
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.zip.ZipFile
+import scala.util.Using
 
-class CloseableModelLoader(filename: String) extends ModelLoader(filename) {
+class CloseableModelLoader(filename: String) extends ModelLoader(filename) with AutoCloseable {
 }
 
-class CloseableZipModelLoader(filename: String, zipname: String) extends ZipModelLoader(filename, zipname) {
+class CloseableZipModelLoader(filename: String, zipname: String) extends ZipModelLoader(filename, zipname) with AutoCloseable {
 }
 
 case class ResourceInfo(resourceName: String, resourceFilename: String, nativeResourceFilename: String, isZipped: Boolean)
@@ -30,7 +29,7 @@ case class ResourceInfo(resourceName: String, resourceFilename: String, nativeRe
 // parallel the plain ModelLoader, but it is not encumbered by the needs
 // of this particular project so that it can be included simply in dynet.
 // The models are read in C++ and can't read from resources.
-abstract class BaseTextModelLoader {
+abstract class BaseTextModelLoader extends AutoCloseable {
   def populateModel(model: ParameterCollection, key: String = ""): Unit
   def populateParameter(p: Parameter, key: String = ""): Unit
   def populateLookupParameter(p: LookupParameter, key: String = ""): Unit
@@ -174,7 +173,7 @@ class RawTextLoader(filename: String) extends BaseTextLoader {
     val inputStreamReader = new InputStreamReader(fileInputStream, BaseTextLoader.CHAR_SET)
     val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
-    bufferedReader.autoClose { bufferedReader =>
+    Using.resource(bufferedReader) { bufferedReader =>
       f(bufferedReader)
     }
   }
@@ -189,13 +188,13 @@ class ZipTextLoader(filename: String, zipname: String) extends BaseTextLoader {
 
     // The zipFile needs to be closed as well or else the file won't delete.
     // Closing the bufferedReader alone is insufficient.
-    zipFile.autoClose { zipFile =>
+    Using.resource(zipFile) { zipFile =>
       val zipEntry = zipFile.getEntry(filename)
       val inputStream = zipFile.getInputStream(zipEntry)
       val inputStreamReader = new InputStreamReader(inputStream, BaseTextLoader.CHAR_SET)
       val bufferedReader = new BufferedReader(inputStreamReader, BaseTextLoader.BUFFER_SIZE)
 
-      bufferedReader.autoClose { bufferedReader =>
+      Using.resource(bufferedReader) { bufferedReader =>
         f(bufferedReader)
       }
     }

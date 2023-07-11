@@ -8,8 +8,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.net.URI
-
-import org.clulab.fatdynet.utils.Closer.AutoCloser
+import scala.util.Using
 
 object Zipper {
 
@@ -19,7 +18,7 @@ object Zipper {
     val jarUri = URI.create(s"jar:$zipUri")
     val env = Map("create" -> "true").asJava
 
-    FileSystems.newFileSystem(jarUri, env).autoClose { zipFileSystem =>
+    Using.resource(FileSystems.newFileSystem(jarUri, env)) { zipFileSystem =>
       val origPath = Paths.get(filename)
       val zipPath = zipFileSystem.getPath(filename)
 

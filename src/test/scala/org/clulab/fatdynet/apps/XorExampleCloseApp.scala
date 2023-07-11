@@ -2,17 +2,17 @@ package org.clulab.fatdynet.apps
 
 // These components are made explicit so that one knows what to close().
 import edu.cmu.dynet
-
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Synchronizer
 import org.clulab.fatdynet.utils.Utils
 
 import scala.util.Random
+import scala.util.Using
+import scala.util.Using.Releasable
 
-case class XorModel(w: dynet.Parameter, b: dynet.Parameter, v: dynet.Parameter, a: dynet.Parameter, model: dynet.ParameterCollection) {
+case class XorModel(w: dynet.Parameter, b: dynet.Parameter, v: dynet.Parameter, a: dynet.Parameter, model: dynet.ParameterCollection) extends AutoCloseable {
   def close(): Unit = {
     w.close()
     b.close()
@@ -41,6 +41,18 @@ case class XorTransformation(input1: Int, input2: Int, output: Int) {
 
 object XorExampleCloseApp {
   protected val random: Random = new Random(1234L)
+
+  implicit object SimpleSGDTrainerReleaser extends Releasable[dynet.SimpleSGDTrainer] {
+    override def release(resource: dynet.SimpleSGDTrainer): Unit = resource.close()
+  }
+
+  implicit object FloatVectorReleaser extends Releasable[dynet.FloatVector] {
+    override def release(resource: dynet.FloatVector): Unit = resource.close()
+  }
+
+  implicit object ExpressionReleaser extends Releasable[dynet.Expression] {
+    override def release(resource: dynet.Expression): Unit = resource.close()
+  }
 
   val  INPUT_SIZE = 2
   val HIDDEN_SIZE = 2
@@ -71,7 +83,7 @@ object XorExampleCloseApp {
   def train: (XorModel, Seq[Float]) = {
     val model = new dynet.ParameterCollection
 
-    new dynet.SimpleSGDTrainer(model).autoClose { trainer => // i.e., stochastic gradient descent trainer
+    Using.resource(new dynet.SimpleSGDTrainer(model)) { trainer => // i.e., stochastic gradient descent trainer
       val WParameter = model.addParameters(dynet.Dim(HIDDEN_SIZE, INPUT_SIZE))
       val bParameter = model.addParameters(dynet.Dim(HIDDEN_SIZE))
       val VParameter = model.addParameters(dynet.Dim(OUTPUT_SIZE, HIDDEN_SIZE))
@@ -137,9 +149,9 @@ object XorExampleCloseApp {
   }
 
   def predict(xorModel: XorModel): Seq[Float] = {
-    new dynet.FloatVector(INPUT_SIZE).autoClose { xValues =>
+    Using.resource(new dynet.FloatVector(INPUT_SIZE)) { xValues =>
       Synchronizer.withComputationGraph("XorExampleApp.predict()") {
-        mkPredictionGraph(xorModel, xValues).autoClose { yPrediction =>
+        Using.resource(mkPredictionGraph(xorModel, xValues)) { yPrediction =>
           predict(xorModel, xValues, yPrediction)
         }
       }
@@ -147,7 +159,7 @@ object XorExampleCloseApp {
   }
 
   def save(filename: String, xorModel: XorModel): Unit = {
-    new CloseableModelSaver(filename).autoClose { saver =>
+    Using.resource(new CloseableModelSaver(filename)) { saver =>
       saver.addModel(xorModel.model, "/model")
     }
   }
@@ -171,12 +183,12 @@ object XorExampleCloseApp {
     Initializer.initialize(Map(Initializer.RANDOM_SEED -> 2522620396L))
 
     val (xorModel1, initialResults) = train
-    val expectedResults = xorModel1.autoClose { xorModel1 =>
+    val expectedResults = Using.resource(xorModel1) { xorModel1 =>
       val expectedResults = predict(xorModel1)
       save(filename, xorModel1) // TODO: just once
       expectedResults
     }
-    val actualResults = load(filename).autoClose { xorModel2 =>
+    val actualResults = Using.resource(load(filename)) { xorModel2 =>
       predict(xorModel2)
     }
 

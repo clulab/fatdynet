@@ -7,9 +7,10 @@ import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.design.Design
 import org.clulab.fatdynet.parser.VanillaLstmParser
 import org.clulab.fatdynet.utils.CloseableModelSaver
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Transducer
+
+import scala.util.Using
 
 class TestTransducer extends FatdynetTest {
 
@@ -55,7 +56,7 @@ class TestTransducer extends FatdynetTest {
           * dynet seems to get mixed up when loading the model then and will throw
           * an exception.
           */
-        new CloseableModelSaver(filename).autoClose { saver =>
+        Using.resource(new CloseableModelSaver(filename)) { saver =>
           saver.addModel(oldModel, modelName)
         }
 

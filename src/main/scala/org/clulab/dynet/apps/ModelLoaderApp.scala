@@ -4,9 +4,10 @@ import org.clulab.dynet.models.hot.scala.HotModel
 import org.clulab.fatdynet.utils.CloseableModelLoader
 import org.clulab.fatdynet.utils.CloseableModelSaver
 import org.clulab.fatdynet.utils.CloseableZipModelLoader
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
+
+import scala.util.Using
 
 object ModelLoaderApp extends App {
 
@@ -18,7 +19,7 @@ object ModelLoaderApp extends App {
   val copyFromZipFilename = "modelZipCopy.rnn"
   val key = "/key"
 
-  new CloseableModelSaver(origFilename).autoClose { saver =>
+  Using.resource(new CloseableModelSaver(origFilename)) { saver =>
     val model = HotModel()
 
     saver.addModel(model.parameters, key)
@@ -28,7 +29,7 @@ object ModelLoaderApp extends App {
 
   val copyFromTextModel = {
     // This will be different from the original because of random initialization.
-    new CloseableModelLoader(origFilename).autoClose { loader =>
+    Using.resource(new CloseableModelLoader(origFilename)) { loader =>
       val model = HotModel()
 
       loader.populateModel(model.parameters, key)
@@ -37,7 +38,7 @@ object ModelLoaderApp extends App {
   }
   val copyFromZipModel = {
     // This will be different from the original because of random initialization.
-    new CloseableZipModelLoader(origFilename, zipFilename).autoClose { loader =>
+    Using.resource(new CloseableZipModelLoader(origFilename, zipFilename)) { loader =>
       val model = HotModel()
 
       loader.populateModel(model.parameters, key)
@@ -45,10 +46,10 @@ object ModelLoaderApp extends App {
     }
   }
 
-  new CloseableModelSaver(copyFromTextFilename).autoClose { saver =>
+  Using.resource(new CloseableModelSaver(copyFromTextFilename)) { saver =>
     saver.addModel(copyFromTextModel.parameters, key)
   }
-  new CloseableModelSaver(copyFromZipFilename).autoClose { saver =>
+  Using.resource(new CloseableModelSaver(copyFromZipFilename)) { saver =>
     saver.addModel(copyFromZipModel.parameters, key)
   }
 }

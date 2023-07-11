@@ -6,9 +6,10 @@ import edu.cmu.dynet.ParameterCollection
 import org.clulab.fatdynet.FatdynetTest
 import org.clulab.fatdynet.Repo
 import org.clulab.fatdynet.utils.CloseableModelSaver
-import org.clulab.fatdynet.utils.Closer.AutoCloser
 import org.clulab.fatdynet.utils.Initializer
 import org.clulab.fatdynet.utils.Zipper
+
+import scala.util.Using
 
 class TestRepoDelete extends FatdynetTest {
 
@@ -28,7 +29,7 @@ class TestRepoDelete extends FatdynetTest {
       lookupParameter
     }
 
-    new CloseableModelSaver(filename).autoClose { modelSaver =>
+    Using.resource(new CloseableModelSaver(filename)) { modelSaver =>
       modelSaver.addLookupParameter(lookupParameter, key)
     }
 
